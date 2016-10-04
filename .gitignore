@@ -243,3 +243,12 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+
+Debug/
+*.sln
+*.db
+*.opendb
+*.vcxproj
+*.filters
+.vs/
