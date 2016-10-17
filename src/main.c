@@ -19,7 +19,7 @@ typedef struct hTable{
 }HashTable;
 
 HashTable *createHashTable(unsigned int size);
-int deleteHashTable(HashTable *hashTable);
+void deleteHashTable(HashTable *hashTable);
 int addToHashTable(HashTable *hashTable, char *key,char *type, unsigned int data);
 int deleteFromHashTable(HashTable *HashTable, char *key);
 HashTable *searchInHashTable(HashTable *hashTable, char *key);
