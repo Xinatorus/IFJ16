@@ -48,19 +48,25 @@ int main() {
 
 //TODO pridat osetreni chyb
 
+// Vytvoreni tab
 HashTable *createHashTable(unsigned int size) {
 	HashTable *htab;
 	htab = malloc(sizeof(HashTable)*size);
-	
+	if (htab == NULL)
+		return NULL;
+//TODO add pre-set val?
 	return htab;
 }
 
+// Odstraneni tabulky
 void deleteHashTable(HashTable *hashTable) {
+//TODO procistit jednotlive polozky/seznamy 
 	free(hashTable);
 }
 
+// Pridavani zaznamu do tabulky
 int addToHashTable(HashTable *hashTable, char *key, char *type, unsigned int data) {
-	//+search jesi neexistuje uz... asi podle null v key
+//TODO search jesi neexistuje uz... asi podle null v key
 
 	unsigned int index = hash(key);
 	hashTable[index].key = malloc(sizeof(char)*strlen(key));
@@ -79,24 +85,42 @@ int deleteFromHashTable(HashTable *HashTable, char *key) {
 	
 }
 
+
+// Vyhledavani v tabulce
 HashTable *searchInHashTable(HashTable *hashTable, char *key) {
 	unsigned int index = hash(key);
+
+//TODO tohle musi do for()
+
 	if (hashTable[index].key == NULL) { // nenalezen
 		return NULL; // asi?
 	}
 	else { //neco tam je
-		if (strcmp(hashTable[index].key, key)) {
+		if (strcmp(hashTable[index].key, key)) { // nalezeno
 
 		}
-		else {
+		else { //nenalezeno, podivam se jestli neexistuje dalsi zaznam
+			if (hashTable[index].next == NULL) { // zadne dalsi polozky neexistujou
+				return NULL;
+			}
+			else {
+				
+			}
 
 		}
 	}
+// Predelani do for
 
-	return &hashTable[index];
+	for (HashTable *item = hash(key); item != NULL; item = item->next) {
+		if (!strcmp(key, item->key))
+			return item; //nalezen
+	}
+
+	// nenaezen
+	return NULL;
 }
 
-
+// Hashovaci fce
 unsigned int hash(char *key) {
 	unsigned int h = 0;
 	const unsigned char *p;
