@@ -1,3 +1,14 @@
+/*******************************************************
+*
+*						IFJ_2016
+*					Autor: xsztef02
+*
+*
+*			Last Edit: x***## xx.xx.xxxx 00:00 
+*
+*
+*******************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +21,8 @@
 
 */
 
+
+#define SIZE 500;
 
 typedef struct hTable{
 	char *key; 
@@ -84,4 +97,10 @@ HashTable *searchInHashTable(HashTable *hashTable, char *key) {
 }
 
 
-unsigned int hash(char *key);
+unsigned int hash(char *key) {
+	unsigned int h = 0;
+	const unsigned char *p;
+	for (p = (const unsigned char*)key; *p != '\0'; p++)
+		h = 65599 * h + *p;
+	return h % SIZE;
+}
