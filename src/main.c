@@ -66,7 +66,7 @@ void deleteHashTable(HashTable *hashTable) {
 
 // Pridavani zaznamu do tabulky
 int addToHashTable(HashTable *hashTable, char *key, char *type, unsigned int data) {
-//TODO search jesi neexistuje uz... asi podle null v key
+//TODO search jesi uz neexistuje
 
 	unsigned int index = hash(key);
 	hashTable[index].key = malloc(sizeof(char)*strlen(key));
@@ -90,30 +90,10 @@ int deleteFromHashTable(HashTable *HashTable, char *key) {
 HashTable *searchInHashTable(HashTable *hashTable, char *key) {
 	unsigned int index = hash(key);
 
-//TODO tohle musi do for()
-
-	if (hashTable[index].key == NULL) { // nenalezen
-		return NULL; // asi?
-	}
-	else { //neco tam je
-		if (strcmp(hashTable[index].key, key)) { // nalezeno
-
-		}
-		else { //nenalezeno, podivam se jestli neexistuje dalsi zaznam
-			if (hashTable[index].next == NULL) { // zadne dalsi polozky neexistujou
-				return NULL;
-			}
-			else {
-				
-			}
-
-		}
-	}
-// Predelani do for
-
-	for (HashTable *item = hash(key); item != NULL; item = item->next) {
-		if (!strcmp(key, item->key))
-			return item; //nalezen
+	// prochazim zaznam, pokud je key = 0 neexistuje v tabulce, pokud je zaznam nullovy = neexistuje v seznamu
+	for (HashTable *item = hash(key); item != NULL && item->key != NULL; item = item->next) {
+			if (!strcmp(key, item->key))
+				return item; //vracim odkaz na zaznam
 	}
 
 	// nenaezen
