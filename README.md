@@ -7,4 +7,4 @@ ToDo:
 https://docs.google.com/spreadsheets/d/1kb8gn5SivUUbamupqXJ9z6w2lD-CwwdihxQLQXnM88M/edit#gid=0
 
 Jak psát:
-  - Pokud je část kódu nedokončená/chybí , napište komentář, na jehož začátku bude TODO, s popisem
+  - Pokud je část kódu nedokončená/chybí , napište komentář, na jehož začátku bude TODO, s popisem aby se to lip hledalo 
