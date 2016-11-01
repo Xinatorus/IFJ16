@@ -6,8 +6,8 @@
 //TODO pridat osetreni chyb
 
 // Vytvoreni tab
-HashTable *createHashTable(unsigned int size) {
-	HashTable *htab;
+HashTable createHashTable(unsigned int size) {
+	HashTable htab;
 	htab = malloc(sizeof(HashTable)*size);
 	if (htab == NULL)
 		return NULL;
@@ -19,29 +19,34 @@ HashTable *createHashTable(unsigned int size) {
 }
 
 // Odstraneni tabulky
-void deleteHashTable(HashTable *hashTable) {
-	//TODO procistit jednotlive polozky/seznamy 
+//TODO procistit jednotlive polozky/seznamy 
+void deleteHashTable(HashTable hashTable) {
+	
+	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
+		if (hashTable[i].next != NULL) {
 
+		}
+	}
 
 	free(hashTable);
 }
 
 // Pridavani zaznamu do tabulky
-int addToHashTable(HashTable *hashTable, char *key, char *type, unsigned int data) {
+int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data) {
 
-	if (searchInHashTable(hashTable, *key) != NULL) //prvek uz existuje!
+	if (searchInHashTable(hashTable, key) != NULL) //prvek uz existuje!
 		return 1;
 
 	unsigned int index = hash(key);
 	
 	//TODO pokud na dane pozici neni nejaky prvek, zaradim ho do seznamu
 
-	HashTable *item = &(hashTable[index]);
+	HashTable item = &(hashTable[index]);
 
 	if (item->key != NULL) {//pokud neco jiz existuje
 		for (; item->next != NULL; item = item->next); //najdu konec
 		// vytvorim novou polozku
-		HashTable *tmp = malloc(sizeof(HashTable));
+		HashTable tmp = malloc(sizeof(HashTable));
 		//pridam do seznamu
 		item->next = tmp;
 		//zmenim odkaz na polozku
@@ -61,19 +66,13 @@ int addToHashTable(HashTable *hashTable, char *key, char *type, unsigned int dat
 	return 0;
 }
 
-// je vubec potreba??
-int deleteFromHashTable(HashTable *HashTable, char *key) {
-
-}
-
 
 // Vyhledavani v tabulce
-HashTable *searchInHashTable(HashTable *hashTable, char *key) {
+HashTable searchInHashTable(HashTable hashTable, char *key) {
 	unsigned int index = hash(key);
 
 	// prochazim zaznam, pokud je key = 0 neexistuje v tabulce, pokud je zaznam nullovy = neexistuje v seznamu
-	// WTF? proc ten item!=0 ... uz je moc pozde....
-	for (HashTable *item = hash(key); item != NULL && item->key != NULL; item = item->next) {
+	for (HashTable item = &(hashTable[hash(key)]); item != NULL && item->key != NULL; item = item->next) {
 		if (!strcmp(key, item->key))
 			return item; //vracim odkaz na zaznam
 	}
