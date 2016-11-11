@@ -9,10 +9,10 @@ void mergeSort(char *arr,int len) {
 	if (len <= 1) return;
 
 	int half = len / 2;
-	char *l = malloc(half/2);
+	char *l = malloc(half);
 	char *r = malloc(len - half);
 
-	if (!r || !l) printf("errMalloc\n");
+	//if (!r || !l) printf("errMalloc\n");
 
 	for (int i = 0; i < half; i++)
 		l[i] = arr[i];
@@ -23,9 +23,8 @@ void mergeSort(char *arr,int len) {
 	mergeSort(r, len - half);
 	merge(arr, l, r, half, len - half);
 
-//TODO: why stuck?
-	//free(l);
-	//free(r);
+	free(l);
+	free(r);
 }
 
 void merge(char *arr,char *l, char *r, int sizeL, int sizeR) {
