@@ -33,8 +33,12 @@ int instrListAddInstr(tInstrList *list, tInstr instr) {
 	return 0;
 }
 
-tInstr instrListGetActiveInstr(tInstrList *list, tInstr instr) {
-	return list->active->instr;
+int instrListGetActiveInstr(tInstrList *list, tInstr *instr) {
+	if (list->active == NULL) // neni aktivni prvek
+		return 1;
+
+	*instr = list->active->instr;
+	return 0;
 }
 
 void instrListSetActive(tInstrList *list, tInstrListItem *active) {
