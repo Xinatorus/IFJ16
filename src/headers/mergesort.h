@@ -14,6 +14,4 @@ void mergeSort(char *arr,int len);
 
 void merge(char *arr,char *l, char*r, int sizeL, int sizeR);
 
-void mergeTest();
-
 #endif // !MERGESORT

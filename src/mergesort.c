@@ -42,6 +42,3 @@ void merge(char *arr,char *l, char *r, int sizeL, int sizeR) {
 	while (j < sizeR)
 		arr[k++] = r[j++];
 }
-
-
-void mergeTest();

@@ -13,14 +13,6 @@
 
 
 int main() {
-	char *x = "zeacbhfgd";
-
-	printf("%s", x);
-
-	mergeSort(x, strlen(x));
-
-	printf("\noutput: ");
-	printf("%s\n", x);
 
 	system("pause");
 	return 0;
