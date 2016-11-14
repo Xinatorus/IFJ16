@@ -15,7 +15,7 @@
 
 int main() {
 
-	printf("want num 2.\nI got: %d.", findSubstring("abcdefgh", "fg"));
+	
 
 
 	system("pause");

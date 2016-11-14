@@ -5,34 +5,33 @@
 
 int findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 
-		|| s[0] == '\0' || search[0] == '\0') return -1;
+		|| s[0] == '\0' || search[0] == '\0') return 0;
 
 	int sLen = strlen(s);
 	int searchLen = strlen(search);
 	int i,j,k=0;
 
 
-	if (sLen < searchLen) return -1; // neni mozne aby byl v retezci delsi podretezec
+	if (sLen < searchLen) return 0; // neni mozne aby byl v retezci delsi podretezec
 
 	// pozici kurzoru nastavim na searchLen az do sLen
-	//									? <= ? kontroluju posledni znak v search pokud == tak je nalezen
-	for (i = 0,j=searchLen; i < sLen && j >= 0;) {
+	for (i = searchLen - 1, j = 0; i < sLen && j < searchLen;) {
 		// kontroluju jestli je znak c z S je v search
 		// pokud ne 
 			// posunu se o pozici c nalezenem v search -> plna delka pokud znak neni
 			// jinak o pozici znaku c zprava
 		//opakuju do shody nebo konce S
 
-		if (s[searchLen - i] == search[j]) {//znak odpovida
-			i++;
-			j--; 
+		if (s[i-j] == search[searchLen-j-1]) {//znak odpovida
+			j++; 
 		}
 		else { // neshoduje se, posouvam se..
-			for (k = searchLen; k > 0 && s[searchLen - i] != search[k]; k--);
-			j = searchLen;
+			for (k = searchLen; k > 0 && s[i-j] != search[k-1]; k--);
+			j = 0;
 			i += searchLen - k; 
 		}
 	}
-	if (j < 0) return i - searchLen - 1;
-	else return -1;
+
+	if (j == searchLen) return i - searchLen + 1 + 1;
+	else return 0;
 }
