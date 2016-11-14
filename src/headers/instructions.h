@@ -8,13 +8,15 @@ typedef enum {
 	I_MOV,
 	I_CALL,
 	I_RET,
-	I_CMP,
 
-	//binary
-	I_AND,
-	I_OR,
-	I_XOR,
-	I_NOT,
+	//logic
+	I_EQ,
+	I_NEQ,
+	I_LES, 
+	I_LESE,
+	I_GRE,
+	I_GREE,
+
 
 	//math
 	I_ADD,
