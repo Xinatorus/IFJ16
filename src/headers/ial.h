@@ -6,6 +6,7 @@
 int findSubstring(char *s, char *search);
 
 
+#define HASH_TABLE_SIZE 200
 
 //Hash table
 typedef struct hItem {

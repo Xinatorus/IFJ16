@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HASH_TABLE_SIZE 200;
+
 
 int findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 
