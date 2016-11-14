@@ -17,6 +17,7 @@ typedef struct {
 typedef struct {
 	unsigned int size;
 	unsigned int SP; // index vrcholu
+	unsigned int BP; // base pointer
 	Data *data;
 }Stack;
 
@@ -24,7 +25,7 @@ typedef struct {
 Stack stackInit(unsigned int size);
 void stackFree(Stack stack);
 int stackPush(Stack stack, Data data);
-Data stackPop(Stack stack);
+int stackPop(Stack stack, Data *data);
 
 
 #endif // !STACK
