@@ -8,10 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "headers\hash.h"
 #include "headers\mergesort.h"
 #include "headers\ial.h"
-
+#include "headers\instructions.h"
 
 int main() {
 
