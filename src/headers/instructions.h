@@ -2,12 +2,38 @@
 #define INSTRUCTIONS
 
 //TODO Pridat instrukcni sadu
-#define JMP 
-#define CALL 
+typedef enum {
+	//em..
+	I_JMP,
+	I_MOV,
+	I_CALL,
+	I_RET,
+	I_CMP,
+
+	//binary
+	I_AND,
+	I_OR,
+	I_XOR,
+	I_NOT,
+
+	//math
+	I_ADD,
+	I_SUB,
+	I_MUL,
+	I_DIV,
+
+	I_INC,
+	I_DEC,
+
+	//strings
+	I_READ,
+	I_WRITE,
+
+}Instructions;
 
 
 typedef struct {
-	int type;
+	Instructions instr;
 	void *addr1;
 	void *addr2;
 	void *addr3;
