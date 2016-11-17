@@ -5,72 +5,58 @@
 /* Datum:   24.10.2016                                                        */
 /* ========================================================================== */
 
+// hlavickove soubory 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 
-
-extern int LINE;
-
+// vyctovy typ obsahujici seznam stavu konecneho automatu
 typedef enum {
-	INIT,                                   // 0
-
-	//identifikator,retazec,integer,double
-	ID,                                     // 1
-  STRING_LITERAL,                         // 2
-  INT,					// 3
-  DBL,                                	// 4
   
-  KLUC,
-  REZER,
-	
-  //operatory
-	ASSIGNMENT,                             // 22
-  LSS,                                    // 23
-  GTR,                                    // 24
-  LESS_OR_EQUAL,                          // 25
-  GREATER_OR_EQUAL,                       // 26
-  EQUAL,                                  // 27
-  NOT_EQUAL,                              // 28
+  // pocatecni stav
+  POC_STAV,
+  
+  // komentare
+  JEDNORADKOVY_KOMENTAR,
+  VICERADKOVY_KOMENTAR,
+  VICERADKOVY_KOMENTAR_2,
+  
+  PRIRAZENI,
+  DELENI,
 
-	  LAVO,                                     // 29
-    PRAVO,                                    // 30
-
-	  ADD,                                    // 31
-    SUB,                                    // 32
-    MULTIPLICATION,                         // 33
-    DIVISION,                               // 34
-
-	//zatvorky
-  LEFT_BRACKET,                           // 35
-  RIGHT_BRACKET,                          // 36
-  LEFT_SQUARE_BRACKET,                    // 37
-  RIGHT_SQUARE_BRACKET,                   // 38
-	LEFT_CURLY_BRACKET,                     // 39
-	RIGHT_CURLY_BRACKET,                    // 40
-
-	//komentare
-	JED_RIAD_KOM,                    // 41
-  VIAC_RIAD_KOM,                     // 42
-  VIAC_RIAD_KOM_KONIEC,                 // 43
-
-	//ciarka, bodkociarka
-	COMMA,                                  // 44
-  SEMICLN,                                // 45
-
-	//pomocne stavy
-	DBL_DOT,                                // 46
-  DBL_EXPONENT,                           // 47
-  DBL_EXPONENT_SIGNED,                    // 48
-
-
-	END_OF_FILE,                            // 49
-  LEX_ERROR                               // 50
+  // relacni operatory
+  MENSI,
+  VETSI,
+  NEROVNO,
+  
+  // identifikatory
+  IDENTIFIKATOR,
+  PLNE_KVALIFIKOVANY_IDENTIFIKATOR,
+  PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2,
+  
+  // retezec
+  RETEZEC,
+  
+  // cisla
+  CELOCISELNY_LITERAL,
+  DESETINNY_LITERAL,
+  DESETINNY_LITERAL_2,
+  DESETINNY_LITERAL_EXPONENT,
+  DESETINNY_LITERAL_EXPONENT_2,
+  CELOCISELNY_LITERAL_EXPONENT,
+  CELOCISELNY_LITERAL_EXPONENT_2,
+  CELOCISELNY_LITERAL_EXPONENT_3,
+  
+  // konec souboru (EOF)
+  KONEC_SOUBORU,
+  // lexikalni chyba (lex_error)
+  LEXIKALNI_CHYBA                             
 
 }TokenType;
 
+// struktury reprezentujici token
 typedef struct{
 	char* str;
 	int length;
@@ -82,16 +68,16 @@ typedef struct{
 	int cisloRiadku;
 }Ttoken;
 
-
-int loadSourceFile(char* file);
-int closeSourceFile();
-
-
+// funkce vytvarejici token 
+Ttoken* vytvorToken();
+// funkce pro inicializaci retezce a inicializaci tokenu
 int stringInit(string* s);
+// funkce pro rozsireni daneho retezce o znak
 int addChar(string* s,char c);
 
-Ttoken* vytvorToken();
-int znicToken(Ttoken* token);
-
+// funkce vracejici token (podle stavu konecneho automatu)
 Ttoken* getNextToken();
+// funkce pro pruchod tabulkou klicovych a rezervovanych slov
 TokenType najdiKlucoveSlovo(string* s);
+
+/*=========================KONEC HLAVICKOVEHO SOUBORU=========================*/
