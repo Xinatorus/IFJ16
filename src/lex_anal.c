@@ -318,7 +318,7 @@ Ttoken* getNextToken()
 				else if(c==EOF)
         {
           fseek(subor,-1,SEEK_CUR);
-					token->type=LEXIKALNI_CHYBA ;
+					token->type=LEXIKALNI_CHYBA;
 				}
         
         // vsechno ostatni (jakekoliv znaky v komentari)
@@ -449,7 +449,7 @@ Ttoken* getNextToken()
 				else
 				{
 					fseek(subor,-1,SEEK_CUR);
-					token->type=najdiKlucoveSlovo(token->attr);
+					token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR;
 					return token;
 				} 
         
@@ -573,7 +573,7 @@ Ttoken* getNextToken()
         else
         {
           fseek(subor,-1,SEEK_CUR);
-          token->type=LEXIKALNI_CHYBA ;
+          token->type=LEXIKALNI_CHYBA;
         } 
       
       break;
@@ -585,18 +585,37 @@ Ttoken* getNextToken()
         if (isdigit(c))
         {
           addChar(token->attr,c);
-          token->type=DESETINNY_LITERAL_EXPONENT_2;
+          token->type=DESETINNY_LITERAL_EXPONENT_3;
         }
       
-        // vrati token 
+        // vrati chybu, nepovolena kombinace
+        else
+        {
+          fseek(subor,-1,SEEK_CUR);
+          token->type=LEXIKALNI_CHYBA;
+        }
+      
+      break;
+      
+      // kombinace cislo.cisloe(E)+(-,cislo)cislo
+      case DESETINNY_LITERAL_EXPONENT_3:
+      
+        // nasleduje cislo
+        if (isdigit(c))
+        {
+          addChar(token->attr,c);
+  				token->type=DESETINNY_LITERAL_EXPONENT_3;
+        }
+      
+        // jina kombinace
         else
         {
           fseek(subor,-1,SEEK_CUR);
           token->type=DESETINNY_LITERAL_EXPONENT;
 					return token;
         }
-      
-      break;
+        
+      break; 
       
       // kombinace cisloe(E)
       case CELOCISELNY_LITERAL_EXPONENT:
@@ -613,7 +632,7 @@ Ttoken* getNextToken()
         else
         {
           fseek(subor,-1,SEEK_CUR);
-          token->type=LEXIKALNI_CHYBA ;
+          token->type=LEXIKALNI_CHYBA;
         }  
     
       break;
@@ -632,7 +651,7 @@ Ttoken* getNextToken()
         else
         {
           fseek(subor,-1,SEEK_CUR);
-          token->type=LEXIKALNI_CHYBA ;
+          token->type=LEXIKALNI_CHYBA;
         }
         
       break;
@@ -665,7 +684,7 @@ Ttoken* getNextToken()
       break;
       
       // v pripade chyby se chyba vytiskne a ukonci funkce
-      case LEXIKALNI_CHYBA :
+      case LEXIKALNI_CHYBA:
      
         fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
         return;
