@@ -30,8 +30,9 @@ const char *rezervovaneSlova[50] =
     "long\0", "strictfp\0", "volatile\0", "const\0", "float\0", "native\0", "super\0", "while\0",
 };
 
+// zdrojovy soubor
+FILE* subor;
 unsigned int riadok;
-
 
 // funkce vracejici token (podle stavu konecneho automatu)
 Ttoken* getNextToken()
@@ -441,7 +442,7 @@ Ttoken* getNextToken()
         if(isalpha(c) || (c=='_') || (c=='$') || isdigit(c))
           {
   					addChar(token->attr,c);
-  					token->PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2;
+  					token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2;
   				}
           
         // chybny znak -> posun v souboru o jeden znak zpet a vrati token
@@ -467,7 +468,7 @@ Ttoken* getNextToken()
         // koniec retazca
 				else if(c==34)
         {
-          token->type=RETEZEC
+          token->type=RETEZEC;
 					return token;
 				}
         

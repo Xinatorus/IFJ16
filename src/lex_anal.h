@@ -12,7 +12,7 @@
 #include <ctype.h>
 #include <string.h>
 
-// vyctovy typ obsahujici seznam stavu konecneho automatu
+// vyctovy typ obsahujici seznam tokenu
 typedef enum {
   
   // pocatecni stav
@@ -23,13 +23,29 @@ typedef enum {
   VICERADKOVY_KOMENTAR,
   VICERADKOVY_KOMENTAR_2,
   
-  PRIRAZENI,
+  // operandy (operace)
+  SCITANI,
   DELENI,
+  ODECITANI,
+  NASOBENI,
 
   // relacni operatory
   MENSI,
   VETSI,
   NEROVNO,
+  
+  PRIRAZENI,
+  STREDNIK,
+  CARKA,
+  
+  // zavorky
+  LEVA_KULATA_ZAVORKA,
+  PRAVA_KULATA_ZAVORKA,
+  LEVA_HRANATA_ZAVORKA,
+  PRAVA_HRANATA_ZAVORKA,
+  LEVA_SLOZENA_ZAVORKA,
+  PRAVA_SLOZENA_ZAVORKA,
+  
   
   // identifikatory
   IDENTIFIKATOR,
