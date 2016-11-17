@@ -3,6 +3,9 @@
 Doc:
 https://docs.google.com/document/d/1xfO5FWdqh2rSXctU5C0-LHUc5uFAfd0s_QOd8VIG4VU/edit
 
+Implementační detaily:
+https://docs.google.com/document/d/1rkFnAQ2zqhloMoxHRm-5IjIKP6yxGBAKQzmQzxytE2I/edit
+
 ToDo:
 https://docs.google.com/spreadsheets/d/1kb8gn5SivUUbamupqXJ9z6w2lD-CwwdihxQLQXnM88M/edit#gid=0
 
