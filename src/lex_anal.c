@@ -19,15 +19,14 @@ const char *klucoveSlova[17] =
 /**
  * Rezervovane slova (tabulka rezervovanych slov)
  */
-const char *rezervovaneSlova[50] =
+const char *rezervovaneSlova[36] =
 {
-    "abstract\0", "continue\0", "for\0", "new\0", "switch\0", "assert\0", "default\0",
-    "if\0", "package\0", "synchronized\0", "boolean\0", "do\0", "goto\0", "private\0",
-    "this\0", "break\0", "double\0", "implements\0", "protected\0", "throw\0", "byte\0",
-    "else\0", "import\0", "public\0", "throws\0", "case\0", "enum\0", "instanceof\0",
-    "return\0", "transient\0", "catch\0", "extends\0", "int\0", "short\0", "try\0",
-    "char\0", "final\0", "interface\0", "static\0", "void\0", "class\0", "finally\0",
-    "long\0", "strictfp\0", "volatile\0", "const\0", "float\0", "native\0", "super\0", "while\0",
+    "abstract\0", "new\0", "switch\0", "assert\0", "default\0", "package\0",
+    "synchronized\0", "goto\0", "private\0", "this\0", "implements\0",
+    "protected\0", "throw\0", "byte\0", "import\0", "public\0", "throws\0",
+    "case\0", "enum\0", "instanceof\0", "transient\0", "catch\0", "extends\0",
+    "short\0", "try\0", "char\0", "final\0", "interface\0", "finally\0", "long\0",
+    "strictfp\0", "volatile\0", "const\0", "float\0", "native\0", "super\0",
 };
 
 // zdrojovy soubor
@@ -60,19 +59,19 @@ Ttoken* getNextToken()
 					token->cisloRiadku=riadok;
 					token->type=POC_STAV;
 				}
-        
+
         // ignoruje biele znaky
 				else if(isspace(c))
         {
 					token->type=POC_STAV;
 				}
-        
+
         // hned narazi na koniec suboru
 				else if(c==EOF)
         {
 					token->type=KONEC_SOUBORU;
 				}
-      
+
         // =, alebo ==
 				else if(c=='=')
         {
@@ -85,15 +84,15 @@ Ttoken* getNextToken()
 					token->type=SCITANI;
           return token;
 				}
-       
+
         // odecitani
 				else if(c=='-')
         {
 					token->type=ODECITANI;
           return token;
 				}
-        
-        // nasobeni  
+
+        // nasobeni
 				else if(c=='*')
         {
 					token->type=NASOBENI;
@@ -111,68 +110,68 @@ Ttoken* getNextToken()
         {
 					token->type=MENSI;
 				}
-        
+
         // >, >> alebo >=
 				else if(c=='>')
         {
 					token->type=VETSI;
 				}
-     
+
         // !=
 				else if(c=='!')
         {
 					token->type=NEROVNO;
 				}
-  
+
         // strednik
 				else if(c==';')
         {
 					token->type=STREDNIK;
 					return token;
 				}
-        
-        // carka 
+
+        // carka
 				else if(c==',')
         {
 					token->type=CARKA;
 					return token;
 				}
-        
-        // leva kulata zavorka         
+
+        // leva kulata zavorka
 				else if(c=='(')
         {
 					token->type=LEVA_KULATA_ZAVORKA;
 					return token;
 				}
-        
+
         // prava kulata zavorka
 				else if(c==')')
         {
 					token->type=PRAVA_KULATA_ZAVORKA;
 					return token;
 				}
-        
+
         // leva hranata zavorka
 				else if(c=='[')
         {
 					token->type=LEVA_HRANATA_ZAVORKA;
 					return token;
 				}
-        
+
         // prava hranata zavorka
 				else if(c==']')
         {
 					token->type=PRAVA_HRANATA_ZAVORKA;
 					return token;
 				}
-        
+
         // leva slozena zavorka
 				else if(c=='{')
         {
 					token->type=LEVA_SLOZENA_ZAVORKA;
 					return token;
 				}
-        
+
         // prava slozena zavorka
 				else if(c=='}')
         {
@@ -185,39 +184,39 @@ Ttoken* getNextToken()
         {
 					token->type=RETEZEC;
 				}
-        
+
         // identifikator, alebo klucove slovo
 				else if(isalpha(c) || (c=='_') || (c=='$'))
         {
 					addChar(token->attr,c);
 					token->type=IDENTIFIKATOR;
 				}
-        
+
         // INT, double
 				else if(isdigit(c))
         {
 					addChar(token->attr,c);
 					token->type=CELOCISELNY_LITERAL;
 				}
-        
+
         // lexikalni chyba
 				else
         {
           fseek(subor,-1,SEEK_CUR);
 					token->type=LEXIKALNI_CHYBA;
 				}
-        
+
 			break;
 
 			case PRIRAZENI:
 
-        // kombinace ==  
+        // kombinace ==
 				if(c=='=')
         {
 					token->type=ROVNO;
 					return token;
 				}
-        
+
         // kombinace = (prirazeni)
 				else
         {
@@ -236,13 +235,13 @@ Ttoken* getNextToken()
         {
 					token->type=JEDNORADKOVY_KOMENTAR;
 				}
-        
+
         // kombinace /* (viceradkovy komentar)
 				else if(c=='*')
         {
 					token->type=VICERADKOVY_KOMENTAR;
 				}
-        
+
         // v pripade jine kombinace vrati chybu (stav LEXIKALNI_CHYBA)
 				else
         {
@@ -262,13 +261,13 @@ Ttoken* getNextToken()
 					token->cisloRiadku=riadok;
 					token->type=POC_STAV;
 				}
-        
+
         // koniec suboru => vrati EOF token
 				else if(c==EOF)
         {
 					token->type=KONEC_SOUBORU;
 				}
-        
+
         // vsechno ostatni (jakekoliv znaky v komentari)
 				else
         {
@@ -279,19 +278,19 @@ Ttoken* getNextToken()
 
 			case VICERADKOVY_KOMENTAR:
 
-        // kombinace /* [neco] * 
+        // kombinace /* [neco] *
 				if(c=='*')
         {
 					token->type=VICERADKOVY_KOMENTAR_2;
 				}
-        
+
         // koniec suboru => neukonceny koment, vrati chybu
 				else if(c==EOF)
         {
           fseek(subor,-1,SEEK_CUR);
 					token->type=LEXIKALNI_CHYBA;
 				}
-        
+
         // vsechno ostatni (jakekoliv znaky v komentari)
 				else
         {
@@ -300,7 +299,7 @@ Ttoken* getNextToken()
 						riadok++;
 						token->cisloRiadku=riadok;
 					}
-        
+
 					token->type=VICERADKOVY_KOMENTAR;
 				}
 
@@ -313,14 +312,14 @@ Ttoken* getNextToken()
         {
 					token->type=POC_STAV;
 				}
-        
+
         // koniec suboru => neukonceny koment, vrati chybu
 				else if(c==EOF)
         {
           fseek(subor,-1,SEEK_CUR);
 					token->type=LEXIKALNI_CHYBA;
 				}
-        
+
         // vsechno ostatni (jakekoliv znaky v komentari)
 				else
         {
@@ -329,7 +328,7 @@ Ttoken* getNextToken()
 						riadok++;
 						token->cisloRiadku=riadok;
 					}
-        
+
 					token->type=VICERADKOVY_KOMENTAR;
 				}
 
@@ -343,7 +342,7 @@ Ttoken* getNextToken()
 					token->type=MENSI_NEBO_ROVNO;
 					return token;
 				}
-        
+
         // posunie sa v subore o 1 znak dozadu a vrati <
 				else
         {
@@ -362,7 +361,7 @@ Ttoken* getNextToken()
 					token->type=VETSI_NEBO_ROVNO;
 					return token;
 				}
-                
+
         // posunie sa v subore o 1 znak dozadu a vrati >
 				else
         {
@@ -381,7 +380,7 @@ Ttoken* getNextToken()
 					token->type=NEROVNO;
 					return token;
 				}
-        
+
         // ziaden iny token sa nemoze zacinat ! => chyba
 				else
         {
@@ -400,14 +399,14 @@ Ttoken* getNextToken()
 					addChar(token->attr,c);
 					token->type=IDENTIFIKATOR;
 				}
-        
+
         // kdyz je znak tecka nasleduje plne kvalifikovany identifikator
         else if (c=='.')
         {
           addChar(token->attr,c);
           token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR;
         }
-        
+
         // chybny znak -> posun v souboru o jeden zank zpet a vrati token
 				else
 				{
@@ -417,42 +416,56 @@ Ttoken* getNextToken()
 				}
 
 			break;
-      
+
       // plne kvalifikovany identifikator
       case PLNE_KVALIFIKOVANY_IDENTIFIKATOR:
-      
+
 				if(isalpha(c) || (c=='_') || (c=='$') || isdigit(c))
         {
 					addChar(token->attr,c);
 					token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2;
 				}
-        
+
         // kombinace retezec.[cokoli krome identifikatoru] je chybna a vrati chybu
 				else
 				{
           fseek(subor,-1,SEEK_CUR);
 					token->type=LEXIKALNI_CHYBA;
 				}
-        
+
       break;
-      
+
       // plne kvalifikovany identifikator pokracovani
       case PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2:
-       
+
         if(isalpha(c) || (c=='_') || (c=='$') || isdigit(c))
           {
   					addChar(token->attr,c);
   					token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2;
   				}
-          
+
         // chybny znak -> posun v souboru o jeden znak zpet a vrati token
 				else
 				{
 					fseek(subor,-1,SEEK_CUR);
-					token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR;
-					return token;
-				} 
-        
+          // projde tabulku klicovych slov a tabulku rezervovanych slov
+					token->type=najdiKlucoveSlovo2(token->attr);
+
+          // kdyz vyhodnoti token jako klicove, nebo rezervovane slovo vyhlasi chybu
+          if ((token->type == KLICOVE_SLOVO) || (token->type == REZERVOVANE_SLOVO))
+          {
+             fseek(subor,-1,SEEK_CUR);
+					   token->type=LEXIKALNI_CHYBA;
+          }
+
+          // jinak vrati token PLNE_KVALIFIKOVANY_IDENTIFIKATOR
+          else
+          {
+             token->type=PLNE_KVALIFIKOVANY_IDENTIFIKATOR;
+             return token;
+          }
+				}
+
       break;
 
       // retezec
@@ -464,14 +477,14 @@ Ttoken* getNextToken()
 					addChar(token->attr,c);
 					token->type=RETEZEC;
 				}
-        
+
         // koniec retazca
 				else if(c==34)
         {
           token->type=RETEZEC;
 					return token;
 				}
-        
+
         // jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
         {
@@ -496,14 +509,14 @@ Ttoken* getNextToken()
 					addChar(token->attr,c);
 					token->type=DESETINNY_LITERAL;
 				}
-        
+
         // nasleduje exponent
 				else if((c=='e') || (c=='E'))
         {
 					addChar(token->attr,c);
 					token->type=CELOCISELNY_LITERAL_EXPONENT;
 				}
-        
+
         // konec cisla
 				else
         {
@@ -515,14 +528,14 @@ Ttoken* getNextToken()
 			break;
 
 			case DESETINNY_LITERAL:
-        
+
         // desatinna cast cisla
 				if(isdigit(c))
         {
 					addChar(token->attr,c);
 					token->type=DESETINNY_LITERAL_2;
 				}
-        
+
         // kombinace cislo.[cokoliv krome cisla] vrati chybu
 				else
         {
@@ -533,21 +546,21 @@ Ttoken* getNextToken()
 			break;
 
       case DESETINNY_LITERAL_2:
-      
-        // v pripade cisla pokracujeme jako double (popø. double s kombinací) 
+
+        // v pripade cisla pokracujeme jako double (popø. double s kombinací)
         if(isdigit(c))
         {
           addChar(token->attr,c);
 					token->type=DESETINNY_LITERAL_2;
         }
-        
+
         // v pripade kombinace cislo.cisloe(E)
         else if((c=='e') || (c=='E'))
         {
           addChar(token->attr,c);
 					token->type=DESETINNY_LITERAL_EXPONENT;
         }
-       
+
         // v pripade jine kombinace cislo.cislo vrati token DBL
         else
         {
@@ -555,12 +568,12 @@ Ttoken* getNextToken()
 					token->type=DESETINNY_LITERAL;
 					return token;
         }
-        
+
       break;
-      
+
       // kombinace cislo.cisloe(E)
       case DESETINNY_LITERAL_EXPONENT:
-      
+
         // kombinace cislo.cisloe(E)+(-)
         // plus a minus je nepovinny znak, muze nasledovat cislo
         if((c=='+') || (c=='-') || isdigit(c))
@@ -568,45 +581,45 @@ Ttoken* getNextToken()
           addChar(token->attr,c);
 					token->type=DESETINNY_LITERAL_EXPONENT_2;
         }
-        
+
         // jina kombinace vede k chybe (kombinace cislo.cisloe(E)[cokoli krome cisla])
         else
         {
           fseek(subor,-1,SEEK_CUR);
           token->type=LEXIKALNI_CHYBA;
-        } 
-      
+        }
+
       break;
-      
+
       // kombinace cislo.cisloe(E)+(-,cislo)
       case DESETINNY_LITERAL_EXPONENT_2:
-        
+
         // nasleduje cislo
         if (isdigit(c))
         {
           addChar(token->attr,c);
           token->type=DESETINNY_LITERAL_EXPONENT_3;
         }
-      
+
         // vrati chybu, nepovolena kombinace
         else
         {
           fseek(subor,-1,SEEK_CUR);
           token->type=LEXIKALNI_CHYBA;
         }
-      
+
       break;
-      
+
       // kombinace cislo.cisloe(E)+(-,cislo)cislo
       case DESETINNY_LITERAL_EXPONENT_3:
-      
+
         // nasleduje cislo
         if (isdigit(c))
         {
           addChar(token->attr,c);
   				token->type=DESETINNY_LITERAL_EXPONENT_3;
         }
-      
+
         // jina kombinace
         else
         {
@@ -614,12 +627,12 @@ Ttoken* getNextToken()
           token->type=DESETINNY_LITERAL_EXPONENT;
 					return token;
         }
-        
-      break; 
-      
+
+      break;
+
       // kombinace cisloe(E)
       case CELOCISELNY_LITERAL_EXPONENT:
-      
+
         // nasleduje +,-,cislo
         // plus a minus je nepovinny znak, muze nasledovat cislo
         if((c=='+') || (c=='-') || isdigit(c))
@@ -627,45 +640,45 @@ Ttoken* getNextToken()
           addChar(token->attr,c);
   				token->type=CELOCISELNY_LITERAL_EXPONENT_2;
         }
-        
+
         // jina kombinace vede k chybe
         else
         {
           fseek(subor,-1,SEEK_CUR);
           token->type=LEXIKALNI_CHYBA;
-        }  
-    
+        }
+
       break;
-      
+
       // kombinace cisloe(E)+(-,cislo)
       case CELOCISELNY_LITERAL_EXPONENT_2:
-      
+
         // nasleduje cislo
         if (isdigit(c))
         {
           addChar(token->attr,c);
   				token->type=CELOCISELNY_LITERAL_EXPONENT_3;
         }
-        
-        // jina kombinace vrati chybu 
+
+        // jina kombinace vrati chybu
         else
         {
           fseek(subor,-1,SEEK_CUR);
           token->type=LEXIKALNI_CHYBA;
         }
-        
+
       break;
-      
+
       // kombinace cisloe(E)+(-,cislo)cislo
       case CELOCISELNY_LITERAL_EXPONENT_3:
-        
+
         // nasleduje cislo
         if (isdigit(c))
         {
           addChar(token->attr,c);
   				token->type=CELOCISELNY_LITERAL_EXPONENT_3;
         }
-        
+
         // jina kombinace
         else
         {
@@ -673,29 +686,30 @@ Ttoken* getNextToken()
           token->type=CELOCISELNY_LITERAL_EXPONENT;
 					return token;
         }
-      
+
       break;
-     
-      // v pripade konce souboru ukonci funkci  
+
+      // v pripade konce souboru ukonci funkci
       case KONEC_SOUBORU:
-      
-        return;
-      
+
+        return 0;
+
       break;
-      
+
       // v pripade chyby se chyba vytiskne a ukonci funkce
       case LEXIKALNI_CHYBA:
-     
+
         fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
-        return;
-        
-      break; 
+        return 1;
+
+      break;
 		}
 	}
 }
 
 /*=========================IMPLEMENTACE FUNKCI=========================*/
 // zkontroluje podle tabulky klicovych a rezervovanych slov, zda neodpovida tokenu
+// identifikator
 TokenType najdiKlucoveSlovo(string* s)
 {
 	int j;
@@ -706,23 +720,50 @@ TokenType najdiKlucoveSlovo(string* s)
             return KLICOVE_SLOVO;
 
     // prejdeme prezervovane slova
-    for (j = 0; j < 50; j++)
+    for (j = 0; j < 36; j++)
         if (!(strcmp(s->str, rezervovaneSlova[j])))
             return REZERVOVANE_SLOVO;
 
 		return IDENTIFIKATOR;
 }
 
+// zkontroluje podle tabulky klicovych a rezervovanych slov, zda neodpovida tokenu
+// plne kvalifikovany identifikator
+TokenType najdiKlucoveSlovo2(string* s)
+{
+  // pomocne promenne
+	int j;
+  char *str, *str2;
+
+  str = strtok(s->str,".");
+  str2 = strtok(NULL," ");
+
+    // prejdeme klucove slova
+    for (j = 0; j < 17; j++)
+        // kdyz se prvni nebo druhy identifikator rovna klicovemu slovu vrati chybu
+        if ((strcmp(str, klucoveSlova[j]) == 0) || (strcmp(str2, klucoveSlova[j]) == 0))
+            return KLICOVE_SLOVO;
+
+    // prejdeme prezervovane slova
+    for (j = 0; j < 36; j++)
+        // kdyz se prvni nebo druhy identifikator rovna rezervovanemu slovu vrati chybu
+        if ((strcmp(str, rezervovaneSlova[j]) == 0) || ((strcmp(str2, rezervovaneSlova[j])) == 0))
+            return REZERVOVANE_SLOVO;
+
+		return IDENTIFIKATOR;
+}
+
+
 // rozsiri retezec o dany znak (prida char na koniec stringu)
 int addChar(string* s,char c)
-{ 
+{
 	char* new;
-  
+
 	if(!(new = (char *) realloc(s->str,s->length+2)))
   {
 		return 1;
 	}
-  
+
 	else
   {
 		s->str=new;

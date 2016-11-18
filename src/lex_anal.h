@@ -99,7 +99,9 @@ int addChar(string* s,char c);
 
 // funkce vracejici token (podle stavu konecneho automatu)
 Ttoken* getNextToken();
-// funkce pro pruchod tabulkou klicovych a rezervovanych slov
+// funkce pro pruchod tabulkou klicovych a rezervovanych slov pro identifikator
 TokenType najdiKlucoveSlovo(string* s);
+// funkce pro pruchod tabulkou klicovych a rezervovanych slov pro plne_kvalifikovany_identifikator
+TokenType najdiKlucoveSlovo2(string* s);
 
 /*=========================KONEC HLAVICKOVEHO SOUBORU=========================*/
