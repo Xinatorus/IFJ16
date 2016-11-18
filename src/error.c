@@ -6,7 +6,7 @@
 /* ========================================================================== */
 
 #include <stdio.h>
-#include "errors.h"
+#include "error.h"
 
 
 int vypisChybu(int chyba)
