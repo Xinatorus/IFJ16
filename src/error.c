@@ -6,10 +6,10 @@
 /* ========================================================================== */
 
 #include <stdio.h>
-#include "error.h"
+#include "headers/error.h"
 
 
-int vypisChybu(int chyba)
+int error(int chyba)
 {
 	switch(chyba)
 	{

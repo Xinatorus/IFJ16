@@ -22,5 +22,5 @@ enum chyboveStavy
                                     riadku atï.). */
 };
 
-int error(int chyba);
+int vypisChybu(int chyba);
 
