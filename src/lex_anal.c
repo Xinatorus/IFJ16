@@ -4,7 +4,7 @@
 /* Faze:    Lexikalni analyzator                                              */
 /* Datum:   24.10.2016                                                        */
 /* ========================================================================== */
-#include "lex_anal.h"
+#include "headers\lex_anal.h"
 
 /**
  * Klucove slova (tabulka klicovych slov)
