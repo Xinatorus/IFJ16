@@ -24,5 +24,9 @@ unsigned int hash(char *key);
 void writeOut(HashTable hashTable);
 void hashTest();
 
+
+void mergeSort(char *arr, int len);
+void merge(char *arr, char *l, char*r, int sizeL, int sizeR);
+
 #endif // !IAL
 
