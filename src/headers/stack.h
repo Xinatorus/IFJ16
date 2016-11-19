@@ -27,6 +27,7 @@ Stack stackInit(unsigned int size);
 void stackFree(Stack stack);
 int stackPush(Stack stack, Data data);
 int stackPop(Stack stack, Data *data);
+int stackResize(Stack stack, unsigned int newSize);
 
 
 #endif // !STACK

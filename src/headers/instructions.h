@@ -8,6 +8,8 @@ typedef enum {
 	I_MOV,
 	I_CALL,
 	I_RET,
+	I_PUSH,
+	I_POP,
 
 	//logic
 	I_EQ,

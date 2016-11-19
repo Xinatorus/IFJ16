@@ -33,3 +33,7 @@ int stackPop(Stack stack, Data *data) {
 	}
 	else return 1; 
 }
+
+int stackResize(Stack stack, unsigned int newSize) {
+	//TODO implementace stackREsize
+}
