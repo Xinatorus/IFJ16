@@ -6,7 +6,7 @@
 /* ========================================================================== */
 enum chyboveStavy
 {
-	USPES_PREKL = 0,			    /* Žiadna chyba. */
+	USPES_PREKL = 0,			/* Žiadna chyba. */
 	LEXIK_ERROR = 1,			/* 1 - Chyba v programe v rámci lexikálnej analýzy (chybná štruktúra aktuálneho lexému). */
  	SYNTA_ERROR = 2,			/* 2 - Chyba v programe v rámci syntaktickej analýzy (chybná syntax štruktúry programu). */
  	SEMAN_UNDE = 3,	            /* 3 - Sémantická chyba - nedefinovaná funkcia/premenná, pokus o redefinovanie funkcie/premennej. */
@@ -22,5 +22,6 @@ enum chyboveStavy
                                     riadku atï.). */
 };
 
-int vypisChybu(int chyba);
+// Funkce pro zpusobeni chyby, zastavi beh programu (pokud to neni USPES_PREKL)
+void error(int chyba);
 

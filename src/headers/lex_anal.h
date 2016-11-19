@@ -96,6 +96,8 @@ Ttoken* vytvorToken();
 int stringInit(string* s);
 // funkce pro rozsireni daneho retezce o znak
 int addChar(string* s,char c);
+// funkce pro otevreni zdrojoveho souboru
+void loadSource(char* path);
 
 // funkce vracejici token (podle stavu konecneho automatu)
 Ttoken* getNextToken();

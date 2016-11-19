@@ -6,10 +6,11 @@
 /* ========================================================================== */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "headers/error.h"
 
 
-int error(int chyba)
+void error(int chyba)
 {
 	switch(chyba)
 	{
@@ -46,5 +47,6 @@ int error(int chyba)
 			fprintf(stderr," - Interna chyba interpretu tj. neovplyvnitelna vstupnym programom (napr. chyba alokacie pamati, chyba pri otvarani suboru s riadiacim programom, nespravne parametre prikazoveho riadku).\n");
 			break;
 	}
-	return chyba;
+	if (chyba != USPES_PREKL)
+		exit(chyba);
 }
