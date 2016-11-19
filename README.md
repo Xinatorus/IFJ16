@@ -1,13 +1,6 @@
 # IFJ16
 
-Doc:
-https://docs.google.com/document/d/1xfO5FWdqh2rSXctU5C0-LHUc5uFAfd0s_QOd8VIG4VU/edit
-
 Implementační detaily:
 https://docs.google.com/document/d/1rkFnAQ2zqhloMoxHRm-5IjIKP6yxGBAKQzmQzxytE2I/edit
 
-ToDo:
-https://docs.google.com/spreadsheets/d/1kb8gn5SivUUbamupqXJ9z6w2lD-CwwdihxQLQXnM88M/edit#gid=0
-
-Jak psát:
-  - Pokud je část kódu nedokončená/chybí , napište komentář, na jehož začátku bude TODO, s popisem aby se to lip hledalo 
+![alt tag](https://scontent-fra3-1.xx.fbcdn.net/v/t1.0-9/15107235_1354816574543119_1370119444020286331_n.jpg?oh=bdcd46cea6fe74c8edc0b7aa8b9ad3a2&oe=58CEFF5A)
