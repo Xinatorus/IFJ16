@@ -62,4 +62,6 @@ void instrListSetActive(tInstrList *list, tInstrListItem *active);
 void instrListSetActiveFirst(tInstrList *list);
 void instrListSetActiveNext(tInstrList *list);
 
+#define generateInstr(i,a1,a2,a3) tInstr instr = {i,a1,a2,a3}
+
 #endif // !INSTRUCTIONS

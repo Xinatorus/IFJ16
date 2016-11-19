@@ -2,6 +2,7 @@
 #define STACK
 
 typedef struct {
+	char *name;
 	enum {
 		t_int,
 		t_double,

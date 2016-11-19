@@ -24,9 +24,11 @@ int stackPush(Stack stack, Data data) {
 
 int stackPop(Stack stack, Data *data) {
 	if (stack.SP > stack.BP) {
+		/* 
+		musi byt hard copy? ano nebo ne ?
 		data->type = stack.data[stack.SP].type;
-		data->value = stack.data[stack.SP].value;
-		stack.SP--;
+		data->value = stack.data[stack.SP].value;*/
+		*data = stack.data[--stack.SP];
 		return 0;
 	}
 	else return 1; 
