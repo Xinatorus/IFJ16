@@ -1,3 +1,6 @@
+#ifndef ERROR_H
+#define ERROR_H
+
 /* ========================================================================== */
 /* Jmena:   .......                                                           */
 /* Soubor:  error.c                                                           */
@@ -25,3 +28,4 @@ enum chyboveStavy
 // Funkce pro zpusobeni chyby, zastavi beh programu (pokud to neni USPES_PREKL)
 void error(int chyba);
 
+#endif // include guard

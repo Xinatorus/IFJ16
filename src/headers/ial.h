@@ -1,5 +1,5 @@
-﻿#ifndef IAL
-#define IAL
+﻿#ifndef IAL_H
+#define IAL_H
 
 
 //Boyer-Moore
@@ -28,5 +28,4 @@ void hashTest();
 void mergeSort(char *arr, int len);
 void merge(char *arr, char *l, char*r, int sizeL, int sizeR);
 
-#endif // !IAL
-
+#endif // include guard

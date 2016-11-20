@@ -1,5 +1,5 @@
-#ifndef INSTRUCTIONS
-#define INSTRUCTIONS
+#ifndef INSTRUCTIONS_H
+#define INSTRUCTIONS_H
 
 // Instrunkci sada
 typedef enum {
@@ -82,4 +82,4 @@ void instrListSetActiveNext(tInstrList *list);
 //TODO pridat makra pro tvorbu operandu/instrukce
 
 
-#endif // !INSTRUCTIONS
+#endif // include guard
