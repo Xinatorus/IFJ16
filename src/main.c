@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,7 +25,7 @@ int main(int argc, char* argv[]) {
 		int num = 0;
 		do {
 			token = getNextToken();
-			fprintf(stdout, "#%d -> Typ: %d, Data: %s\n", num, token->type, token->attr->str);
+			fprintf(stdout, "#%-5d Typ: %-11s Data: %-12s\n", num, getTokenName(token->type), token->attr->str);
 			num++;
 		} while (token != NULL && token->type != KONEC_SOUBORU && token->type != LEXIKALNI_CHYBA);
 	#endif

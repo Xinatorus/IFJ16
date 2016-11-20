@@ -106,4 +106,7 @@ TokenType najdiKlucoveSlovo(string* s);
 // funkce pro pruchod tabulkou klicovych a rezervovanych slov pro plne_kvalifikovany_identifikator
 TokenType najdiKlucoveSlovo2(string* s);
 
+// funkce pro ziskani textove reprezentace typu tokenu
+char *getTokenName(TokenType type);
+
 /*=========================KONEC HLAVICKOVEHO SOUBORU=========================*/
