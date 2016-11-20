@@ -7,13 +7,11 @@
 #include "headers\error.h"
 #include "headers\framework.h"
 #include "headers\interpret.h"
-
-
+#include "headers\io.h"
 
 
 int main(int argc, char* argv[]) {
 
-	testInsterpret();
 	
 
 	system("pause");
