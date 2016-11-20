@@ -12,7 +12,7 @@ Data *findInFrame(char *name, StackFrame *sf) {
 }
 
 //vklada novy ramec na VRCHOL
-StackFrame *newFrame(char *name, StackFrame *parent, void *ts) {
+StackFrame *newFrame(StackFrame *parent, void *ts) {
 	int size = 1; // dohledat v TS
 	StackFrame *sf = malloc(sizeof(StackFrame));
 	if (sf == NULL) return NULL;

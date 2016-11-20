@@ -29,7 +29,7 @@ int instrListAddInstr(tInstrList *list, tInstr instr) {
 	else
 		list->last->next = instrItem;
 	list->last = instrItem;
-	
+
 	return 0;
 }
 

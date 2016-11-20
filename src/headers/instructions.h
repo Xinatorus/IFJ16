@@ -1,7 +1,7 @@
 #ifndef INSTRUCTIONS
 #define INSTRUCTIONS
 
-//TODO Pridat instrukcni sadu
+// Instrunkci sada
 typedef enum {
 	//em..
 	I_JMP,
@@ -14,7 +14,7 @@ typedef enum {
 	//logic
 	I_EQ,
 	I_NEQ,
-	I_LES, 
+	I_LES,
 	I_LESE,
 	I_GRE,
 	I_GREE,
@@ -35,12 +35,27 @@ typedef enum {
 
 }Instructions;
 
+typedef struct {
+	enum {
+		name,
+		c_int,
+		c_double,
+		c_string
+	}type;
+	union {
+		char *name;
+		int c_int;
+		double c_double;
+		char *c_string;
+	}value;
+}Operand;
+
 
 typedef struct {
 	Instructions instr;
-	void *addr1;
-	void *addr2;
-	void *addr3;
+	Operand *addr1;
+	Operand *addr2;
+	Operand *addr3;
 }tInstr;
 
 typedef struct instrListItem {
@@ -64,6 +79,7 @@ void instrListSetActive(tInstrList *list, tInstrListItem *active);
 void instrListSetActiveFirst(tInstrList *list);
 void instrListSetActiveNext(tInstrList *list);
 
-#define generateInstr(i,a1,a2,a3) tInstr instr = {i,a1,a2,a3}
+//TODO pridat makra pro tvorbu operandu/instrukce
+
 
 #endif // !INSTRUCTIONS
