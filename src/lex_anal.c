@@ -4,6 +4,7 @@
 /* Faze:    Lexikalni analyzator                                              */
 /* Datum:   24.10.2016                                                        */
 /* ========================================================================== */
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\lex_anal.h"
 #include "headers\error.h"
 
@@ -710,7 +711,7 @@ Ttoken* getNextToken()
 			// v pripade konce souboru ukonci funkci
 			case KONEC_SOUBORU:
 
-				return 0;
+				return token;
 
 				break;
 
@@ -719,7 +720,7 @@ Ttoken* getNextToken()
 
 				//fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
 				error(LEXIK_ERROR);
-				return 1;
+				return NULL;
 
 				break;
 		}
