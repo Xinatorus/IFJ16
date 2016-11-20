@@ -17,6 +17,11 @@ char *cat(char *s1, char *s2) {
 	return str;
 }
 
+//Vrati string reprezentaci non-string promenne
+char *varToString(Data var) {
+
+}
+
 char *intToString(int x) {
 	//TODO int toString
 }
