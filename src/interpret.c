@@ -8,14 +8,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-void interpret(tInstrList iList) {
+void interpret(tInstrList iList,void *ts) {
 	//stack pro vnitrni mezi vypocty
 	Stack interStack = stackInit(100);
 
 	tInstr ins; // aktualni instrukce
 
-				// tabulka ramcu
-	StackFrame *sf = newFrame(NULL, NULL);
+	// tabulka ramcu
+	//StackFrame *sf = newFrame(NULL, ts);
+	StackFrame *sf = ts; // POUZE PRO TEST
 
 	Data *dest, *src1, *src2;
 
@@ -23,6 +24,7 @@ void interpret(tInstrList iList) {
 
 	// prochazim seznam instrukci az do konce
 	while (!instrListGetActiveInstr(&iList, &ins)) {
+			
 		instrListSetActiveNext(&iList); // posunu aktivitu
 
 		switch (ins.instr) {
@@ -102,12 +104,14 @@ void interpret(tInstrList iList) {
 					break;
 				case t_double: dest->value.v_double += *(double*)src;
 					break;
-				case t_string: break;
+				case t_string: 
+					strcat(dest->value.v_string, src);
+					break;
 				default: break;
 				}
 			}
 			else {
-
+				//to same ale dest je addr3
 			}
 			break;
 		case I_SUB:
@@ -137,5 +141,43 @@ void interpret(tInstrList iList) {
 		default: break;
 		}
 	}
+
+}
+
+
+void testInsterpret() {
+	//vytvorim nekolik instrukci ADD
+	//vytvorim pravidlo ramec
+	//interpretuju
+	//vypisu ramec
+
+	StackFrame *sf = malloc(sizeof(StackFrame));
+	sf->child = NULL;
+	sf->parent = NULL;
+	sf->size = 3;
+	sf->data = malloc(sizeof(Data) * 3);
+	sf->data[0].name = "A";
+	sf->data[0].type = t_int;
+	sf->data[0].value.v_int = 5;
+
+	sf->data[2].name = "C";
+	sf->data[2].type = t_int;
+	sf->data[2].value.v_int = 5;
+
+	sf->data[1].name = "B";
+	sf->data[1].type = t_string;
+	sf->data[1].value.v_string = "Nejaky retezec";
+
+	testWriteOutFrame(sf);
+
+	tInstrList list;
+	instrListInit(&list);
+
+	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name,.value.name="A"}, &(Operand) { name, .value.name = "C" }, NULL });
+
+	interpret(list,sf);
+
+	testWriteOutFrame(sf);
+	
 
 }

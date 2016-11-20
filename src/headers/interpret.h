@@ -5,4 +5,6 @@
 
 void interpret(tInstrList instr);
 
+void testInsterpret();
+
 #endif // !INTERPRET
