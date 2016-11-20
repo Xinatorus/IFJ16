@@ -86,8 +86,8 @@ void interpret(tInstrList iList) {
 						break;
 					}
 					break;
-				case c_int: // konstanta 
-
+					// konstanta
+				case c_int:  src = &ins.addr2->value.c_int;
 					break;
 				case c_double:
 					break;
@@ -98,9 +98,9 @@ void interpret(tInstrList iList) {
 
 
 				switch (dest->type) {
-				case t_int: dest->value.v_int += (int)*src;
+				case t_int: dest->value.v_int += *(int*)src;
 					break;
-				case t_double: dest->value.v_double += (double)*src;
+				case t_double: dest->value.v_double += *(double*)src;
 					break;
 				case t_string: break;
 				default: break;
