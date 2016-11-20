@@ -76,7 +76,7 @@ void interpret(tInstrList iList) {
 
 				switch (ins.addr2->type) { // typ 2. operandu
 										   // jmeno takze musim najit koho 
-				case name: src1 = findInFrame(ins.addr1->value.name, sf)->type;
+				case name: src1 = findInFrame(ins.addr1->value.name, sf);
 					switch (src1->type) { //podle typu zdroje priradim adresu
 					case t_int: src = &(src1->value.v_int);
 						break;
@@ -89,9 +89,9 @@ void interpret(tInstrList iList) {
 					// konstanta
 				case c_int:  src = &ins.addr2->value.c_int;
 					break;
-				case c_double:
+				case c_double: src = &ins.addr2->value.c_double;
 					break;
-				case c_string:
+				case c_string: src = ins.addr2->value.c_string;
 					break;
 				default: break;
 				}

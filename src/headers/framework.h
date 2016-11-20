@@ -14,6 +14,6 @@ typedef struct sFrame {
 
 Data *findInFrame(char *name, StackFrame *sf);
 StackFrame *newFrame(StackFrame *parent, void *ts);
-void deleteLastFrame(StackFrame *sf);
+void deleteFrame(StackFrame *sf);
 
 #endif // !FRAMEWORK

@@ -139,7 +139,7 @@ void writeOut(HashTable hashTable) {
 	printf("+----------------------------\n");
 }
 
-void hashTest() {
+void hashTest() {/*
 	printf("Create HashTable...\n");
 	HashTable table = createHashTable(HASH_TABLE_SIZE);
 	if (table == NULL) {
@@ -173,7 +173,7 @@ void hashTest() {
 	writeOut(table);
 
 	printf("Deleting table\n");
-	deleteHashTable(table);
+	deleteHashTable(table);*/
 }
 
 //Merge sort
