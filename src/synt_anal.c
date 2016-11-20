@@ -1,6 +1,6 @@
 #include "headers\synt_anal.h"
 #include "headers\lex_anal.h"
-#include "headers\stack.h"
+#include "headers\collections.h"
 
 
 int getRuleNumber(NTType nt, TokenType token) {
@@ -168,5 +168,13 @@ void applyRule(int rule, Stack *stack) {
 
 Ttoken * getNextTerminal()
 {
+    cItem item;
+    item.type = t_token;
+    Ttoken token;
+    item.cdata.token = token;
+    cStack stack;
+    cStack_init(&stack, 10);
+    cStack_push(&stack, item);
+
     return NULL;
 }
