@@ -168,13 +168,7 @@ void applyRule(int rule, Stack *stack) {
 
 Ttoken * getNextTerminal()
 {
-    cItem item;
-    item.type = t_token;
-    Ttoken token;
-    item.cdata.token = token;
-    cStack stack;
-    cStack_init(&stack, 10);
-    cStack_push(&stack, item);
+
 
     return NULL;
 }

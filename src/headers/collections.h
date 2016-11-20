@@ -1,5 +1,5 @@
-#ifndef COLLECTIONS.H
-#define COLLECTIONS.H
+#ifndef COLLECTIONS_H
+#define COLLECTIONS_H
 
 #include "lex_anal.h"
 #include <stdbool.h>
