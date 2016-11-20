@@ -8,12 +8,13 @@
 #include "headers\framework.h"
 #include "headers\interpret.h"
 
-#define LEX_TEST 1 // Lexical analysis test
+
+
 
 int main(int argc, char* argv[]) {
 
 	testInsterpret();
-
+	
 
 	system("pause");
 	return 0;

@@ -18,7 +18,7 @@ void interpret(tInstrList iList,void *ts) {
 	//StackFrame *sf = newFrame(NULL, ts);
 	StackFrame *sf = ts; // POUZE PRO TEST
 
-	Data *dest, *src1, *src2;
+	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 
 	instrListSetActiveFirst(&iList);
 
@@ -71,48 +71,62 @@ void interpret(tInstrList iList,void *ts) {
 
 			//Matematicke operace
 		case I_ADD:
-			if (ins.addr3 == NULL) { // dest?
-				Data *dest = findInFrame(ins.addr1->value.name, sf); // dest je addr1
-				Data *src1;
-				void *src; // odkaz na zdroj 
 
-				switch (ins.addr2->type) { // typ 2. operandu
-										   // jmeno takze musim najit koho 
-				case name: src1 = findInFrame(ins.addr1->value.name, sf);
-					switch (src1->type) { //podle typu zdroje priradim adresu
-					case t_int: src = &(src1->value.v_int);
-						break;
-					case t_double: src = &(src1->value.v_double);
-						break;
-					case t_string: src = src1->value.v_string;
-						break;
-					}
-					break;
-					// konstanta
-				case c_int:  src = &ins.addr2->value.c_int;
-					break;
-				case c_double: src = &ins.addr2->value.c_double;
-					break;
-				case c_string: src = ins.addr2->value.c_string;
-					break;
-				default: break;
-				}
+			dest = src1 = src2 = NULL; // reset adres
 
-
-				switch (dest->type) {
-				case t_int: dest->value.v_int += *(int*)src;
-					break;
-				case t_double: dest->value.v_double += *(double*)src;
-					break;
-				case t_string: 
-					strcat(dest->value.v_string, src);
-					break;
-				default: break;
-				}
+			// Priradim zdroje a cile
+			if (ins.addr3 == NULL) { 
+				dest = ins.addr1;
+				src1 = ins.addr1;
+				src2 = ins.addr2;
 			}
 			else {
-				//to same ale dest je addr3
+				dest = ins.addr3;
+				src1 = ins.addr1;
+				src2 = ins.addr2;
 			}
+			
+			//typy    (dest->type == name) ? findInFrame(dest->value.name, sf)->type : dest->type;
+			int destT, src1T, src2T;
+
+			destT = findInFrame(dest->value.name, sf)->type; // cil
+			if (dest != src1) // pokud nebyla dvou operandova instrukce
+				src1T = getType(src1); //typ src1
+			else src1T = destT; // pokud byla dvou src1 je kopie dest
+			src2T = getType(src2);
+
+			printf("type2: %d\n", getType(src2));
+
+			switch (destT) { 
+				case t_int: // int + int/double only
+					printf("intOP\n");
+					if(dest != src1){ // nepotrebuju delat kopii toho sameho
+						findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+					}
+					printf("%d+%d\n", findInFrame(dest->value.name, sf)->value.v_int, byType(src2));
+
+					findInFrame(dest->value.name, sf)->value.v_int += byType(src2);
+
+					printf("%d+%d\n", findInFrame(dest->value.name, sf)->value.v_int, byType(src2));
+					break;
+				case t_double: 
+					printf("bouble\n");
+					if (dest != src1) {
+						findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
+					}
+					findInFrame(dest->value.name, sf)->value.v_double += byType(src2);
+					break;
+				case t_string: // konkatenace retezcu str + str/int/double
+					/*
+					*
+					* blah
+					*
+					*/
+					printf("stringOP\n");
+					break;
+				default: break;
+			}
+
 			break;
 		case I_SUB:
 			//ADD
@@ -160,20 +174,20 @@ void testInsterpret() {
 	sf->data[0].type = t_int;
 	sf->data[0].value.v_int = 5;
 
-	sf->data[2].name = "C";
-	sf->data[2].type = t_int;
-	sf->data[2].value.v_int = 5;
+	sf->data[2].name = "B";
+	sf->data[2].type = t_double;
+	sf->data[2].value.v_double = 1;
 
-	sf->data[1].name = "B";
-	sf->data[1].type = t_string;
-	sf->data[1].value.v_string = "Nejaky retezec";
+	sf->data[1].name = "C";
+	sf->data[1].type = t_int;
+	sf->data[1].value.v_int= 2;
 
 	testWriteOutFrame(sf);
 
 	tInstrList list;
 	instrListInit(&list);
 
-	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name,.value.name="A"}, &(Operand) { name, .value.name = "C" }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name,.value.name="B"}, &(Operand) { name, .value.name = "A" }, NULL });
 
 	interpret(list,sf);
 
