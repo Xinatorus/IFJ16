@@ -1,5 +1,5 @@
-#ifndef FRAMEWORK
-#define FRAMEWORK
+#ifndef FRAMEWORK_H
+#define FRAMEWORK_H
 
 #include "stack.h"
 #include "ial.h"
@@ -16,6 +16,8 @@ Data *findInFrame(char *name, StackFrame *sf);
 StackFrame *newFrame(StackFrame *parent, void *ts);
 void deleteFrame(StackFrame *sf);
 
+
 void testWriteOutFrame(StackFrame *sf);
 
 #endif // !FRAMEWORK
+

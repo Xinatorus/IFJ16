@@ -1,4 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\ial.h"
+#include "headers\error.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -144,9 +146,9 @@ void hashTest() {/*
 	HashTable table = createHashTable(HASH_TABLE_SIZE);
 	if (table == NULL) {
 		printf("Create Error");
-		return 1;
+		error(INTER_ERROR);
 	}
-	printf("Hash adr: %d\n", table);
+	printf("Hash adr: %p\n", table);
 	writeOut(table);
 
 
@@ -163,13 +165,13 @@ void hashTest() {/*
 	writeOut(table);
 
 	printf("Search for ANO\n");
-	printf("adr: %d key: %s\n", searchInHashTable(table, "ANO"), searchInHashTable(table, "ANO")->key);
+	printf("adr: %p key: %s\n", searchInHashTable(table, "ANO"), searchInHashTable(table, "ANO")->key);
 	writeOut(table);
 
 	printf("Search for B\n");
 	if (searchInHashTable(table, "B") == NULL) printf("not found\n");
 	else
-		printf("adr: %d key: %s\n", searchInHashTable(table, "B"), searchInHashTable(table, "B")->key);
+		printf("adr: %p key: %s\n", searchInHashTable(table, "B"), searchInHashTable(table, "B")->key);
 	writeOut(table);
 
 	printf("Deleting table\n");

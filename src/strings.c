@@ -6,6 +6,7 @@
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {
 	//TODO implementace makeString
+	return 0;
 }
 
 //spojeni dvou retezcu/znaku

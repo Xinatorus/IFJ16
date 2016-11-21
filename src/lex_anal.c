@@ -4,6 +4,7 @@
 /* Faze:    Lexikalni analyzator                                              */
 /* Datum:   24.10.2016                                                        */
 /* ========================================================================== */
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\lex_anal.h"
 #include "headers\error.h"
 
@@ -710,7 +711,7 @@ Ttoken* getNextToken()
 			// v pripade konce souboru ukonci funkci
 			case KONEC_SOUBORU:
 
-				return 0;
+				return token;
 
 				break;
 
@@ -719,7 +720,7 @@ Ttoken* getNextToken()
 
 				//fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
 				error(LEXIK_ERROR);
-				return 1;
+				return NULL;
 
 				break;
 		}
@@ -825,6 +826,135 @@ Ttoken* vytvorToken()
 	stringInit(token->attr);
 
 	return token;
+}
+
+// funkce pro ziskani textove reprezentace typu tokenu
+char *getTokenName(TokenType type) {
+    switch (type) {
+    case POC_STAV:
+        return "POC_STAV";
+        break;
+    case JEDNORADKOVY_KOMENTAR:
+        return "//";
+        break;
+    case VICERADKOVY_KOMENTAR:
+        return "/*";
+        break;
+    case VICERADKOVY_KOMENTAR_2:
+        return "*/";
+        break;
+    case SCITANI:
+        return "+";
+        break;
+    case DELENI:
+        return "/";
+        break;
+    case ODECITANI:
+        return "-";
+        break;
+    case NASOBENI:
+        return "*";
+        break;
+    case MENSI:
+        return "<";
+        break;
+    case VETSI:
+        return "*";
+        break;
+    case ROVNO:
+        return "==";
+        break;
+    case NEROVNO:
+        return "!=";
+        break;
+    case MENSI_NEBO_ROVNO:
+        return "<=";
+        break;
+    case VETSI_NEBO_ROVNO:
+        return ">=";
+        break;
+    case PRIRAZENI:
+        return "=";
+        break;
+    case STREDNIK:
+        return ";";
+        break;
+    case CARKA:
+        return ",";
+        break;
+    case LEVA_KULATA_ZAVORKA:
+        return "(";
+        break;
+    case PRAVA_KULATA_ZAVORKA:
+        return ")";
+        break;
+    case LEVA_HRANATA_ZAVORKA:
+        return "[";
+        break;
+    case PRAVA_HRANATA_ZAVORKA:
+        return "]";
+        break;
+    case LEVA_SLOZENA_ZAVORKA:
+        return "{";
+        break;
+    case PRAVA_SLOZENA_ZAVORKA:
+        return "}";
+        break;
+    case IDENTIFIKATOR:
+        return "IDENT";
+        break;
+    case PLNE_KVALIFIKOVANY_IDENTIFIKATOR:
+        return "PLNY_IDENT";
+        break;
+    case PLNE_KVALIFIKOVANY_IDENTIFIKATOR_2:
+        return "PLNY_IDENT2";
+        break;
+    case KLICOVE_SLOVO:
+        return "KEYWORD";
+        break;
+    case REZERVOVANE_SLOVO:
+        return "REZWORD";
+        break;
+    case RETEZEC:
+        return "String";
+        break;
+    case CELOCISELNY_LITERAL:
+        return "celeCislo";
+        break;
+    case DESETINNY_LITERAL:
+        return "desCislo";
+        break;
+    case DESETINNY_LITERAL_2:
+        return "desCislo2";
+        break;
+    case DESETINNY_LITERAL_EXPONENT:
+        return "desCisloExp";
+        break;
+    case DESETINNY_LITERAL_EXPONENT_2:
+        return "desCisloExp2";
+        break;
+    case DESETINNY_LITERAL_EXPONENT_3:
+        return "desCisloExp3";
+        break;
+    case CELOCISELNY_LITERAL_EXPONENT:
+        return "celeCisloExp";
+        break;
+    case CELOCISELNY_LITERAL_EXPONENT_2:
+        return "celeCisloExp2";
+        break;
+    case CELOCISELNY_LITERAL_EXPONENT_3:
+        return "celeCisloExp3";
+        break;
+    case KONEC_SOUBORU:
+        return "EOF";
+        break;
+    case LEXIKALNI_CHYBA:
+        return "LERROR";
+        break;
+    default:
+        return "???";
+        break;
+    }
 }
 
 /*=========================KONEC SOUBORU LEX_ANAl.c=========================*/

@@ -1,4 +1,6 @@
-#ifndef STRINGS
+#ifndef STRINGS_H
+#define STRINGS_H
+
 // prace s retezci
 #include "headers\stack.h"
 
@@ -8,4 +10,4 @@ char *varToString(Data var);
 char *intToString(int x);
 char *doubleToString(double x);
 
-#endif // !STRINGS
+#endif // include guard

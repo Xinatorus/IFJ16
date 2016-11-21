@@ -1,5 +1,5 @@
-#ifndef STACK
-#define STACK
+#ifndef STACK_H
+#define STACK_H
 
 typedef struct {
 	char *name;
@@ -30,4 +30,4 @@ int stackPop(Stack stack, Data *data);
 int stackResize(Stack stack, unsigned int newSize);
 
 
-#endif // !STACK
+#endif // include guard

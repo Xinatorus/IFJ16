@@ -1,5 +1,5 @@
-#ifndef INTERPRET
-#define INTERPRET
+#ifndef INTERPRET_H
+#define INTERPRET_H
 
 #include "instructions.h"
 
@@ -16,4 +16,4 @@ void testInsterpret();
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;
 
 
-#endif // !INTERPRET
+#endif // include guard

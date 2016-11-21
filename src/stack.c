@@ -8,6 +8,7 @@ Stack stackInit(unsigned int size) {
 	stack.SP = 0;
 	stack.BP = 0;
 	stack.data = malloc(sizeof(Data)*size);
+	return stack;
 }
 
 void stackFree(Stack stack) {
@@ -36,4 +37,5 @@ int stackPop(Stack stack, Data *data) {
 
 int stackResize(Stack stack, unsigned int newSize) {
 	//TODO implementace stackREsize
+	return 0;
 }

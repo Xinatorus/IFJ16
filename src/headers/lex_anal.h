@@ -5,6 +5,9 @@
 /* Datum:   24.10.2016                                                        */
 /* ========================================================================== */
 
+#ifndef LEX_ANAL_H
+#define LEX_ANAL_H
+
 // hlavickove soubory 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,8 +76,8 @@ typedef enum {
   
   // konec souboru (EOF)
   KONEC_SOUBORU,
-  // lexikalni chyba (lex_error)
-  LEXIKALNI_CHYBA                             
+  // lexikalni chyba (lex_error) !! Musi byt vzdy posledni v ENUM !!
+  LEXIKALNI_CHYBA // vzdy posledni v ENUM
 
 }TokenType;
 
@@ -106,4 +109,7 @@ TokenType najdiKlucoveSlovo(string* s);
 // funkce pro pruchod tabulkou klicovych a rezervovanych slov pro plne_kvalifikovany_identifikator
 TokenType najdiKlucoveSlovo2(string* s);
 
-/*=========================KONEC HLAVICKOVEHO SOUBORU=========================*/
+// funkce pro ziskani textove reprezentace typu tokenu
+char *getTokenName(TokenType type);
+
+#endif // include guard
