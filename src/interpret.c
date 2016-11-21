@@ -103,8 +103,7 @@ void interpret(tInstrList iList,void *ts) {
 				case t_string: // retezec je vytvoren pres push, nemusim tvorit novy 
 			//TODO mozna oprava u str free puvodni str
 					stackPop(interStack,&tmpData);
-					findInFrame(dest->value.name, sf)->type = tmpData.type;
-					findInFrame(dest->value.name, sf)->value = tmpData.value;
+					findInFrame(dest->value.name, sf)->value = tmpData.value; // NERUCIM za spravnost 
 				default:
 					break;
 			}
