@@ -4,6 +4,7 @@
 #include "headers\strings.h"
 #include "headers\ial.h"
 #include "headers\framework.h"
+#include "headers\io.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +21,7 @@ void interpret(tInstrList iList,void *ts) {
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 	char *tmpStr1,*tmpStr2;
+	Data tmpData;
 
 	instrListSetActiveFirst(&iList);
 
@@ -51,14 +53,25 @@ void interpret(tInstrList iList,void *ts) {
 		src2T = getType(src2);
 
 
-
 		switch (ins.instr) {
-			//Zakladni operace
+//Zakladni operace
 		case I_JMP:
 			//ADD
 			break;
 		case I_MOV:
-			//ADD
+			switch (destT) {
+				case t_int:
+					findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+					break;
+				case t_double:
+					findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
+					break;
+				case t_string:
+				//TODO nema se udelat kopie retezce??
+					findInFrame(dest->value.name, sf)->value.v_string = makeString((dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+					break;
+				default: break;
+			}
 			break;
 		case I_CALL:
 			//ADD
@@ -67,13 +80,36 @@ void interpret(tInstrList iList,void *ts) {
 			//ADD
 			break;
 		case I_PUSH:
-			//ADD
+			switch (destT)
+			{
+				case t_int: 
+				case t_double: 
+					tmpData = *findInFrame(dest->value.name, sf);
+					stackPush(interStack,tmpData);
+				case t_string: 
+					tmpData = *findInFrame(dest->value.name, sf);
+					tmpData.value.v_string = makeString(tmpData.value.v_string); // novou kopii 
+					stackPush(interStack, tmpData); // vlozim na stack
+					break;
+				default:
+				break;
+			}
 			break;
 		case I_POP:
-			//ADD
+			switch (destT)
+			{
+				case t_int:
+				case t_double:
+				case t_string: // retezec je vytvoren pres push, nemusim tvorit novy 
+			//TODO mozna oprava u str free puvodni str
+					stackPop(interStack,&tmpData);
+					findInFrame(dest->value.name, sf)->value = tmpData.value; // NERUCIM za spravnost 
+				default:
+					break;
+			}
 			break;
 
-			//Logicke operace
+//Logicke operace
 		case I_EQ:
 			//ADD
 			break;
@@ -94,7 +130,7 @@ void interpret(tInstrList iList,void *ts) {
 			break;
 
 
-			//Matematicke operace
+//Matematicke operace
 		case I_ADD:
 			//printf("type2: %d\n", getType(src2));
 
@@ -222,9 +258,20 @@ void interpret(tInstrList iList,void *ts) {
 			}
 			break;
 
-			//Prace s retezci
+//Prace s retezci
 		case I_READ:
-			//ADD
+			switch(destT) {
+				case t_int: 
+					findInFrame(dest->value.name, sf)->value.v_int = readInt();
+					break;
+				case t_double: 
+					findInFrame(dest->value.name, sf)->value.v_double = readDouble();
+					break;
+				case t_string: 
+					findInFrame(dest->value.name, sf)->value.v_string = readString();
+					break;
+				default: break;
+			}
 			break;
 		case I_WRITE:
 			printf("%s", (dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
