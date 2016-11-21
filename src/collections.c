@@ -1,5 +1,7 @@
 #include "headers/collections.h"
 
+extern Ttoken *archive = NULL;
+
 /////////////////////////////
 /////////// STACK ///////////
 /////////////////////////////
@@ -42,11 +44,10 @@ bool cStack_pop(cStack *stack) {
 }
 
 cItem cStack_top(cStack *stack) {
-    cItem item;
     if (cStack_isempty(stack)) {
         cItem item;
-        item.type = T_ERROR;
-        item.cdata.error = 1;
+        item.type = IT_ERROR;
+        item.content.error = 1;
         return item;
     }
     return stack->items[stack->used-1];

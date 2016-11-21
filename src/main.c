@@ -9,6 +9,7 @@
 #include "headers\interpret.h"
 #include "headers\io.h"
 
+#define LEX_TEST 0
 
 int main(int argc, char* argv[]) {
 
