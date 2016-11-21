@@ -52,14 +52,25 @@ void interpret(tInstrList iList,void *ts) {
 		src2T = getType(src2);
 
 
-
 		switch (ins.instr) {
-			//Zakladni operace
+//Zakladni operace
 		case I_JMP:
 			//ADD
 			break;
 		case I_MOV:
-			//ADD
+			switch (destT) {
+				case t_int:
+					findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+					break;
+				case t_double:
+					findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
+					break;
+				case t_string:
+				//TODO nema se udelat kopie retezce??
+					findInFrame(dest->value.name, sf)->value.v_string = makeString((dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+					break;
+				default: break;
+			}
 			break;
 		case I_CALL:
 			//ADD
@@ -74,7 +85,7 @@ void interpret(tInstrList iList,void *ts) {
 			//ADD
 			break;
 
-			//Logicke operace
+//Logicke operace
 		case I_EQ:
 			//ADD
 			break;
@@ -95,7 +106,7 @@ void interpret(tInstrList iList,void *ts) {
 			break;
 
 
-			//Matematicke operace
+//Matematicke operace
 		case I_ADD:
 			//printf("type2: %d\n", getType(src2));
 
@@ -223,7 +234,7 @@ void interpret(tInstrList iList,void *ts) {
 			}
 			break;
 
-			//Prace s retezci
+//Prace s retezci
 		case I_READ:
 			switch(destT) {
 				case t_int: 
