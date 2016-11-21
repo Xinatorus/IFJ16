@@ -74,14 +74,20 @@ void interpret(tInstrList iList,void *ts) {
 			}
 			break;
 		case I_CALL:
-			//ADD
+			//kam ulozit return? na stack? nebo si necham tady v promenne adresu a pri ret to tam poslu
+			//vytvorim novy ramec
+			//prepnu se do neho
+			//nactu paramety
+			//a pokracuju v instrukcich
 			break;
 		case I_RET:
-			//ADD
+			//vlozim do returnu
+			// odstnim ramec
+			//prepnu se z5
+			//pokud jsem v NULL tak je konec Main.run
 			break;
 		case I_PUSH:
-			switch (destT)
-			{
+			switch (destT){
 				case t_int: 
 				case t_double: 
 					tmpData = *findInFrame(dest->value.name, sf);
@@ -96,8 +102,7 @@ void interpret(tInstrList iList,void *ts) {
 			}
 			break;
 		case I_POP:
-			switch (destT)
-			{
+			switch (destT){
 				case t_int:
 				case t_double:
 				case t_string: // retezec je vytvoren pres push, nemusim tvorit novy 
@@ -258,7 +263,7 @@ void interpret(tInstrList iList,void *ts) {
 			}
 			break;
 
-//Prace s retezci
+//Vstup - vystup
 		case I_READ:
 			switch(destT) {
 				case t_int: 
@@ -318,4 +323,14 @@ void testInsterpret() {
 	testWriteOutFrame(sf);
 	
 
+}
+
+void extractParams(StackFrame *sf, void *ts, Stack stack) {
+	int cpar = 0; // pocet parametru
+	Data tmp;
+
+	for (int i = cpar; i >= 0; i--) {
+		stackPop(stack, &tmp);
+		sf->data[i].value = tmp.value;
+	}
 }

@@ -5,7 +5,9 @@
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {
-	//TODO implementace makeString
+	//TODO neni potreba vlozit \0 ? 
+	char *s = malloc(strlen(str) + 1);
+	strcpy(s, str);
 	return 0;
 }
 
@@ -20,7 +22,20 @@ char *cat(char *s1, char *s2) {
 
 //Vrati string reprezentaci non-string promenne
 char *varToString(Data var) {
+	char *s;
+	switch (var.type) {
+		case t_int: 
+			
+			break;
+		case t_double: 
+			
+			break;
+		default: 
+			
+			break;
+	}
 
+	return s;
 }
 
 char *intToString(int x) {

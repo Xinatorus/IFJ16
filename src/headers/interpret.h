@@ -11,6 +11,7 @@
 
 void interpret(tInstrList instr);
 void testInsterpret();
+void extractParams(StackFrame *sf,void *ts);
 
 //TODO obalit do makra
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;
