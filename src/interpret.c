@@ -4,6 +4,7 @@
 #include "headers\strings.h"
 #include "headers\ial.h"
 #include "headers\framework.h"
+#include "headers\io.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -224,7 +225,18 @@ void interpret(tInstrList iList,void *ts) {
 
 			//Prace s retezci
 		case I_READ:
-			//ADD
+			switch(destT) {
+				case t_int: 
+					findInFrame(dest->value.name, sf)->value.v_int = readInt();
+					break;
+				case t_double: 
+					findInFrame(dest->value.name, sf)->value.v_double = readDouble();
+					break;
+				case t_string: 
+					findInFrame(dest->value.name, sf)->value.v_string = readString();
+					break;
+				default: break;
+			}
 			break;
 		case I_WRITE:
 			printf("%s", (dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);

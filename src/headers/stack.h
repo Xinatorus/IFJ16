@@ -30,4 +30,4 @@ int stackPop(Stack stack, Data *data);
 int stackResize(Stack stack, unsigned int newSize);
 
 
-#endif // include guard
+#endif // !STACK
