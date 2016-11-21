@@ -8,7 +8,7 @@
 typedef struct sFrame {
 	struct sFrame *parent;
 	struct sFrame *child;
-	unsigned int size;
+	unsigned int size; 
 	Data *data; //parametry a promenne
 }StackFrame;
 

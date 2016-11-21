@@ -21,6 +21,7 @@ void interpret(tInstrList iList,void *ts) {
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 	char *tmpStr1,*tmpStr2;
+	Data tmpData;
 
 	instrListSetActiveFirst(&iList);
 
@@ -79,10 +80,34 @@ void interpret(tInstrList iList,void *ts) {
 			//ADD
 			break;
 		case I_PUSH:
-			//ADD
+			switch (destT)
+			{
+				case t_int: 
+				case t_double: 
+					tmpData = *findInFrame(dest->value.name, sf);
+					stackPush(interStack,tmpData);
+				case t_string: 
+					tmpData = *findInFrame(dest->value.name, sf);
+					tmpData.value.v_string = makeString(tmpData.value.v_string); // novou kopii 
+					stackPush(interStack, tmpData); // vlozim na stack
+					break;
+				default:
+				break;
+			}
 			break;
 		case I_POP:
-			//ADD
+			switch (destT)
+			{
+				case t_int:
+				case t_double:
+				case t_string: // retezec je vytvoren pres push, nemusim tvorit novy 
+			//TODO mozna oprava u str free puvodni str
+					stackPop(interStack,&tmpData);
+					findInFrame(dest->value.name, sf)->type = tmpData.type;
+					findInFrame(dest->value.name, sf)->value = tmpData.value;
+				default:
+					break;
+			}
 			break;
 
 //Logicke operace
