@@ -36,8 +36,8 @@ int findSubstring(char *s, char *search) {
 		}
 	}
 
-	if (j == searchLen) return i - searchLen + 1 + 1;
-	else return 0;
+	if (j == searchLen) return i - searchLen + 1;
+	else return -1;
 }
 
 HashTable createHashTable(unsigned int size) {
