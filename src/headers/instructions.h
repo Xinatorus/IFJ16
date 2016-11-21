@@ -37,16 +37,16 @@ typedef enum {
 
 typedef struct {
 	enum {
-		name,
 		c_int,
 		c_double,
-		c_string
+		c_string,
+		name
 	}type;
 	union {
+		int v_int;
+		double v_double;
+		char *v_string;
 		char *name;
-		int c_int;
-		double c_double;
-		char *c_string;
 	}value;
 }Operand;
 

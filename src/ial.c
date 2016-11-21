@@ -124,7 +124,7 @@ unsigned int hash(char *key) {
 	return h % HASH_TABLE_SIZE;
 }
 
-void writeOut(HashTable hashTable) {
+void testWriteOut(HashTable hashTable) {
 	printf("+----------------------------\n");
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		//sloupec
@@ -182,20 +182,20 @@ void hashTest() {/*
 void mergeSort(char *arr, int len) {
 	if (len <= 1) return;
 
-	int half = len / 2;
+	int half = len / 2; // rozdelim na pul
 	char *l = malloc(half);
 	char *r = malloc(len - half);
 
 	//if (!r || !l) printf("errMalloc\n");
 
-	for (int i = 0; i < half; i++)
+	for (int i = 0; i < half; i++) // naplnim pod-pole
 		l[i] = arr[i];
 	for (int i = half; i < len; i++)
 		r[i - half] = arr[i];
 
-	mergeSort(l, half);
+	mergeSort(l, half); // opakuji
 	mergeSort(r, len - half);
-	merge(arr, l, r, half, len - half);
+	merge(arr, l, r, half, len - half); // spojim z5 dohromady
 
 	free(l);
 	free(r);

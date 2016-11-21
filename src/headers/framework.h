@@ -16,4 +16,8 @@ Data *findInFrame(char *name, StackFrame *sf);
 StackFrame *newFrame(StackFrame *parent, void *ts);
 void deleteFrame(StackFrame *sf);
 
-#endif // include guard
+
+void testWriteOutFrame(StackFrame *sf);
+
+#endif // !FRAMEWORK
+

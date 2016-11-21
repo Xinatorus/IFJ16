@@ -5,8 +5,10 @@
 #include "headers\instructions.h"
 #include "headers\lex_anal.h"
 #include "headers\error.h"
+#include "headers\framework.h"
+#include "headers\interpret.h"
+#include "headers\io.h"
 
-#define LEX_TEST 1 // Lexical analysis test
 
 int main(int argc, char* argv[]) {
 
@@ -29,6 +31,7 @@ int main(int argc, char* argv[]) {
 			num++;
 		} while (token != NULL && token->type != KONEC_SOUBORU && token->type != LEXIKALNI_CHYBA);
 	#endif
+
 
 	return 0;
 }
