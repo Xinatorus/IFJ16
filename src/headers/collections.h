@@ -5,6 +5,7 @@
 #include "synt_anal.h"
 #include <stdbool.h>
 
+/* Token archive - used in syntax analysis */
 extern Ttoken *archive;
 
 ////////////////////////////
@@ -13,13 +14,13 @@ extern Ttoken *archive;
 
 typedef enum {
     IT_ERROR,
-    IT_TTYPE,
+    IT_TERMINAL,
     IT_NTTYPE
 }cItemType;
 
 typedef union {
     int error;
-    TType ttype;
+    Terminal terminal;
     NTType nttype;
 }cItemData;
 

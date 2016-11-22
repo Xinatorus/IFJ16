@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include "lex_anal.h"
-#include "stack.h"
+#include "collections.h"
 
 /* List of possible non-terminals */
 typedef enum {
@@ -17,8 +17,8 @@ typedef enum {
     NT_SEZNAM_PARAMETRU,
     NT_PARAMETR_PRVNI,
     NT_PARAMETR_DALSI,
-    NT_SEZNAM_TERMU,
-    NT_TERM_DALSI,
+    NT_SEZNAM_VYRAZU,
+    NT_VYRAZ_DALSI,
     NT_SLOZENY_PRIKAZ,
     NT_BLOK_PRIKAZU,
     NT_PRIKAZ,
@@ -28,7 +28,7 @@ typedef enum {
     NT_PRIRAZENI,
     NT_PRAVA_STRANA,
     NT_NAVRATOVY_TYP,
-    NT_DOLLAR // Vzdy posledni
+    NT_DOLLAR
 }NTType;
 
 /* List of possible terminals (excluding lex_error and expression symbols) */
@@ -56,14 +56,25 @@ typedef enum {
     T_UNKNOWN       // some other not known terminal
 }TType;
 
+typedef struct {
+    TType type; // Type of this terminal
+    Ttoken *token; // Associated token (can be NULL if it is made form Nonterminal)
+}Terminal;
+
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
 int getRuleNumber(NTType nt, TType t);
 
 /* Apply rule identified by number to stack (= expand non-terminal) */
-void applyRule(int rule, Stack *stack);
+void applyRule(int rule, cStack *stack);
 
 /* Get next terminal (from getNextToken() OR token archive) */
-TType getNextTerminal();
+Terminal getNextTerminal();
+
+/* Auxiliary function to push terminal on stack (token will be NULL) */
+void push_terminal(TType type, cStack *stack);
+
+/* Auxiliary function to push non-terminal on stack */
+void push_nonterminal(NTType type, cStack *stack);
 
 void execute();
 
