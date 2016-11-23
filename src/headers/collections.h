@@ -1,9 +1,9 @@
 #ifndef COLLECTIONS_H
 #define COLLECTIONS_H
 
-#include "lex_anal.h"
-#include "synt_anal.h"
 #include <stdbool.h>
+#include "lex_anal.h"
+#include "synt_structures.h"
 
 /* Token archive - used in syntax analysis */
 extern Ttoken *archive;

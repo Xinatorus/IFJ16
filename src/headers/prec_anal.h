@@ -3,6 +3,6 @@
 
 #include "lex_anal.h"
 
-void prec_parse(Ttoken token1, Ttoken token2);
+void prec_analysis(Ttoken *token);
 
 #endif // include guard

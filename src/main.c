@@ -4,6 +4,7 @@
 #include "headers\ial.h"
 #include "headers\instructions.h"
 #include "headers\lex_anal.h"
+#include "headers\synt_anal.h"
 #include "headers\error.h"
 #include "headers\framework.h"
 #include "headers\interpret.h"

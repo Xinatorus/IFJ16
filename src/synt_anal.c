@@ -1,9 +1,5 @@
 #include <string.h>
 #include "headers\synt_anal.h"
-#include "headers\prec_anal.h"
-#include "headers\lex_anal.h"
-#include "headers\collections.h"
-#include "headers\error.h"
 
 int getRuleNumber(NTType nt, TType token) {
 

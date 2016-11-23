@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+#include "error.h"
 
 // vyctovy typ obsahujici seznam tokenu
 typedef enum {

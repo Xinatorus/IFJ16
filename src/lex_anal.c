@@ -6,7 +6,6 @@
 /* ========================================================================== */
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\lex_anal.h"
-#include "headers\error.h"
 
 /**
  * Klucove slova (tabulka klicovych slov)
