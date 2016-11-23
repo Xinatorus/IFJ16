@@ -7,56 +7,75 @@
 
 #include "lex_anal.h"
 
+#define FOREACH_NTTYPE(NTTYPE)          \
+    NTTYPE(NT_PROGRAM)                  \
+    NTTYPE(NT_TRIDA)                    \
+    NTTYPE(NT_SEZNAM_DEFINIC_STATIC)    \
+    NTTYPE(NT_DEFINICE_STATIC)          \
+    NTTYPE(NT_DEFINICE_PROMENNA)        \
+    NTTYPE(NT_DEF_PROM_KONEC)           \
+    NTTYPE(NT_DEFINICE_FUNKCE)          \
+    NTTYPE(NT_SEZNAM_PARAMETRU)         \
+    NTTYPE(NT_PARAMETR_PRVNI)           \
+    NTTYPE(NT_PARAMETR_DALSI)           \
+    NTTYPE(NT_SEZNAM_VSTUPU)            \
+    NTTYPE(NT_VSTUP_DALSI)              \
+    NTTYPE(NT_VSTUP_KONEC)              \
+    NTTYPE(NT_SLOZENY_PRIKAZ)           \
+    NTTYPE(NT_BLOK_PRIKAZU)             \
+    NTTYPE(NT_PRIKAZ)                   \
+    NTTYPE(NT_POUZITI)                  \
+    NTTYPE(NT_VOLANI_FUNKCE)            \
+    NTTYPE(NT_NAVRAT_KONEC)             \
+    NTTYPE(NT_PRIRAZENI)                \
+    NTTYPE(NT_PRAVA_STRANA)             \
+    NTTYPE(NT_DATOVY_TYP)               \
+    NTTYPE(NT_DOLLAR)
+
+#define FOREACH_TTYPE(TTYPE)                                                                                                    \
+    TTYPE(T_IDENT)      /* identificator */                                                                                     \
+    TTYPE(T_FIDENT)     /* function identificator */                                                                            \
+    TTYPE(T_CLASS)      /* keyword CLASS */                                                                                     \
+    TTYPE(T_STATIC)     /* keyword STATIC */                                                                                    \
+    TTYPE(T_RETURN)     /* keyword RETURN */                                                                                    \
+    TTYPE(T_IF)         /* keyword IF */                                                                                        \
+    TTYPE(T_ELSE)       /* keyword ELSE */                                                                                      \
+    TTYPE(T_WHILE)      /* keyword WHILE */                                                                                     \
+    TTYPE(T_VOID)       /* keyword VOID */                                                                                      \
+    TTYPE(T_TYPE)       /* int, double, String */                                                                               \
+    TTYPE(T_EXPRESSION) /* any kind of expr - at least 2 tokens (num, var id, string, parenthesis, aritm + rel operators) */    \
+    TTYPE(T_LCB)        /* { */                                                                                                 \
+    TTYPE(T_RCB)        /* } */                                                                                                 \
+    TTYPE(T_LRB)        /* ( */                                                                                                 \
+    TTYPE(T_RRB)        /* ) */                                                                                                 \
+    TTYPE(T_SC)         /* ; */                                                                                                 \
+    TTYPE(T_COMMA)      /* , */                                                                                                 \
+    TTYPE(T_ASSIGN)     /* = */                                                                                                 \
+    TTYPE(T_EOF)        /* EOF */                                                                                               \
+    TTYPE(T_UNKNOWN)    /* some other not known terminal */
+
+#define GENERATE_ENUM(ENUM) ENUM,
+#define GENERATE_STRING(STRING) #STRING,
+
 /* List of possible non-terminals */
 typedef enum {
-    NT_PROGRAM,
-    NT_TRIDA,
-    NT_SEZNAM_DEFINIC_STATIC,
-    NT_DEFINICE_STATIC,
-    NT_DEFINICE_PROMENNA,
-    NT_DEF_PROM_KONEC,
-    NT_DEFINICE_FUNKCE,
-    NT_SEZNAM_PARAMETRU,
-    NT_PARAMETR_PRVNI,
-    NT_PARAMETR_DALSI,
-    NT_SEZNAM_VSTUPU,
-    NT_VSTUP_DALSI,
-    NT_VSTUP_KONEC,
-    NT_SLOZENY_PRIKAZ,
-    NT_BLOK_PRIKAZU,
-    NT_PRIKAZ,
-    NT_POUZITI,
-    NT_VOLANI_FUNKCE,
-    NT_NAVRAT_KONEC,
-    NT_PRIRAZENI,
-    NT_PRAVA_STRANA,
-    NT_DATOVY_TYP,
-    NT_DOLLAR
+    FOREACH_NTTYPE(GENERATE_ENUM)
 }NTType;
+
+/* Get text representation of enum NTType */
+static char *NTType_string[] = {
+    FOREACH_NTTYPE(GENERATE_STRING)
+};
 
 /* List of possible terminals (excluding lex_error and expression symbols) */
 typedef enum {
-    T_IDENT,        // identificator
-    T_FIDENT,       // function identificator
-    T_CLASS,        // keyword CLASS
-    T_STATIC,       // keyword STATIC
-    T_RETURN,       // keyword RETURN
-    T_IF,           // keyword IF
-    T_ELSE,         // keyword ELSE
-    T_WHILE,        // keyword WHILE
-    T_VOID,         // keyword VOID
-    T_TYPE,         // int, double, String
-    T_EXPRESSION,   // any kind of expression - at least 2 tokens (num, variable id, string, parenthesis, aritmetic + relation operators)
-    T_LCB,          // {
-    T_RCB,          // }
-    T_LRB,          // (
-    T_RRB,          // )
-    T_SC,           // ;
-    T_COMMA,        // ,
-    T_ASSIGN,       // =
-    T_EOF,          // EOF
-    T_UNKNOWN       // some other not known terminal
+    FOREACH_TTYPE(GENERATE_ENUM)
 }TType;
+
+/* Get text representation of enum TType */
+static char *TType_string[] = {
+    FOREACH_TTYPE(GENERATE_STRING)
+};
 
 typedef struct {
     TType type; // Type of this terminal

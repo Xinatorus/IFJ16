@@ -1,7 +1,13 @@
 #include <string.h>
 #include "headers\synt_anal.h"
 
+#define SYNT_DEBUG 1    // Debug messages for syntax analysis
+
 int getRuleNumber(NTType nt, TType token) {
+
+    #if SYNT_DEBUG == 1
+        fprintf(stdout, "[SYNT_DEBUG] getRuleNumber(%s, %s)\n", NTType_string[nt], TType_string[token]);
+    #endif
 
     int rules[NT_DOLLAR+1][T_UNKNOWN+1] = {
     //    IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -37,6 +43,10 @@ void applyRule(int rule, cStack *stack) {
     if (stack == NULL) {
         return;
     }
+
+    #if SYNT_DEBUG == 1
+        fprintf(stdout, "[SYNT_DEBUG] Applying rule #%d\n", rule);
+    #endif
 
     // The reason for not automating this process is precedence analysis
     switch (rule) {
@@ -445,32 +455,64 @@ void execute() {
     do {
         top = cStack_top(&stack);
 
+        #if SYNT_DEBUG == 1
+            char *debug_top, *debug_input;
+            if (top.type == IT_TERMINAL)
+                debug_top = TType_string[top.content.terminal.type];
+            else if (top.type == IT_NTTYPE)
+                debug_top = NTType_string[top.content.nttype];
+            else
+                debug_top = "ERROR";
+            debug_input = NTType_string[input.type];
+            fprintf(stdout, "[SYNT_DEBUG] ~~~ LOOP: top = %s, input = %s\n", debug_top, debug_input);
+        #endif
+
         // We have NT_DOLLAR on top -> success or fail
         if (top.type == IT_NTTYPE && top.content.nttype == NT_DOLLAR) {
+            #if SYNT_DEBUG == 1
+                fprintf(stdout, "[SYNT_DEBUG]   ~ T_EOF must be on input\n");
+            #endif
             if (input.type == T_EOF) {
                 return;
             }
             else {
+                #if SYNT_DEBUG == 1
+                    fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - NT_DOLLAR on top but no T_EOF on input\n");
+                #endif
                 error(SYNTA_ERROR);
             }
         }
 
         // We have terminal on top -> if it is the same as terminal from input, process
-        if (top.type == IT_TERMINAL && top.content.terminal.type == input.type) {
-            if (input.type == T_EXPRESSION) {
-                prec_analysis(input.token);
+        if (top.type == IT_TERMINAL) {
+            #if SYNT_DEBUG == 1
+                fprintf(stdout, "[SYNT_DEBUG]   ~ Top must be same type like input\n");
+            #endif
+            if (top.content.terminal.type == input.type) {
+                if (input.type == T_EXPRESSION) {
+                    prec_analysis(input.token);
+                }
+                cStack_pop(&stack);
+                input = getNextTerminal();
             }
-            cStack_pop(&stack);
-            input = getNextTerminal();
-        }
-        else {
-            error(SYNTA_ERROR);
+            else {
+                #if SYNT_DEBUG == 1
+                    fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Terminal on top not same like terminal on input\n");
+                #endif
+                error(SYNTA_ERROR);
+            }
         }
 
         // We have non-terminal on top -> try to find and apply LL rule
         if (top.type == IT_NTTYPE) {
-            int rule = getRuleNumber(top.type, input.token->type);
+            #if SYNT_DEBUG == 1
+                fprintf(stdout, "[SYNT_DEBUG]   ~ Try to find LL rule\n");
+            #endif
+            int rule = getRuleNumber(top.type, input.type);
             if (rule == -1) {
+                #if SYNT_DEBUG == 1
+                    fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Rule not found\n");
+                #endif
                 error(SYNTA_ERROR);
             }
             else {
