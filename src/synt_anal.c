@@ -347,8 +347,8 @@ Terminal getNextTerminal() {
         else if (strcmp(token->attr->str, "void") == 0) {
             terminal.type = T_VOID;
         }
-        else if (strcmp(token->attr->str, "int") == 0 &&
-            strcmp(token->attr->str, "double") == 0 &&
+        else if (strcmp(token->attr->str, "int") == 0 ||
+            strcmp(token->attr->str, "double") == 0 ||
             strcmp(token->attr->str, "String") == 0) {
             terminal.type = T_TYPE;
         }
@@ -453,7 +453,16 @@ void execute() {
     Terminal input = getNextTerminal(); // Actual terminal from input
     cItem top; // Top of the stack
     do {
+        #if SYNT_DEBUG == 1
+            fprintf(stdout, "---------------------------------\n");
+        #endif
         top = cStack_top(&stack);
+        if (top.type == IT_ERROR) {
+            #if SYNT_DEBUG == 1
+                fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Stack was empty???\n");
+            #endif
+            error(INTER_ERROR);
+        }
 
         #if SYNT_DEBUG == 1
             char *debug_top, *debug_input;
@@ -462,8 +471,8 @@ void execute() {
             else if (top.type == IT_NTTYPE)
                 debug_top = NTType_string[top.content.nttype];
             else
-                debug_top = "ERROR";
-            debug_input = NTType_string[input.type];
+                debug_top = "ERROR - unknown type O_o";
+            debug_input = TType_string[input.type];
             fprintf(stdout, "[SYNT_DEBUG] ~~~ LOOP: top = %s, input = %s\n", debug_top, debug_input);
         #endif
 
@@ -508,7 +517,7 @@ void execute() {
             #if SYNT_DEBUG == 1
                 fprintf(stdout, "[SYNT_DEBUG]   ~ Try to find LL rule\n");
             #endif
-            int rule = getRuleNumber(top.type, input.type);
+            int rule = getRuleNumber(top.content.nttype, input.type);
             if (rule == -1) {
                 #if SYNT_DEBUG == 1
                     fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Rule not found\n");
