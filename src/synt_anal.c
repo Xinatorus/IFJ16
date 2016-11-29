@@ -47,7 +47,6 @@ void applyRule(int rule, cStack *stack) {
     #if SYNT_DEBUG == 1
         fprintf(stdout, "[SYNT_DEBUG] Applying rule #%d\n", rule);
     #endif
-
     // The reason for not automating this process is precedence analysis
     switch (rule) {
         case 1:
