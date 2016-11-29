@@ -1,44 +1,58 @@
-#include "headers\io.h"
+//#include "headers\io.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "headers\ial.h"
-#include "headers\instructions.h"
-#include "headers\lex_anal.h"
-#include "headers\error.h"
-#include "headers\framework.h"
-#include "headers\interpret.h"
+//#include "headers\ial.h"
+//#include "headers\instructions.h"
+//#include "headers\lex_anal.h"
+//#include "headers\error.h"
+//#include "headers\framework.h"
+//#include "headers\interpret.h"
+#include <stdbool.h>
 
 
 #define STR_MAX 100000
 
-bool readString(char *buffer, size_t max_size)
+
+bool readString(char *slovo, size_t max_size)
 {
-    return (fgets(buffer, max_size, stdin) != NULL);
+     return (fgets(slovo, max_size, stdin) != NULL);
 }
-/*****
-int main(int argc, char* argv[]) {
 
-    char veta[MAX];
+bool readInt()
+{
+    char cislo[STR_MAX];
 
-    if (readString(veta, STR_MAX))
-        printf("%s\n", veta);
+    if (readString(cislo, STR_MAX))
+    {
+        int cis = atoi(cislo);
+
+        printf("%d\n", cis);
+        return true;
+
+    }
     else
-        printf("-- CHYBA --");
-
-    return 0;
-
-}
-*****/
-
-int readInt() {
-
+    {
+        fprintf(stderr, "stderr - fgets\n");
+        return false;
+    }
 }
 
-double readDouble() {
+double readDouble()
+{
 
 }
 
-char *readString() {
+int main()
+{
+    /*char veta[STR_MAX];
+    if (readString(veta, STR_MAX))
+        printf("%s\n", veta);*/
 
+
+        readInt();
+
+        return 0;
 }
+
+
