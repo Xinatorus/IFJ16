@@ -54,6 +54,23 @@
     TTYPE(T_EOF)        /* EOF */                                                                                               \
     TTYPE(T_UNKNOWN)    /* some other not known terminal */
 
+#define FOREACH_PTYPE(PTYPE)        \
+    PTYPE(PS_VALUE)      /* i */    \
+    PTYPE(PS_EXPRESSION) /* E */    \
+    PTYPE(PS_LRB)        /* ( */    \
+    PTYPE(PS_RRB)        /* ) */    \
+    PTYPE(PS_PLUS)       /* + */    \
+    PTYPE(PS_MINUS)      /* - */    \
+    PTYPE(PS_STAR)       /* * */    \
+    PTYPE(PS_SLASH)      /* / */    \
+    PTYPE(PS_LTHAN)      /* < */    \
+    PTYPE(PS_RTHAN)      /* > */    \
+    PTYPE(PS_LTHANEQ)    /* <= */   \
+    PTYPE(PS_RTHANEQ)    /* >= */   \
+    PTYPE(PS_EQ)         /* == */   \
+    PTYPE(PS_NEQ)        /* != */   \
+    PTYPE(PS_DOLLAR)     /* $ */
+
 #define GENERATE_ENUM(ENUM) ENUM,
 #define GENERATE_STRING(STRING) #STRING,
 
@@ -77,9 +94,26 @@ static char *TType_string[] = {
     FOREACH_TTYPE(GENERATE_STRING)
 };
 
+/* List of possible precedence symbols */
+typedef enum {
+    FOREACH_PTYPE(GENERATE_ENUM)
+}PType;
+
+/* Get text representation of enum PType */
+static char *PType_string[] = {
+    FOREACH_PTYPE(GENERATE_STRING)
+};
+
+/* Terminal structure */
 typedef struct {
     TType type; // Type of this terminal
-    Ttoken *token; // Associated token (can be NULL if it is made form Nonterminal)
+    Ttoken *token; // Associated token (can be NULL if it was made artificially)
 }Terminal;
+
+/* Precedence symbol structure */
+typedef struct {
+    PType type;
+    Ttoken *token; // Associated token (can be NULL if it was made artificially)
+}Psymbol;
 
 #endif // include guard

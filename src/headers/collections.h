@@ -15,13 +15,15 @@ extern Ttoken *archive;
 typedef enum {
     IT_ERROR,
     IT_TERMINAL,
-    IT_NTTYPE
+    IT_NTTYPE,
+    IT_PSYMBOL
 }cItemType;
 
 typedef union {
     int error;
     Terminal terminal;
     NTType nttype;
+    Psymbol psymbol;
 }cItemData;
 
 typedef struct {
