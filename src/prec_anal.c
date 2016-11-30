@@ -24,9 +24,33 @@ char getPrecedenceOperation(PType p, TType t) {
 }
 
 Psymbol getNextPrecSymbol() {
-
+    /* Precedencni analyza vrati PS_DOLLAR kdyz konci - tzn bud v pripade, kdy je token znak, ktery nepatri do vyrazu
+       nebo v pripade, kdy je token prava zavorka ) ale uz jsou vsechny uzavreny... 
+       NEPOUZITY TOKEN JE TREBA VRATIT DO ARCHIVU */
 }
 
+void applyPrecedenceOperation(char operation, cStack *stack) {
+    if (operation == '<') {
+        // za symbol ve stacku dat PS_LSYS (bude treba zmenit stack za seznam? nebo to bude vzdy jen push PS_LSYS ? )
+        // pushni vstup do stacku
+        // precti dalsi vstup
+        // (ten kdo vola pak musi overit, ze dalsim vstupem neni konecny PS_DOLLAR)
+    }
+    else if (operation == '>') {
+        // pushni PS_RSYS do stacku
+        // popuj stack, postupuj ve stavovem automatu az dojdes k PS_LSYS
+        // podle typu stavoveho automatu proved push leve strany pravidla
+        // stavovy automat detekuje neplatne (chybove) stavy
+    }
+    else if (operation == '=') {
+        // pushni vstup do stacku
+        // precti dalsi vstup
+    }
+    else {
+        // operace je X nebo nejaka neznama (asi ne)
+        // takze chyba
+    }
+}
 
 void push_psymbol(PType type, cStack *stack) {
     cItem item;

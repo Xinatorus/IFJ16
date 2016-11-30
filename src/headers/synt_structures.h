@@ -69,6 +69,8 @@
     PTYPE(PS_RTHANEQ)    /* >= */   \
     PTYPE(PS_EQ)         /* == */   \
     PTYPE(PS_NEQ)        /* != */   \
+    PTYPE(PS_LSYS)       /* LSYS */ \
+    PTYPE(PS_RSYS)       /* RSYS */ \
     PTYPE(PS_DOLLAR)     /* $ */
 
 #define GENERATE_ENUM(ENUM) ENUM,

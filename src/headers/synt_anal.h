@@ -21,6 +21,9 @@ char getPrecedenceOperation(PType p, TType t);
 /* Get next precedence symbol (from getNextToken() OR token archive) */
 Psymbol getNextPrecSymbol();
 
+/* Apply precedence operation identified by its character to stack */
+void applyPrecedenceOperation(char operation, cStack *stack);
+
 /* Auxiliary function to push terminal on stack (token will be NULL) */
 void push_terminal(TType type, cStack *stack);
 
