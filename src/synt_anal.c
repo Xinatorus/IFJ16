@@ -3,7 +3,7 @@
 
 #define SYNT_DEBUG 1    // Debug messages for syntax analysis
 
-cStack token_archive;
+cQueue token_archive;
 cStack stack;
 
 int synt_rules[23][20] = {
@@ -316,9 +316,9 @@ Terminal getNextTerminal() {
     Terminal terminal; // Terminal to return
 
     // Something is left in token archive, we must use that
-    if (cStack_isempty(&token_archive)) {
-        token = cStack_top(&token_archive).content.token;
-        cStack_pop(&token_archive);
+    if (cQueue_isempty(&token_archive)) {
+        token = cQueue_first(&token_archive).content.token;
+        cQueue_pop(&token_archive);
     }
     else {
         token = getNextToken();
@@ -396,7 +396,7 @@ Terminal getNextTerminal() {
         cItem toinsert;
         toinsert.content.token = following;
         toinsert.type = IT_TOKEN;
-        cStack_push(&token_archive, toinsert);
+        cQueue_insert(&token_archive, toinsert);
         // identificator followed by operator is surely an expression
         if (following->type == SCITANI ||
             following->type == ODECITANI ||
@@ -450,7 +450,7 @@ void push_nonterminal(NTType type, cStack *stack) {
 
 void execute() {
     cStack_init(&stack, 50);
-    cStack_init(&token_archive, 10);
+    cQueue_init(&token_archive);
     /* First step - push NT_DOLLAR (NT version of EOF) and NT_PROGRAM to stack */
     push_nonterminal(NT_DOLLAR, &stack);
     push_nonterminal(NT_PROGRAM, &stack);
@@ -505,11 +505,7 @@ void execute() {
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_EXPRESSION) {
-                    cItem inserted;
-                    inserted.content.token = input.token;
-                    inserted.type = IT_TOKEN;
-                    cStack_insert(&token_archive, inserted);
-                    prec_analysis();
+                    prec_analysis(input.token);
                 }
                 else {
                     cStack_pop(&stack);
@@ -544,6 +540,6 @@ void execute() {
     } while (input.type != T_EOF);
 
     cStack_free(&stack);
-    cStack_free(&token_archive);
+    cQueue_free(&token_archive);
 }
 

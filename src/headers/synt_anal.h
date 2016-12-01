@@ -3,10 +3,9 @@
 
 #include <stdbool.h>
 #include "collections.h"
-#include "synt_structures.h"
 #include "error.h"
 
-extern cStack token_archive;
+extern cQueue token_archive;
 extern cStack stack;
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
@@ -37,7 +36,7 @@ void push_nonterminal(NTType type, cStack *stack);
 void push_psymbol(PType type, cStack *stack);
 
 /* Run precedence analysis */
-void prec_analysis();
+void prec_analysis(Ttoken *token);
 
 /* Run syntax analysis */
 void execute();

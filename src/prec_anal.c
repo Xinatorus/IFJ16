@@ -1,5 +1,7 @@
 #include "headers\synt_anal.h"
 
+Ttoken *token_param = NULL; // Token got from prec_analysis() call
+
 int prec_rules[14][14] = {
 //     i     (     )     +     -     *     /     <     >     <=    >=    ==    !=    $
     { 'X' , 'X' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_VALUE
@@ -28,10 +30,15 @@ Psymbol getNextPrecSymbol() {
     Psymbol symbol; // Symbol to return
     static int par_level = 0; // Level of parenthesis
 
+    // We got token prec_analysis() call
+    if (token_param != NULL) {
+        token = token_param;
+        token_param = NULL;
+    }
     // Something is left in token archive, we must use that
-    if (cStack_isempty(&token_archive)) {
-        token = cStack_top(&token_archive).content.token;
-        cStack_pop(&token_archive);
+    else if (cQueue_isempty(&token_archive)) {
+        token = cQueue_first(&token_archive).content.token;
+        cQueue_pop(&token_archive);
     }
     // Read token from input
     else {
@@ -48,7 +55,7 @@ Psymbol getNextPrecSymbol() {
         token->type == CELOCISELNY_LITERAL_EXPONENT ||
         token->type == DESETINNY_LITERAL ||
         token->type == DESETINNY_LITERAL_EXPONENT) {
-        symbol.type = PS_VALUE
+        symbol.type = PS_VALUE;
     }
     else if (token->type == LEVA_KULATA_ZAVORKA) {
         symbol.type = PS_LRB;
@@ -91,7 +98,8 @@ Psymbol getNextPrecSymbol() {
     NEPOUZITY TOKEN JE TREBA VRATIT DO ARCHIVU */
 
 
-    // uroven zanoreni zavorek (par_level) musi menit tato funkce a pri zaviraci zavorce a urovni 0 to vrati PS_DOLLAR (+ archiv)
+    // uroven zanoreni zavorek (par_level) musi menit tato funkce a pri zaviraci zavorce a urovni 0 to vrati PS_DOLLAR (+ vlozit do archivu)
+
 
     return symbol;
 
@@ -132,6 +140,9 @@ void push_psymbol(PType type, cStack *stack) {
     }
 }
 
-void prec_analysis() {
+void prec_analysis(Ttoken *token) {
+    token_param = token;
+
+
     return;
 }

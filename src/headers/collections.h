@@ -81,5 +81,6 @@ bool cQueue_pop(cQueue *queue);
 bool cQueue_isempty(cQueue *queue);
 // Free all elements of Queue
 void cQueue_free(cQueue *queue);
-#endif // include guard
 
+
+#endif // include guard
