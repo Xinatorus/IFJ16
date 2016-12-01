@@ -724,6 +724,7 @@ Ttoken* getNextToken()
 				break;
 		}
 	}
+    return token; // Aby nebyl warning, ze to ne ve vsech pripadech vraci token
 }
 
 /*=========================IMPLEMENTACE FUNKCI=========================*/

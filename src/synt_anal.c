@@ -3,6 +3,9 @@
 
 #define SYNT_DEBUG 1    // Debug messages for syntax analysis
 
+cStack token_archive;
+cStack stack;
+
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
     { -1  ,  -1  ,   1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,   2  ,  -1 } , // NT_PROGRAM
@@ -313,9 +316,9 @@ Terminal getNextTerminal() {
     Terminal terminal; // Terminal to return
 
     // Something is left in token archive, we must use that
-    if (archive != NULL) {
-        token = archive;
-        archive = NULL;
+    if (cStack_isempty(&token_archive)) {
+        token = cStack_top(&token_archive).content.token;
+        cStack_pop(&token_archive);
     }
     else {
         token = getNextToken();
@@ -389,22 +392,26 @@ Terminal getNextTerminal() {
     // We must decide whether this will be an expression terminal or ident or identf terminal
     else if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
-        archive = getNextToken(); // We have to use another token
+        Ttoken *following = getNextToken(); // We have to use another token
+        cItem toinsert;
+        toinsert.content.token = following;
+        toinsert.type = IT_TOKEN;
+        cStack_push(&token_archive, toinsert);
         // identificator followed by operator is surely an expression
-        if (archive->type == SCITANI ||
-            archive->type == ODECITANI ||
-            archive->type == NASOBENI ||
-            archive->type == DELENI ||
-            archive->type == MENSI ||
-            archive->type == VETSI ||
-            archive->type == ROVNO ||
-            archive->type == NEROVNO ||
-            archive->type == MENSI_NEBO_ROVNO ||
-            archive->type == VETSI_NEBO_ROVNO) {
+        if (following->type == SCITANI ||
+            following->type == ODECITANI ||
+            following->type == NASOBENI ||
+            following->type == DELENI ||
+            following->type == MENSI ||
+            following->type == VETSI ||
+            following->type == ROVNO ||
+            following->type == NEROVNO ||
+            following->type == MENSI_NEBO_ROVNO ||
+            following->type == VETSI_NEBO_ROVNO) {
             terminal.type = T_EXPRESSION;
         }
         // identificator followed by left parenthesis is function identificator
-        else if (archive->type == LEVA_KULATA_ZAVORKA) {
+        else if (following->type == LEVA_KULATA_ZAVORKA) {
             terminal.type = T_FIDENT;
         }
         // it is single identificator, note that identificator alone is not an expression
@@ -442,8 +449,8 @@ void push_nonterminal(NTType type, cStack *stack) {
 }
 
 void execute() {
-    cStack stack;
     cStack_init(&stack, 50);
+    cStack_init(&token_archive, 10);
     /* First step - push NT_DOLLAR (NT version of EOF) and NT_PROGRAM to stack */
     push_nonterminal(NT_DOLLAR, &stack);
     push_nonterminal(NT_PROGRAM, &stack);
@@ -498,9 +505,15 @@ void execute() {
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_EXPRESSION) {
-                    prec_analysis(input.token);
+                    cItem inserted;
+                    inserted.content.token = input.token;
+                    inserted.type = IT_TOKEN;
+                    cStack_insert(&token_archive, inserted);
+                    prec_analysis();
                 }
-                cStack_pop(&stack);
+                else {
+                    cStack_pop(&stack);
+                }
                 input = getNextTerminal();
             }
             else {
@@ -529,5 +542,8 @@ void execute() {
         }
 
     } while (input.type != T_EOF);
+
+    cStack_free(&stack);
+    cStack_free(&token_archive);
 }
 

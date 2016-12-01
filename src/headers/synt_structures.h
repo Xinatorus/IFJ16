@@ -56,7 +56,7 @@
 
 #define FOREACH_PTYPE(PTYPE)        \
     PTYPE(PS_VALUE)      /* i */    \
-    PTYPE(PS_EXPRESSION) /* E */    \
+    PTYPE(PS_ESYS)       /* ESYS */ \
     PTYPE(PS_LRB)        /* ( */    \
     PTYPE(PS_RRB)        /* ) */    \
     PTYPE(PS_PLUS)       /* + */    \

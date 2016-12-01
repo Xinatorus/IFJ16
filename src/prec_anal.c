@@ -24,9 +24,77 @@ char getPrecedenceOperation(PType p, TType t) {
 }
 
 Psymbol getNextPrecSymbol() {
+    Ttoken *token = NULL; // Token to work with
+    Psymbol symbol; // Symbol to return
+    static int par_level = 0; // Level of parenthesis
+
+    // Something is left in token archive, we must use that
+    if (cStack_isempty(&token_archive)) {
+        token = cStack_top(&token_archive).content.token;
+        cStack_pop(&token_archive);
+    }
+    // Read token from input
+    else {
+        token = getNextToken();
+    }
+
+    symbol.token = token;
+    symbol.type = PS_DOLLAR;
+
+    if (token->type == IDENTIFIKATOR ||
+        token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR ||
+        token->type == RETEZEC ||
+        token->type == CELOCISELNY_LITERAL ||
+        token->type == CELOCISELNY_LITERAL_EXPONENT ||
+        token->type == DESETINNY_LITERAL ||
+        token->type == DESETINNY_LITERAL_EXPONENT) {
+        symbol.type = PS_VALUE
+    }
+    else if (token->type == LEVA_KULATA_ZAVORKA) {
+        symbol.type = PS_LRB;
+    }
+    else if (token->type == PRAVA_KULATA_ZAVORKA) {
+        symbol.type = PS_RRB;
+    }
+    else if (token->type == SCITANI) {
+        symbol.type = PS_PLUS;
+    }
+    else if (token->type == ODECITANI) {
+        symbol.type = PS_MINUS;
+    }
+    else if (token->type == NASOBENI) {
+        symbol.type = PS_STAR;
+    }
+    else if (token->type == DELENI) {
+        symbol.type = PS_SLASH;
+    }
+    else if (token->type == MENSI) {
+        symbol.type = PS_LTHAN;
+    }
+    else if (token->type == VETSI) {
+        symbol.type = PS_RTHAN;
+    }
+    else if (token->type == MENSI_NEBO_ROVNO) {
+        symbol.type = PS_LTHANEQ;
+    }
+    else if (token->type == VETSI_NEBO_ROVNO) {
+        symbol.type = PS_RTHANEQ;
+    }
+    else if (token->type == ROVNO) {
+        symbol.type = PS_EQ;
+    }
+    else if (token->type == NEROVNO) {
+        symbol.type = PS_NEQ;
+    }
     /* Precedencni analyza vrati PS_DOLLAR kdyz konci - tzn bud v pripade, kdy je token znak, ktery nepatri do vyrazu
-       nebo v pripade, kdy je token prava zavorka ) ale uz jsou vsechny uzavreny... 
-       NEPOUZITY TOKEN JE TREBA VRATIT DO ARCHIVU */
+    nebo v pripade, kdy je token prava zavorka ) ale uz jsou vsechny uzavreny...
+    NEPOUZITY TOKEN JE TREBA VRATIT DO ARCHIVU */
+
+
+    // uroven zanoreni zavorek (par_level) musi menit tato funkce a pri zaviraci zavorce a urovni 0 to vrati PS_DOLLAR (+ archiv)
+
+    return symbol;
+
 }
 
 void applyPrecedenceOperation(char operation, cStack *stack) {
@@ -64,6 +132,6 @@ void push_psymbol(PType type, cStack *stack) {
     }
 }
 
-void prec_analysis(Ttoken *token) {
+void prec_analysis() {
     return;
 }

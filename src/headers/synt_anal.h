@@ -6,6 +6,9 @@
 #include "synt_structures.h"
 #include "error.h"
 
+extern cStack token_archive;
+extern cStack stack;
+
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
 int getRuleNumber(NTType nt, TType t);
 
@@ -34,7 +37,7 @@ void push_nonterminal(NTType type, cStack *stack);
 void push_psymbol(PType type, cStack *stack);
 
 /* Run precedence analysis */
-void prec_analysis(Ttoken *token);
+void prec_analysis();
 
 /* Run syntax analysis */
 void execute();
