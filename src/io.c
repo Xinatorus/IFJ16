@@ -14,11 +14,45 @@
 #define STR_MAX 100000
 
 
-bool readString(char *slovo, size_t max_size)
+char *readString()
 {
-     return (fgets(slovo, max_size, stdin) != NULL);
-}
+    char slovo[STR_MAX];
 
+    if (fgets(slovo, STR_MAX, stdin) == NULL)
+    {
+        fprintf(stderr, "stderr - fgets\n");
+        return false;
+    }
+
+    int pocet_znaku = strlen(slovo);
+
+    char *novy_vstup;
+    novy_vstup = (char *) malloc(pocet_znaku*sizeof(char));
+
+    if (novy_vstup == NULL)
+    {
+        fprintf(stderr, "stderr - malloc\n");
+        return false;
+    }
+
+    novy_vstup = slovo;
+
+    /*for (int i = 0; i < (pocet_znaku - 1) ;i++)
+    {
+        int j = 0;
+
+        strcpy(novy_vstup[i], slovo[j]);
+
+        j++;
+    }*/
+
+    printf("%d\n", strlen(novy_vstup));
+    printf("%d\n", strlen(slovo));
+    printf("%s\n", novy_vstup);
+
+    return novy_vstup;
+}
+/*
 bool readInt()
 {
     char cislo[STR_MAX];
@@ -32,7 +66,7 @@ bool readInt()
         {
             if (i == (pocet_znaku - 1) || cislo[pocet_znaku - 1] == ' ')
             {
-                int vysledek = atoi(cislo);
+                int *vysledek = atoi(cislo);
                 return true;
             }
 
@@ -51,7 +85,7 @@ bool readInt()
         return false;
     }
 }
-
+/*
 double readDouble()
 {
     char cislo[STR_MAX];
@@ -118,6 +152,9 @@ double readDouble()
 
                 case 3:
                     if (isdigit())
+                    {
+                            printf("Ahoj");
+                    }
 
 
 
@@ -201,7 +238,7 @@ double readDouble()
         else
         {
             return false;
-        }*/
+        }
     }
 
     else
@@ -210,16 +247,62 @@ double readDouble()
         return false;
     }
 }
+*/
+/*-------------------------------FCE LENGTH------------------------*/
+// vrati delku retezce zadaneho jedinym parametrem s
+int length(char* s)
+{
+    // chybove hlaseni v pripade nuloveho znaku
+    if (s == NULL)
+    {
+        fprintf(stderr, "stderr - length of string\n");
+        return false;
+    }
+
+    // pruchod jednotlivych znaku a prepocet pocitadla znaku
+    int pocet = 0;
+    for (int i = 0; s[i] != '\0'; i++)
+    {
+
+        if (s[i] == '/')
+        {
+            i++;
+        }
+
+        pocet++;
+    }
+
+    // vraci pocet znkau retezce
+    return pocet;
+}
+/*-----------------------------------------------------------------*/
+/*-------------------------------FCE COMPARE------------------------*/
+// porovna 2 zadane retezce s1 a s2 a vrati
+// 0    ,kdyz se rovnaji
+// 1    ,kdyz je s1 > s2
+// -1   ,kdyz je s1 < s2
+
+int compare(char *s1, char *s2)
+{
+    return (strcmp(s2,s2));
+}
+/*-----------------------------------------------------------------*/
+
+
+
+
+
+
+
+
+
+
 
 int main()
 {
     /*char veta[STR_MAX];
     if (readString(veta, STR_MAX))
         printf("%s\n", veta);*/
-
-
-        //readInt();
-
 
         return 0;
 }
