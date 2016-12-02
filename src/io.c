@@ -1,3 +1,10 @@
+/* =================================================================================== */
+/* Jmena:   .......                                                                    */
+/* Soubor:  io.c                                                                       */
+/* Faze:    Vestavene funkce                                                           */
+/* Datum:   30.11.2016                                                                 */
+/* =================================================================================== */
+/* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
 //#include "headers\io.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,24 +16,34 @@
 //#include "headers\framework.h"
 //#include "headers\interpret.h"
 #include <stdbool.h>
-
+#include <limits.h>
+/* ----------------------------------------------------------------------------------- */
 
 #define STR_MAX 100000
 
-
+/* ------------------------------READ STRING------------------------------------------ */
+// ze standartiho vstupu nacte retezec ukonceny koncem radkem, nebo koncem
+// vstupu, kdy symbol konce radku, nebo vstupu jiz do nacteneho retezce nepatri
 char *readString()
 {
     char slovo[STR_MAX];
 
+    // nacitani ze stdin (resp. chyba)
     if (fgets(slovo, STR_MAX, stdin) == NULL)
     {
         fprintf(stderr, "stderr - fgets\n");
         return false;
     }
 
-    int pocet_znaku = strlen(slovo);
+    // ukazatel na char -> fce vraci ukazatel na char
+    char * slovo1;
+    // oddeli konec radku od nactene posloupnosti znaku ze stdin
+    slovo1 = strtok(slovo, "\n");
+    // spocita pocet znaku pro dynamickou alokaci
+    int pocet_znaku = strlen(slovo1);
 
-    char *novy_vstup;
+    // ukazatel na char -> fce vraci ukazatel na char
+    char *novy_vstup = NULL;
     novy_vstup = (char *) malloc(pocet_znaku*sizeof(char));
 
     if (novy_vstup == NULL)
@@ -35,44 +52,44 @@ char *readString()
         return false;
     }
 
-    novy_vstup = slovo;
+    novy_vstup = slovo1;
 
-    /*for (int i = 0; i < (pocet_znaku - 1) ;i++)
-    {
-        int j = 0;
-
-        strcpy(novy_vstup[i], slovo[j]);
-
-        j++;
-    }*/
-
-    printf("%d\n", strlen(novy_vstup));
-    printf("%d\n", strlen(slovo));
-    printf("%s\n", novy_vstup);
-
+    // vraci ukazatel na nacteny retezec ze stdin
     return novy_vstup;
 }
-/*
+/* ----------------------------------------------------------------------------------- */
+/* ------------------------------READ INT--------------------------------------------- */
+// nacte retezec, ktery prevede na cele cislo, nebo vrati chybu, pokud retezec neodpovida
 bool readInt()
 {
-    char cislo[STR_MAX];
-    int pocet_znaku;
+    // nacteni ze stdin
+    char *cislo = readString();
 
-    if (readString(cislo, STR_MAX))
+    // nacteni ze stdin
+    if (cislo != NULL)
     {
+        // zjisteni poctu znaku v retezci
+        int pocet_znaku;
         pocet_znaku = strlen(cislo);
 
-        for (int i = 0;i < pocet_znaku;i++)
+        // cyklus pro pruchod retezce
+        for (int i = 0;i < pocet_znaku; i++)
         {
-            if (i == (pocet_znaku - 1) || cislo[pocet_znaku - 1] == ' ')
-            {
-                int *vysledek = atoi(cislo);
-                return true;
-            }
-
+            // v pripade chyby retezce vraci false
             if (!isdigit(cislo[i]))
             {
+                fprintf(stderr, "stderr int - string is not a int\n");
                 return false;
+            }
+
+            // v pripade posledniho znaku rovnu cislu
+            else if (i == (pocet_znaku - 1))
+            {
+                // prevod na cislo
+                int *vysledek = (int) strtol(cislo, NULL, 10);
+
+                printf("%d\n", vysledek);
+                return true;
             }
         }
 
@@ -85,170 +102,14 @@ bool readInt()
         return false;
     }
 }
-/*
+/* ----------------------------------------------------------------------------------- */
+
 double readDouble()
 {
-    char cislo[STR_MAX];
-    int pocet_znaku;
-    int i = 0;
-    int token = 0;
 
-    if (readString(cislo, STR_MAX))
-    {
-        pocet_znaku = strlen(cislo);
-
-        while (cislo[i] < pocet_znaku)
-        {
-            switch (token)
-            {
-                case 0:
-                    if (isdigit(cislo[i]))
-                    {
-                        token = 1;
-                    }
-
-                    else
-                    {
-                        return false;
-                    }
-
-                    break;
-
-                case 1:
-                    if (isdigit(cislo[i]))
-                    {
-                        token = 1;
-                    }
-
-                    else if (cislo[i] == '.')
-                    {
-                        token = 10;
-                    }
-
-                    else if (cislo[i] == 'e' || cislo[i] == 'E')
-                    {
-                        token = 2;
-                    }
-
-                    else
-                    {
-                        return false;
-                    }
-
-                    break;
-
-                case 2:
-                    if (isdigit(cislo[i]) || cislo[i] == '+' || cislo[i] == '-')
-                    {
-                        token = 3;
-                    }
-
-                    else
-                    {
-                        return false;
-                    }
-
-                    break;
-
-                case 3:
-                    if (isdigit())
-                    {
-                            printf("Ahoj");
-                    }
-
-
-
-            }
-
-            i++;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*pocet_znaku = strlen(cislo);
-
-        if (isdigit(cislo[0]))
-        {
-            for (int i = 1; i < pocet_znaku; i++)
-            {
-                if ((!isdigit(cislo[i])) || (cislo[i] != '.') || (cislo[i] != 'e') || (cislo[i] != 'E'))
-                {
-                    return false;
-                }
-
-                else if (cislo[i] == '.')
-                {
-                    i++;
-
-                    if (!isdigit(cislo[i]))
-                    {
-                        return false
-                    }
-
-                    else if (i == (pocet_znaku - 1))
-                    {
-                        return false;
-                    }
-
-                    else if ()
-                    {
-
-                    }
-
-                }
-
-                else if ((cislo[i] == 'e') || (cislo[i] == 'E'))
-                {
-
-
-                }
-
-                else if (i == (pocet_znaku - 1))
-                {
-                    return false;
-                }
-            }
-        }
-
-        else
-        {
-            return false;
-        }
-    }
-
-    else
-    {
-        fprintf(stderr, "stderr double - fgets\n");
-        return false;
-    }
 }
-*/
-/*-------------------------------FCE LENGTH------------------------*/
+/* ----------------------------------------------------------------------------------- */
+/* ------------------------------FCE LENGTH------------------------------------------- */
 // vrati delku retezce zadaneho jedinym parametrem s
 int length(char* s)
 {
@@ -275,8 +136,8 @@ int length(char* s)
     // vraci pocet znkau retezce
     return pocet;
 }
-/*-----------------------------------------------------------------*/
-/*-------------------------------FCE COMPARE------------------------*/
+/* ----------------------------------------------------------------------------------- */
+/* ------------------------------FCE COMPARE------------------------------------------ */
 // porovna 2 zadane retezce s1 a s2 a vrati
 // 0    ,kdyz se rovnaji
 // 1    ,kdyz je s1 > s2
@@ -286,23 +147,10 @@ int compare(char *s1, char *s2)
 {
     return (strcmp(s2,s2));
 }
-/*-----------------------------------------------------------------*/
-
-
-
-
-
-
-
-
-
-
-
+/* ----------------------------------------------------------------------------------- */
 int main()
 {
-    /*char veta[STR_MAX];
-    if (readString(veta, STR_MAX))
-        printf("%s\n", veta);*/
+        readInt();
 
         return 0;
 }
