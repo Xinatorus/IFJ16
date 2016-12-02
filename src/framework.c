@@ -19,7 +19,7 @@ Data *findInFrame(char *name, StackFrame *sf) {
 
 //vklada novy ramec na VRCHOL
 StackFrame *newFrame(StackFrame *parent, void *ts) {
-	int size = 1; // dohledat v TS
+	int size = 1; // pocet promennych, dohledat v TS
 	StackFrame *sf = malloc(sizeof(StackFrame));
 	if (sf == NULL) return NULL;
 	sf->data = malloc(sizeof(Data)*size);
@@ -37,7 +37,7 @@ StackFrame *newFrame(StackFrame *parent, void *ts) {
 
 //odstanuje posledni ramec ze zasobniku
 void deleteFrame(StackFrame *sf) {
-	sf->parent = sf->child;
+	sf->parent->child = sf->child; // TODO nejsem si jisty ? melo by to byt propojeni seznamu
 	free(sf->data);
 	free(sf);
 }

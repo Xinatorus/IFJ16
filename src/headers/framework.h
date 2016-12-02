@@ -6,6 +6,7 @@
 
 
 typedef struct sFrame {
+	char *identifier; // pro vyhledavani?? 
 	struct sFrame *parent;
 	struct sFrame *child;
 	unsigned int size; 
