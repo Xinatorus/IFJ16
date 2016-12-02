@@ -1,11 +1,9 @@
 #ifndef COLLECTIONS_H
 #define COLLECTIONS_H
 
-#include "lex_anal.h"
-#include "synt_anal.h"
 #include <stdbool.h>
-
-extern Ttoken *archive;
+#include "lex_anal.h"
+#include "synt_structures.h"
 
 ////////////////////////////
 /////////// ITEM ///////////
@@ -13,14 +11,18 @@ extern Ttoken *archive;
 
 typedef enum {
     IT_ERROR,
-    IT_TTYPE,
-    IT_NTTYPE
+    IT_TERMINAL,
+    IT_NTTYPE,
+    IT_PSYMBOL,
+    IT_TOKEN
 }cItemType;
 
 typedef union {
     int error;
-    TType ttype;
+    Terminal terminal;
     NTType nttype;
+    Psymbol psymbol;
+    Ttoken *token;
 }cItemData;
 
 typedef struct {
@@ -42,15 +44,43 @@ typedef struct {
 
 // Init stack with custom size
 bool cStack_init(cStack *stack, unsigned size);
-// Free stack and its items
-void cStack_free(cStack *stack);
 // Insert item into stack
 bool cStack_push(cStack *stack, cItem item);
 // Remove item from the stack top
 bool cStack_pop(cStack *stack);
-// Receive copy of item from the stack top (when empty: item.type = T_ERROR)
+// Receive a copy of item from the stack top (when empty: item.type = T_ERROR)
 cItem cStack_top(cStack *stack);
 // Check whether the stack is empty
 bool cStack_isempty(cStack *stack);
+// Free items in stack
+void cStack_free(cStack *stack);
+
+/////////////////////////////
+/////////// QUEUE ///////////
+/////////////////////////////
+
+typedef struct {
+    cQueueElem *next; // Next element
+    cItem item; // Data (item)
+} cQueueElem;
+
+typedef struct {
+    cQueueElem *first; // First element
+    unsigned size; // Amount of elements
+} cQueue;
+
+// Init Queue
+void cQueue_init(cQueue *queue);
+// Insert item into queue
+bool cQueue_insert(cQueue *queue, cItem item);
+// Receive a copy of the first item (when empty: item.type = T_ERROR)
+cItem cQueue_first(cQueue *queue);
+// Removes a first item from the Queue
+bool cQueue_pop(cQueue *queue);
+// Check whether the Queue is empty
+bool cQueue_isempty(cQueue *queue);
+// Free all elements of Queue
+void cQueue_free(cQueue *queue);
+
 
 #endif // include guard

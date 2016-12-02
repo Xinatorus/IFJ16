@@ -1,7 +1,5 @@
 #include "headers/collections.h"
 
-extern Ttoken *archive = NULL;
-
 /////////////////////////////
 /////////// STACK ///////////
 /////////////////////////////
@@ -11,11 +9,6 @@ bool cStack_init(cStack *stack, unsigned size) {
     stack->used = 0;
     stack->items = malloc(sizeof(cItem)*size);
     return (stack->items != NULL);
-}
-
-void cStack_free(cStack *stack) {
-    free(stack->items);
-    free(stack);
 }
 
 bool cStack_push(cStack *stack, cItem item) {
@@ -56,3 +49,80 @@ cItem cStack_top(cStack *stack) {
 bool cStack_isempty(cStack *stack) {
     return (stack->used == 0);
 }
+
+void cStack_free(cStack *stack) {
+    free(stack->items);
+}
+
+/////////////////////////////
+/////////// QUEUE ///////////
+/////////////////////////////
+
+void cQueue_init(cQueue *queue) {
+    queue->first = NULL;
+    queue->size = 0;
+}
+
+bool cQueue_insert(cQueue *queue, cItem item) {
+    cQueueElem *elem = (cQueueElem *) malloc(sizeof(cQueueElem));
+    if (elem == NULL) {
+        return false;
+    }
+    else {
+        if (cQueue_isempty(queue)) {
+            queue->first = elem;
+        }
+        else {
+            cQueueElem *iterated = queue->first;
+            while (iterated->next != NULL) {
+                iterated = iterated->next;
+            }
+            iterated->next = elem;
+        }
+        elem->next = NULL;
+        elem->item = item;
+        queue->size++;
+    }
+}
+
+cItem cQueue_first(cQueue *queue) {
+    cItem item;
+    if (cQueue_isempty(queue)) {
+        cItem item;
+        item.type = IT_ERROR;
+        item.content.error = 1;
+        return item;
+    }
+    return queue->first->item;
+}
+
+bool cQueue_pop(cQueue *queue) {
+    if (cQueue_isempty) {
+        return false;
+    }
+    else {
+        cQueueElem *tofree = queue->first;
+        queue->first = tofree->next;
+        queue->size--;
+        free(tofree);
+        return true;
+    }
+}
+
+bool cQueue_isempty(cQueue *queue) {
+    return queue->size == 0;
+}
+
+void cQueue_free(cQueue *queue) {
+    if (!cQueue_isempty(queue)) {
+        cQueueElem *tofree = queue->first;
+        cQueueElem *next = queue->first;
+        while (next != NULL) {
+            next = tofree->next;
+            free(tofree);
+        }
+    }
+    queue->first = NULL;
+    queue->size = 0;
+}
+
