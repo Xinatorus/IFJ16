@@ -8,7 +8,7 @@ char *makeString(char *str) {
 	//TODO neni potreba vlozit \0 ? 
 	char *s = malloc(strlen(str) + 1);
 	strcpy(s, str);
-	return 0;
+	return s;
 }
 
 //spojeni dvou retezcu/znaku
