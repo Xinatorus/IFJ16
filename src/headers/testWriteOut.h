@@ -1,6 +1,9 @@
 #ifndef  TESTWRITEOUT_H
 #define TESTWRITEOUT_H
 
+#include "valgrind.h"
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +15,8 @@
 #include "framework.h"
 #include "strings.h"
 #include "tstree.h"
+
+
 
 //ial
 void hashWriteOut(HashTable hashTable);

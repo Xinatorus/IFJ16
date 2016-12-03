@@ -1,7 +1,6 @@
 ﻿#ifndef IAL_H
 #define IAL_H
-
-
+#include "valgrind.h"
 //Boyer-Moore
 int findSubstring(char *s, char *search);
 

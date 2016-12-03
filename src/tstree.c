@@ -5,9 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 
+
+
 void tsTreeInit(TsTree *root) {
 	*root = NULL;
 }
+
 /*
 	prida TS do stromu na zaklade jmena, 
 	nekontroluje strapvnost jmen
@@ -67,8 +70,26 @@ int tsAdd(TsTree *root, char *name, HashTable ht) {
 	return 1;
 }
 
-void tsDel(TsTree root) {
 
+
+void tsDel(TsTree *root) {
+	TsTree tmp;
+	for (TsTree x = *root; x != NULL;) {
+		for (TsTree t = x->child; t != NULL;) {
+			free(t->name);
+			deleteHashTable(t->ts);
+			tmp = t->next;
+			free(t);
+			t = tmp;
+		}
+		free(x->name);
+		deleteHashTable(x->ts);
+		tmp = x->next;
+		free(x);
+		x = tmp;
+	}
+
+	*root = NULL;
 }
 
 HashTable tsFind(TsTree root, char *name) {

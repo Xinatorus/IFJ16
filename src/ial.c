@@ -53,6 +53,8 @@ HashTable createHashTable(unsigned int size) {
 // Odstraneni tabulky
 void deleteHashTable(HashTable hashTable) {
 
+	if (hashTable == NULL) return;
+
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		if (hashTable[i].next != NULL) {
 			for (HashTable item = hashTable[i].next; item != NULL; ) {

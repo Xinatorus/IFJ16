@@ -1,3 +1,4 @@
+#include "headers\valgrind.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,9 +6,11 @@
 #include "headers\tstree.h"
 #include "headers\testWriteOut.h"
 
+
 #define LEX_TEST 0      // Lexical analysis test
 
 int main(int argc, char* argv[]) {
+	
 //
 //	// Missing parameter
 //	if (argc < 2) {
@@ -34,6 +37,10 @@ int main(int argc, char* argv[]) {
 //
 	tsTest();
 
+	valgrind();
+
+	printf("\n\nhit enter to end\n");
+	getchar();
 	return 0;
 }
 

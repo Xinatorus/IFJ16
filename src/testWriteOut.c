@@ -1,5 +1,11 @@
 #include "headers\testWriteOut.h"
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC 1
+#include <Crtdbg.h>
+#define malloc(size) _malloc_dbg(size,_CLIENT_BLOCK,__FILE__,__LINE__)
+#define free(addr) _free_dbg(addr,_CLIENT_BLOCK)
+#endif
 
 void hashWriteOut(HashTable hashTable) {
 	printf("+----------------------------\n");
@@ -104,6 +110,10 @@ void tsTest() {
 	tsAdd(&root, "Bain.foo", NULL);
 	tsWriteOutTree(root);
 
+	printf("Deleting tree..\n");
+	tsDel(&root);
+	printf("tree deleted\n");
+	tsWriteOutTree(root);
+
 	printf("TsTree Test END...\n");
-	getchar();
 }

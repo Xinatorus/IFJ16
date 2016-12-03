@@ -1,6 +1,6 @@
 #ifndef STRINGS_H
 #define STRINGS_H
-
+#include "valgrind.h"
 // prace s retezci
 #include "headers\stack.h"
 

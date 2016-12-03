@@ -2,6 +2,7 @@
 #define TSTREE_H
 
 #include "ial.h"
+#include "valgrind.h"
 
 typedef struct tsTree{
 	char *name;
@@ -13,7 +14,7 @@ typedef struct tsTree{
 
 void tsTreeInit(TsTree *root);
 int tsAdd(TsTree *root, char *name,HashTable ht);
-void tsDel(TsTree root);
+void tsDel(TsTree *root);
 HashTable tsFind(TsTree root,char *name);
 int isHisParent(char *name,char *parent);
 
