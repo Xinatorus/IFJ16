@@ -21,8 +21,6 @@ void deleteHashTable(HashTable hashTable);
 int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data);
 HashTable searchInHashTable(HashTable hashTable, char *key);
 unsigned int hash(char *key);
-void testWriteOut(HashTable hashTable);
-void hashTest();
 
 
 void mergeSort(char *arr, int len);
