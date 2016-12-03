@@ -44,3 +44,7 @@ char *intToString(int x) {
 char *doubleToString(double x) {
 	//TODO double toString
 }
+
+char *getSubString(char *str, int index, int size) {
+
+}

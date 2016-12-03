@@ -3,44 +3,65 @@
 #include "headers\ial.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void tsTreeInit(TsTree *root) {
 	*root = NULL;
 }
-
+/*
+	prida TS do stromu na zaklade jmena, 
+	nekontroluje strapvnost jmen
+	name = plny identifikator
+	ht = predem vytvorena TS
+*/
 int tsAdd(TsTree *root, char *name, HashTable ht) {
-	TsTree dest; //cil
-	dest = malloc(sizeof(struct tsTree));
-	if (dest == NULL) {
+	TsTree tmp;
+	tmp = malloc(sizeof(struct tsTree));
+	if (tmp == NULL) {
 		fprintf(stderr, "Malloc Err\n");
 		return 1;
 	}
 	else {
-		dest->name = makeString(name);
-		dest->ts = ht;
-		dest->next = NULL;
-		dest->child = NULL;
+		tmp->name = makeString(name);
+		tmp->ts = ht;
+		tmp->next = NULL;
+		tmp->child = NULL;
 	}
 
 	if (*root = NULL) { // prvni	
-		(*root) = dest;
+		(*root) = tmp;
 	}
 	else { //najdu kam
 		if (findSubstring(name, '.') < 0) { //global
 			for (TsTree x = *root; x != NULL; x = x->next) { //najdu konec
 				if (x->next == NULL) {
-					x->next = dest;
+					x->next = tmp;
 					break;
 				}
 			}
 		}
 		else {//local
-
+			// najdu rodice 
+			for (TsTree x = *root; x != NULL; x = x->next) {
+				if (findSubstring(name, x->name) == 0) { // nasel rodice
+					//najdu konec seznamu childs
+					if (x->child == NULL) { //prvni child
+						x->child = tmp;
+					}
+					else {
+						for (TsTree t = x->child; t != NULL; t = t->next) {
+							if (t->next == NULL) { //konec
+								t->next = tmp;	// priradim na konec
+								return 1;
+							}
+						}
+					}
+					break;
+				}
+			}
 		}
 	}
-	
-
-	
+	return 1;
 }
 
 void tsDel(TsTree root) {
@@ -48,10 +69,5 @@ void tsDel(TsTree root) {
 }
 
 HashTable tsFind(TsTree root, char *name) {
-
-}
-
-//testovaci vypis struktury TS
-void tsWout(TsTree root) {
 
 }

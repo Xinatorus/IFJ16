@@ -1,5 +1,6 @@
 #include "headers\testWriteOut.h"
 
+
 void hashWriteOut(HashTable hashTable) {
 	printf("+----------------------------\n");
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
@@ -52,4 +53,33 @@ void hashTest() {/*
 
 				 printf("Deleting table\n");
 				 deleteHashTable(table);*/
+}
+
+//testovaci vypis struktury TS
+void tsWriteOutTree(TsTree root) {
+	if (root == NULL) {
+		printf("Tree is empty\n");
+		return;
+	}
+
+	printf("Tree:\n");
+	for (TsTree x = root; x != NULL; x = x->next) {
+		printf("%s", x->name);
+		for (TsTree t = x->child; t != NULL; t = t->next)
+			printf(" %c-%s",192, t->name);
+	}
+}
+
+void tsWriteOutTreeTS(TsTree root) {
+
+}
+
+void tsTest() {
+	printf("TsTree Test...\n");
+	TsTree root;
+	tsTreeInit(&root);
+	tsAdd(&root, "Main", NULL);
+
+	printf("TsTree Test END...\n");
+	getchar();
 }

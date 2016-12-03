@@ -35,6 +35,8 @@ int main(int argc, char* argv[]) {
     execute();
 #endif
 
+	tsTest();
+
 	return 0;
 }
 
