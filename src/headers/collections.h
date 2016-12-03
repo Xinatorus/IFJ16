@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_H
 #define COLLECTIONS_H
-
+/*
 #include <stdbool.h>
 #include "lex_anal.h"
 #include "synt_structures.h"
@@ -81,6 +81,6 @@ bool cQueue_pop(cQueue *queue);
 bool cQueue_isempty(cQueue *queue);
 // Free all elements of Queue
 void cQueue_free(cQueue *queue);
-
+*/
 
 #endif // include guard

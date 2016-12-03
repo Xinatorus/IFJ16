@@ -7,14 +7,13 @@
 
 
 
-int		findSubstring(char *s, char *search) {
+int	findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 
 		|| s[0] == '\0' || search[0] == '\0') return 0;
 
 	int sLen = strlen(s);
 	int searchLen = strlen(search);
 	int i,j,k=0;
-
 
 	if (sLen < searchLen) return 0; // neni mozne aby byl v retezci delsi podretezec
 
@@ -54,6 +53,8 @@ HashTable createHashTable(unsigned int size) {
 // Odstraneni tabulky
 void deleteHashTable(HashTable hashTable) {
 
+	if (hashTable == NULL) return;
+
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		if (hashTable[i].next != NULL) {
 			for (HashTable item = hashTable[i].next; item != NULL; ) {
@@ -68,7 +69,7 @@ void deleteHashTable(HashTable hashTable) {
 }
 
 // Pridavani zaznamu do tabulky
-int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data) {
+int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data,void *iAddr) {
 
 	if (searchInHashTable(hashTable, key) != NULL) //prvek uz existuje!
 		return 1;
@@ -94,6 +95,7 @@ int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data
 	strcpy(item->type, type);
 
 	item->data = data;
+	item->iAddr = iAddr;
 	item->next = NULL;
 
 

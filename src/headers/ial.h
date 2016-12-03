@@ -1,7 +1,6 @@
 ﻿#ifndef IAL_H
 #define IAL_H
-
-
+#include "valgrind.h"
 //Boyer-Moore
 int findSubstring(char *s, char *search);
 
@@ -13,12 +12,13 @@ typedef struct hItem {
 	char *key;
 	char *type; //1. VELKYM typ var/fce/navesti... 2. datovy typ 3. az n pro parametry F
 	unsigned int data; // pro var 0-n ostatni 0-undefined 1-defined
+	void *iAddr; // adresa na instrukcni pasce
 	struct hItem *next; // kvuli konfliktum v omezenosti hashe
 }*HashTable;
 
 HashTable createHashTable(unsigned int size);
 void deleteHashTable(HashTable hashTable);
-int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data);
+int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data,void *iAddr);
 HashTable searchInHashTable(HashTable hashTable, char *key);
 unsigned int hash(char *key);
 

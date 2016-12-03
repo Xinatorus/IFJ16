@@ -1,6 +1,9 @@
 #ifndef  TESTWRITEOUT_H
 #define TESTWRITEOUT_H
 
+#include "valgrind.h"
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,10 +14,18 @@
 #include "error.h"
 #include "framework.h"
 #include "strings.h"
+#include "tstree.h"
 
 
+
+//ial
 void hashWriteOut(HashTable hashTable);
 void hashTest();
+
+//tstree
+void tsWriteOutTree(TsTree root);
+void tsWriteOutTreeTS(TsTree root);
+void tsTest();
 
 #endif // ! TESTWRITEOUT_H
 
