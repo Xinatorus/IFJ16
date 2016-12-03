@@ -62,12 +62,13 @@ void tsWriteOutTree(TsTree root) {
 		return;
 	}
 
-	printf("Tree:\n");
+	printf("---------TREE---------\n");
 	for (TsTree x = root; x != NULL; x = x->next) {
-		printf("%s", x->name);
+		printf("%c %s\n",195, x->name);
 		for (TsTree t = x->child; t != NULL; t = t->next)
-			printf(" %c-%s",192, t->name);
+			printf("%c %c%c %s\n",179,192,196, t->name);
 	}
+	printf("----------------------\n");
 }
 
 void tsWriteOutTreeTS(TsTree root) {
@@ -78,7 +79,30 @@ void tsTest() {
 	printf("TsTree Test...\n");
 	TsTree root;
 	tsTreeInit(&root);
+
+	printf("Add Main\n");
 	tsAdd(&root, "Main", NULL);
+	tsWriteOutTree(root);
+
+	printf("Add Bain\n");
+	tsAdd(&root, "Bain", NULL);
+	tsWriteOutTree(root);
+
+	printf("Add Main.run\n");
+	tsAdd(&root, "Main.run", NULL);
+	tsWriteOutTree(root);
+
+	printf("Add Main.main\n");
+	tsAdd(&root, "Main.main", NULL);
+	tsWriteOutTree(root);
+
+	printf("Add Dain\n");
+	tsAdd(&root, "Dain", NULL);
+	tsWriteOutTree(root);
+
+	printf("Add Bain.foo\n");
+	tsAdd(&root, "Bain.foo", NULL);
+	tsWriteOutTree(root);
 
 	printf("TsTree Test END...\n");
 	getchar();

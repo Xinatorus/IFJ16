@@ -15,7 +15,6 @@ int	findSubstring(char *s, char *search) {
 	int searchLen = strlen(search);
 	int i,j,k=0;
 
-
 	if (sLen < searchLen) return 0; // neni mozne aby byl v retezci delsi podretezec
 
 	// pozici kurzoru nastavim na searchLen az do sLen

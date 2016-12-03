@@ -28,20 +28,23 @@ int tsAdd(TsTree *root, char *name, HashTable ht) {
 		tmp->child = NULL;
 	}
 
-	if (*root = NULL) { // prvni	
-		(*root) = tmp;
+	if (*root == NULL) { // prvni	
+		*root = tmp;
 	}
 	else { //najdu kam
-		if (findSubstring(name, '.') < 0) { //global
+		//printf("find for global\n");
+		if (findSubstring(tmp->name, ".") < 0) { //global
 			for (TsTree x = *root; x != NULL; x = x->next) { //najdu konec
 				if (x->next == NULL) {
 					x->next = tmp;
-					break;
+					//printf("added");
+					return 1;
 				}
 			}
 		}
 		else {//local
 			// najdu rodice 
+			//printf("find for local\n");
 			for (TsTree x = *root; x != NULL; x = x->next) {
 				if (findSubstring(name, x->name) == 0) { // nasel rodice
 					//najdu konec seznamu childs
