@@ -13,12 +13,12 @@ bool cStack_init(cStack *stack, unsigned size) {
 
 bool cStack_push(cStack *stack, cItem item) {
     if (stack->used >= stack->cap) {
-        cItem *new = realloc(stack->items, sizeof(cItem) * 2 * stack->cap);
-        if (new == NULL) {
+        cItem *new_ = realloc(stack->items, sizeof(cItem) * 2 * stack->cap);
+        if (new_ == NULL) {
             return false;
         }
         else {
-            stack->items = new;
+            stack->items = new_;
         }
         stack->cap *= 2;
     }
