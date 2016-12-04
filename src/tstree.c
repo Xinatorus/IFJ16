@@ -17,7 +17,7 @@ void tsTreeInit(TsTree *root) {
 	name = plny identifikator
 	ht = predem vytvorena TS
 */
-int tsAdd(TsTree *root, char *name, HashTable ht) {
+int tsAdd(TsTree *root, char *name, unsigned int varCount, void *addr, HashTable ht) {
 	TsTree tmp;
 	tmp = malloc(sizeof(struct tsTree));
 	if (tmp == NULL) {
@@ -26,6 +26,8 @@ int tsAdd(TsTree *root, char *name, HashTable ht) {
 	}
 	else {
 		tmp->name = makeString(name);
+		tmp->addr = addr;
+		tmp->varCount = varCount;
 		tmp->ts = ht;
 		tmp->next = NULL;
 		tmp->child = NULL;
@@ -92,12 +94,12 @@ void tsDel(TsTree *root) {
 	*root = NULL;
 }
 
-HashTable tsFind(TsTree root, char *name) {
+TsTree tsFind(TsTree root, char *name) {
 	for (TsTree x = root; x != NULL; x = x->next) {
 		if (isHisParent(name, x->name)) {
 			for (TsTree x = root->child; x != NULL; x = x->next) {
 				if (!strcmp(x->name, name)) {
-					return x->ts;
+					return x;
 				}
 			}
 		}

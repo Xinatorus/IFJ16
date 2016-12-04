@@ -69,7 +69,7 @@ void deleteHashTable(HashTable hashTable) {
 }
 
 // Pridavani zaznamu do tabulky
-int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data,void *iAddr) {
+int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data, unsigned int index) {
 
 	if (searchInHashTable(hashTable, key) != NULL) //prvek uz existuje!
 		return 1;
@@ -95,7 +95,7 @@ int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data
 	strcpy(item->type, type);
 
 	item->data = data;
-	item->iAddr = iAddr;
+	item->index = index;
 	item->next = NULL;
 
 

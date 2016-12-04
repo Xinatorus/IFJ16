@@ -27,5 +27,11 @@ void tsWriteOutTree(TsTree root);
 void tsWriteOutTreeTS(TsTree root);
 void tsTest();
 
+//interpret
+void testInsterpret();
+
+//ramce
+void testWriteOutFrame(StackFrame *sf);
+
 #endif // ! TESTWRITEOUT_H
 

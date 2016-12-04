@@ -9,9 +9,8 @@
 #define getType(var) (var->type == name) ? findInFrame(var->value.name, sf)->type : var->type
 
 
-void interpret(tInstrList instr);
-void testInsterpret();
-void extractParams(StackFrame *sf,void *ts);
+void interpret(tInstrList instr,TsTree *root);
+void extractParams(StackFrame *sf, TsTree ts, Stack stack);
 
 //TODO obalit do makra
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;

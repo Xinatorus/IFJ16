@@ -117,3 +117,67 @@ void tsTest() {
 
 	printf("TsTree Test END...\n");
 }
+
+
+void testInsterpret() {
+	//vytvorim nekolik instrukci ADD
+	//vytvorim pravidlo ramec
+	//interpretuju
+	//vypisu ramec
+
+	StackFrame *sf = malloc(sizeof(StackFrame));
+	sf->child = NULL;
+	sf->parent = NULL;
+	sf->size = 3;
+	sf->data = malloc(sizeof(Data) * 3);
+	sf->data[0].name = "A";
+	sf->data[0].type = t_int;
+	sf->data[0].value.v_int = 5;
+
+	sf->data[2].name = "B";
+	sf->data[2].type = t_double;
+	sf->data[2].value.v_double = 1;
+
+	sf->data[1].name = "C";
+	sf->data[1].type = t_string;
+	sf->data[1].value.v_string = "hello";
+
+	testWriteOutFrame(sf);
+
+	tInstrList list;
+	instrListInit(&list);
+
+	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "C"}, &(Operand) { name, .value.name = "C" }, NULL });
+
+	interpret(list, sf);
+
+	testWriteOutFrame(sf);
+
+
+}
+
+//testovaci vypis obsahu struktury
+void testWriteOutFrame(StackFrame *sf) {
+	printf("+FRAME: %d (%d %d)\n", sf, sf->parent, sf->parent);
+	printf("+------------------------------------------------------------------------------+\n");
+	printf("+                          ID +       TYPE +                                VALUE +\n");
+
+	for (int i = 0; i < sf->size; i++) {
+		switch (sf->data[i].type) {
+		case t_int:
+			printf("+%28s +%11s +%37d +\n", sf->data[i].name, "int", sf->data[i].value.v_int);
+			break;
+		case t_double:
+			printf("+%28s +%11s +%37lf +\n", sf->data[i].name, "double", sf->data[i].value.v_double);
+			break;
+		case t_string:
+			printf("+%28s +%11s +%37s +\n", sf->data[i].name, "string", sf->data[i].value.v_string);
+			break;
+		default: printf("ERROR TYPE");
+			break;
+		}
+	}
+
+	printf("\n");
+
+}
