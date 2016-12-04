@@ -5,7 +5,9 @@
 #include "valgrind.h"
 
 typedef struct tsTree{
-	char *name;
+	char *name; //identifikator
+	unsigned int varCount; // pocet promennych
+	void *addr; //adresa instrukce
 	HashTable ts; //tabulka symbolu
 	struct TsTree *child; // seznam lokalnich ts
 	struct TsTree *next; // list TS akt. urovne
@@ -13,9 +15,9 @@ typedef struct tsTree{
 
 
 void tsTreeInit(TsTree *root);
-int tsAdd(TsTree *root, char *name,HashTable ht);
+int tsAdd(TsTree *root, char *name,unsigned int varCount,void *addr, HashTable ht);
 void tsDel(TsTree *root);
-HashTable tsFind(TsTree root,char *name);
+TsTree tsFind(TsTree root,char *name);
 int isHisParent(char *name,char *parent);
 
 #endif

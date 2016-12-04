@@ -5,19 +5,21 @@
 #include "headers\ial.h"
 #include "headers\framework.h"
 #include "headers\io.h"
+#include "headers\tstree.h"
+#include "headers\valgrind.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void interpret(tInstrList iList,void *ts) {
-	//stack pro vnitrni mezi vypocty
+void interpret(tInstrList iList,TsTree *ts) {
+	//stack pro vnitrni mezi vypocty a parametry fci
 	Stack interStack = stackInit(100);
 
 	tInstr ins; // aktualni instrukce
 
 	// tabulka ramcu
-	//StackFrame *sf = newFrame(NULL, ts);
-	StackFrame *sf = ts; // POUZE PRO TEST
+	StackFrame *sf = newFrame(NULL,ts,"Main.run");
+	//StackFrame *sf = ts; // POUZE PRO TEST
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 	char *tmpStr1,*tmpStr2;
@@ -287,45 +289,8 @@ void interpret(tInstrList iList,void *ts) {
 
 }
 
-
-void testInsterpret() {
-	//vytvorim nekolik instrukci ADD
-	//vytvorim pravidlo ramec
-	//interpretuju
-	//vypisu ramec
-
-	StackFrame *sf = malloc(sizeof(StackFrame));
-	sf->child = NULL;
-	sf->parent = NULL;
-	sf->size = 3;
-	sf->data = malloc(sizeof(Data) * 3);
-	sf->data[0].name = "A";
-	sf->data[0].type = t_int;
-	sf->data[0].value.v_int = 5;
-
-	sf->data[2].name = "B";
-	sf->data[2].type = t_double;
-	sf->data[2].value.v_double = 1;
-
-	sf->data[1].name = "C";
-	sf->data[1].type = t_string;
-	sf->data[1].value.v_string = "hello";
-
-	testWriteOutFrame(sf);
-
-	tInstrList list;
-	instrListInit(&list);
-
-	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name,.value.name="C"}, &(Operand) { name, .value.name = "C" }, NULL });
-
-	interpret(list,sf);
-
-	testWriteOutFrame(sf);
-	
-
-}
-
-void extractParams(StackFrame *sf, void *ts, Stack stack) {
+//extrahuje parametry funkce
+void extractParams(StackFrame *sf, TsTree ts, Stack stack) {
 	int cpar = 0; // pocet parametru
 	Data tmp;
 

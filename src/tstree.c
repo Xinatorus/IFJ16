@@ -17,7 +17,7 @@ void tsTreeInit(TsTree *root) {
 	name = plny identifikator
 	ht = predem vytvorena TS
 */
-int tsAdd(TsTree *root, char *name, HashTable ht) {
+int tsAdd(TsTree *root, char *name, unsigned int varCount, void *addr, HashTable ht) {
 	TsTree tmp;
 	tmp = malloc(sizeof(struct tsTree));
 	if (tmp == NULL) {
@@ -26,6 +26,8 @@ int tsAdd(TsTree *root, char *name, HashTable ht) {
 	}
 	else {
 		tmp->name = makeString(name);
+		tmp->addr = addr;
+		tmp->varCount = varCount;
 		tmp->ts = ht;
 		tmp->next = NULL;
 		tmp->child = NULL;
@@ -49,7 +51,7 @@ int tsAdd(TsTree *root, char *name, HashTable ht) {
 			// najdu rodice 
 			//printf("find for local\n");
 			for (TsTree x = *root; x != NULL; x = x->next) {
-				if (findSubstring(name, x->name) == 0) { // nasel rodice
+				if (isHisParent(name, x->name)) { // nasel rodice
 					//najdu konec seznamu childs
 					if (x->child == NULL) { //prvni child
 						x->child = tmp;
@@ -92,6 +94,21 @@ void tsDel(TsTree *root) {
 	*root = NULL;
 }
 
-HashTable tsFind(TsTree root, char *name) {
+TsTree tsFind(TsTree root, char *name) {
+	for (TsTree x = root; x != NULL; x = x->next) {
+		if (isHisParent(name, x->name)) {
+			for (TsTree x = root->child; x != NULL; x = x->next) {
+				if (!strcmp(x->name, name)) {
+					return x;
+				}
+			}
+		}
+	}
+}
 
+int isHisParent(char *name, char *parent) {
+	if (findSubstring(name, parent) == 0 &&
+		name[strlen(parent)] == '.'
+		) return 1;
+	return 0;
 }
