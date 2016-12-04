@@ -49,7 +49,7 @@ int tsAdd(TsTree *root, char *name, HashTable ht) {
 			// najdu rodice 
 			//printf("find for local\n");
 			for (TsTree x = *root; x != NULL; x = x->next) {
-				if (findSubstring(name, x->name) == 0) { // nasel rodice
+				if (isHisParent(name, x->name)) { // nasel rodice
 					//najdu konec seznamu childs
 					if (x->child == NULL) { //prvni child
 						x->child = tmp;
@@ -93,5 +93,20 @@ void tsDel(TsTree *root) {
 }
 
 HashTable tsFind(TsTree root, char *name) {
+	for (TsTree x = root; x != NULL; x = x->next) {
+		if (isHisParent(name, x->name)) {
+			for (TsTree x = root->child; x != NULL; x = x->next) {
+				if (!strcmp(x->name, name)) {
+					return x->ts;
+				}
+			}
+		}
+	}
+}
 
+int isHisParent(char *name, char *parent) {
+	if (findSubstring(name, parent) == 0 &&
+		name[strlen(parent)] == '.'
+		) return 1;
+	return 0;
 }
