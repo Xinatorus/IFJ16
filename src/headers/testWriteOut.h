@@ -15,7 +15,7 @@
 #include "framework.h"
 #include "strings.h"
 #include "tstree.h"
-
+#include "instructions.h"
 
 
 //ial
@@ -32,6 +32,8 @@ void testInsterpret();
 
 //ramce
 void testWriteOutFrame(StackFrame *sf);
+
+void testWriteOutInstr(tInstrList list);
 
 #endif // ! TESTWRITEOUT_H
 

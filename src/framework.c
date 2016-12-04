@@ -19,7 +19,7 @@ Data *findInFrame(char *name, StackFrame *sf) {
 }
 
 //vklada novy ramec na VRCHOL,
-StackFrame *newFrame(StackFrame *parent, TsTree root, char *name) {
+StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tInstrListItem *lastActive) {
 
 	TsTree ts = tsFind(root, name);
 
@@ -38,7 +38,9 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name) {
 		parent->child = sf;
 	}
 	sf->parent = parent;
-	//TODO vlozeni jmen podle TS + parametry budou nejspise ve stacku tudis push/pop
+	sf->lastActive = lastActive;
+	sf->ret = ret;
+	//TODO vlozeni jmen podle TS
 	
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		//sloupec
@@ -66,9 +68,12 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name) {
 }
 
 //odstanuje posledni ramec ze zasobniku
-void deleteFrame(StackFrame *sf) {
-	sf->parent->child = sf->child; // TODO nejsem si jisty ? melo by to byt propojeni seznamu
+StackFrame *deleteFrame(StackFrame *sf) {
+	StackFrame *tmp = sf->parent;
+	if(tmp!=NULL)
+		sf->parent->child = sf->child;
 	free(sf->data);
 	free(sf);
+	return tmp; 
 }
 

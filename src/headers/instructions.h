@@ -1,38 +1,35 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
+#define FOREACH_INSTR(INS) \
+        INS(I_JMP) \
+		INS(I_MOV) \
+		INS(I_CALL) \
+		INS(I_RET) \
+		INS(I_PUSH) \
+		INS(I_POP) \
+		INS(I_EQ) \
+		INS(I_NEQ) \
+		INS(I_LES) \
+		INS(I_LESE) \
+		INS(I_GRE) \
+		INS(I_GREE) \
+		INS(I_ADD) \
+		INS(I_SUB) \
+		INS(I_MUL) \
+		INS(I_DIV) \
+		INS(I_INC) \
+		INS(I_DEC) \
+		INS(I_READ) \
+		INS(I_WRITE) \
+
+#define GENERATE_ENUM_INSTR(ENUM) ENUM,
+#define GENERATE_STRING_INSTR(STRING) #STRING,
+
+
 // Instrunkci sada
 typedef enum {
-	//em..
-	I_JMP,
-	I_MOV,
-	I_CALL,
-	I_RET,
-	I_PUSH,
-	I_POP,
-
-	//logic
-	I_EQ,
-	I_NEQ,
-	I_LES,
-	I_LESE,
-	I_GRE,
-	I_GREE,
-
-
-	//math
-	I_ADD,
-	I_SUB,
-	I_MUL,
-	I_DIV,
-
-	I_INC,
-	I_DEC,
-
-	//strings
-	I_READ,
-	I_WRITE,
-
+	FOREACH_INSTR(GENERATE_ENUM_INSTR)
 }Instructions;
 
 typedef struct {
