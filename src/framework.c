@@ -38,7 +38,7 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name) {
 		parent->child = sf;
 	}
 	sf->parent = parent;
-	//TODO vlozeni jmen podle TS + parametry budou nejspise ve stacku tudis push/pop
+	//TODO vlozeni jmen podle TS
 	
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		//sloupec
