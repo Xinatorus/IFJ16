@@ -1,6 +1,4 @@
 #include "headers\interpret.h"
-#include "headers\stack.h"
-#include "headers\instructions.h"
 #include "headers\strings.h"
 #include "headers\ial.h"
 #include "headers\framework.h"
@@ -18,7 +16,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 	tInstr ins; // aktualni instrukce
 
 	// tabulka ramcu
-	StackFrame *sf = newFrame(NULL,ts,"Main.run");
+	StackFrame *sf = newFrame(NULL,*ts,"Main.run",NULL,NULL);
 	//StackFrame *sf = ts; // POUZE PRO TEST
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
@@ -29,7 +27,6 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 	// prochazim seznam instrukci az do konce
 	while (!instrListGetActiveInstr(&iList, &ins)) {	
-		instrListSetActiveNext(&iList); // posunu aktivitu
 
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
@@ -80,13 +77,37 @@ void interpret(tInstrList iList,TsTree *ts) {
 			//vytvorim novy ramec
 			//prepnu se do neho
 			//nactu paramety
-			//a pokracuju v instrukcich
+			//continue a pokracuju v instrukcich 
+
+			sf = newFrame(sf, *ts, ins.addr1->value.name, ins.addr3, iList.active);
+			instrListSetActive(&iList, tsFind(ts, ins.addr1->value.name)->addr);
+			extractParams(sf, ts, interStack);
+			continue;
+
 			break;
 		case I_RET:
 			//vlozim do returnu
 			// odstnim ramec
 			//prepnu se z5
 			//pokud jsem v NULL tak je konec Main.run
+			if (ins.addr1) {
+				switch (destT) {
+				case t_int:
+					sf->ret->value.v_int = byType(src1);
+					break;
+				case t_double:
+					sf->ret->value.v_double = byType(src1);
+					break;
+				case t_string:
+					sf->ret->value.v_string = makeString((dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+					break;
+				default: break;
+				}
+			}
+			
+			instrListSetActive(&iList,sf->lastActive); // pokud je konec Main.run tak je to null a smycka konci
+			sf = deleteFrame(sf); // navraceni otcovskeho ramce		
+
 			break;
 		case I_PUSH:
 			switch (destT){
@@ -116,7 +137,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			break;
 
-//Logicke operace
+//Logicke operace predelat asi na JMPx
 		case I_EQ:
 			//ADD
 			break;
@@ -269,13 +290,13 @@ void interpret(tInstrList iList,TsTree *ts) {
 		case I_READ:
 			switch(destT) {
 				case t_int: 
-					findInFrame(dest->value.name, sf)->value.v_int = readInt();
+					//findInFrame(dest->value.name, sf)->value.v_int = readInt();
 					break;
 				case t_double: 
-					findInFrame(dest->value.name, sf)->value.v_double = readDouble();
+					//findInFrame(dest->value.name, sf)->value.v_double = readDouble();
 					break;
 				case t_string: 
-					findInFrame(dest->value.name, sf)->value.v_string = readString();
+					//findInFrame(dest->value.name, sf)->value.v_string = readString();
 					break;
 				default: break;
 			}
@@ -285,7 +306,9 @@ void interpret(tInstrList iList,TsTree *ts) {
 			break;
 		default: break;
 		}
-	}
+
+		instrListSetActiveNext(&iList); // posunu aktivitu na další 
+	}//while ins
 
 }
 

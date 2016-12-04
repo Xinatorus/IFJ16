@@ -46,7 +46,8 @@ void instrListSetActive(tInstrList *list, tInstrListItem *active) {
 }
 
 void instrListSetActiveNext(tInstrList *list) {
-	list->active = list->active->next;
+	if(list->active) // pokud je kam posouvat
+		list->active = list->active->next;
 }
 
 void instrListSetActiveFirst(tInstrList *list) {

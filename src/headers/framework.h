@@ -4,6 +4,7 @@
 #include "stack.h"
 #include "ial.h"
 #include "tstree.h"
+#include "instructions.h"
 
 
 typedef struct sFrame {
@@ -12,11 +13,13 @@ typedef struct sFrame {
 	struct sFrame *child;
 	unsigned int size; // nevim proc jsem to tu dal
 	Data *data; //parametry a promenne
+	Data *ret; //adresa na promennou kde se bude vkladat return
+	tInstrListItem *lastActive; // adresa aktivni insturkce pred call
 }StackFrame;
 
 Data *findInFrame(char *name, StackFrame *sf);
-StackFrame *newFrame(StackFrame *parent, TsTree root, char *name);
-void deleteFrame(StackFrame *sf);
+StackFrame *newFrame(StackFrame *parent, TsTree root, char *name,Data *ret, tInstrListItem *lastActive);
+StackFrame *deleteFrame(StackFrame *sf);
 
 
 

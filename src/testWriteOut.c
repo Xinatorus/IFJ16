@@ -1,4 +1,6 @@
 #include "headers\testWriteOut.h"
+#include "headers\interpret.h"
+#include "headers\instructions.h"
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC 1
@@ -87,27 +89,27 @@ void tsTest() {
 	tsTreeInit(&root);
 
 	printf("Add Main\n");
-	tsAdd(&root, "Main", NULL);
+	tsAdd(&root, "Main",0,NULL, NULL);
 	tsWriteOutTree(root);
 
 	printf("Add Bain\n");
-	tsAdd(&root, "Bain", NULL);
+	tsAdd(&root, "Bain", 0, NULL, NULL);
 	tsWriteOutTree(root);
 
 	printf("Add Main.run\n");
-	tsAdd(&root, "Main.run", NULL);
+	tsAdd(&root, "Main.run", 0, NULL, NULL);
 	tsWriteOutTree(root);
 
 	printf("Add Main.main\n");
-	tsAdd(&root, "Main.main", NULL);
+	tsAdd(&root, "Main.main", 0, NULL, NULL);
 	tsWriteOutTree(root);
 
 	printf("Add Dain\n");
-	tsAdd(&root, "Dain", NULL);
+	tsAdd(&root, "Dain", 0, NULL, NULL);
 	tsWriteOutTree(root);
 
 	printf("Add Bain.foo\n");
-	tsAdd(&root, "Bain.foo", NULL);
+	tsAdd(&root, "Bain.foo", 0, NULL, NULL);
 	tsWriteOutTree(root);
 
 	printf("Deleting tree..\n");
@@ -124,7 +126,7 @@ void testInsterpret() {
 	//vytvorim pravidlo ramec
 	//interpretuju
 	//vypisu ramec
-
+	/*
 	StackFrame *sf = malloc(sizeof(StackFrame));
 	sf->child = NULL;
 	sf->parent = NULL;
@@ -153,7 +155,7 @@ void testInsterpret() {
 
 	testWriteOutFrame(sf);
 
-
+	*/
 }
 
 //testovaci vypis obsahu struktury
@@ -180,4 +182,73 @@ void testWriteOutFrame(StackFrame *sf) {
 
 	printf("\n");
 
+}
+
+void testWriteOutInstr(tInstrList list) {
+	static const char *INSTR_STRING[] = {
+		FOREACH_INSTR(GENERATE_STRING_INSTR)
+	};
+
+	printf("WriteOut Instruction list");
+	for (tInstrListItem *tmp = list.first; tmp != NULL; tmp = tmp->next) {
+		printf("%s ",INSTR_STRING[tmp->instr.instr]);
+		if (tmp->instr.addr1 != NULL) {
+			switch(tmp->instr.addr1->type) {
+				case c_int: 
+					printf("%d ", tmp->instr.addr1->value.v_int);
+					break;
+				case c_double: 
+					printf("%g ", tmp->instr.addr1->value.v_double);
+					break;
+				case c_string: 
+					printf("%s ", tmp->instr.addr1->value.v_string);
+					break;
+				case name: 
+					printf("%s ",tmp->instr.addr1->value.name);
+					break;
+				default: break;
+			}
+		}
+		else printf("NULL ");
+
+		if (tmp->instr.addr2 != NULL) {
+			switch (tmp->instr.addr1->type) {
+			case c_int:
+				printf("%d ", tmp->instr.addr2->value.v_int);
+				break;
+			case c_double:
+				printf("%g ", tmp->instr.addr2->value.v_double);
+				break;
+			case c_string:
+				printf("%s ", tmp->instr.addr2->value.v_string);
+				break;
+			case name:
+				printf("%s ", tmp->instr.addr2->value.name);
+				break;
+			default: break;
+			}
+		}
+		else printf("NULL ");
+
+		if (tmp->instr.addr3 != NULL) {
+			switch (tmp->instr.addr3->type) {
+			case c_int:
+				printf("%d ", tmp->instr.addr3->value.v_int);
+				break;
+			case c_double:
+				printf("%g ", tmp->instr.addr3->value.v_double);
+				break;
+			case c_string:
+				printf("%s ", tmp->instr.addr3->value.v_string);
+				break;
+			case name:
+				printf("%s ", tmp->instr.addr3->value.name);
+				break;
+			default: break;
+			}
+		}
+		else printf("NULL ");
+		printf("\n");
+	}
+	printf("End of Instr\n");
 }

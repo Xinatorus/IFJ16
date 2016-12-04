@@ -2,6 +2,9 @@
 #define INTERPRET_H
 
 #include "instructions.h"
+#include "tstree.h"
+#include "stack.h"
+#include "framework.h"
 
 // zkraceni zapisu
 #define valueByType(var,typ) ((var->type == name) ? findInFrame(var->value.name, sf)->value.typ : var->value.typ)
