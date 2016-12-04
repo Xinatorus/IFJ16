@@ -186,7 +186,7 @@ void testWriteOutFrame(StackFrame *sf) {
 
 void testWriteOutInstr(tInstrList list) {
 	static const char *INSTR_STRING[] = {
-		FOREACH_INSTR(GENERATE_STRING_INSTR)
+		//FOREACH_INSTR(GENERATE_STRING_INSTR)
 	};
 
 	printf("WriteOut Instruction list");
