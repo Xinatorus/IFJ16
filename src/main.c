@@ -37,9 +37,10 @@ int main(int argc, char* argv[]) {
 //
 	
 	//tsTest();
+	testInsterpret();
 
 	
-	valgrind();
+	//valgrind();
 	printf("\n\nhit enter to end\n");
 	getchar();
 	return 0;

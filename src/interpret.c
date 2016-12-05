@@ -30,6 +30,9 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
+//TODO pokud jsou dve NULL 
+
+
 		// Priradim zdroje a cile
 		if (ins.addr3 == NULL) {
 			dest = ins.addr1;
@@ -44,14 +47,16 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 		//typy operandu
 		int destT, src1T, src2T;
-
-		destT = findInFrame(dest->value.name, sf)->type; // cil
+		if(dest->type == name)
+			destT = findInFrame(dest->value.name, sf)->type; // cil
 		if (dest != src1) // pokud nebyla dvou operandova instrukce
 			src1T = getType(src1); //typ src1
 		else src1T = destT; // pokud byla dvou src1 je kopie dest
+		if(src2)
 		src2T = getType(src2);
+//ENDTODO
 
-
+		printf("switch");
 		switch (ins.instr) {
 //Zakladni operace
 		case I_JMP:
@@ -302,7 +307,9 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			break;
 		case I_WRITE:
-			printf("%s", (dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+			//TODO podle typu
+			//printf("%s", (dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+			printf("%s", dest->value.v_string);
 			break;
 		default: break;
 		}
@@ -312,9 +319,9 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 }
 
-//extrahuje parametry funkce
+//TODO extrahuje parametry funkce
 void extractParams(StackFrame *sf, TsTree ts, Stack stack) {
-	int cpar = 0; // pocet parametru
+	int cpar = 0; // TODO pocet parametru
 	Data tmp;
 
 	for (int i = cpar; i >= 0; i--) {

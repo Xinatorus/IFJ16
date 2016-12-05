@@ -13,6 +13,7 @@ void instrListFree(tInstrList *list) {
 	while (list->first != NULL) {
 		tmp = list->first;
 		list->first = list->first->next;
+		//TODO + operandy
 		free(tmp);
 	}
 }

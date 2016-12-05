@@ -1,29 +1,24 @@
 #include "headers\testWriteOut.h"
 #include "headers\interpret.h"
 #include "headers\instructions.h"
-
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC 1
-#include <Crtdbg.h>
-#define malloc(size) _malloc_dbg(size,_CLIENT_BLOCK,__FILE__,__LINE__)
-#define free(addr) _free_dbg(addr,_CLIENT_BLOCK)
-#endif
+#include "headers\valgrind.h"
+#include "headers\tstree.h"
 
 void hashWriteOut(HashTable hashTable) {
-	printf("+----------------------------\n");
+	printf("+-------------TS-------------\n");
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		//sloupec
 		if (hashTable[i].key != NULL) {
-			printf("[%3d]: %s", i, hashTable[i].key);
+			printf("[%3d]: %10s %5s", i, hashTable[i].key, hashTable[i].type);
 			if (hashTable[i].next != NULL) {
 				for (HashTable item = hashTable[i].next; item != NULL; item = item->next) {
-					printf(", %s", item->key);
+					printf(", %10s %5s", item->key,item->type);
 				}
 			}
 			printf("\n");
 		}
 	}
-	printf("+----------------------------\n");
+	printf("+------------END-------------\n");
 }
 
 void hashTest() {/*
@@ -126,23 +121,15 @@ void testInsterpret() {
 	//vytvorim pravidlo ramec
 	//interpretuju
 	//vypisu ramec
-	/*
-	StackFrame *sf = malloc(sizeof(StackFrame));
-	sf->child = NULL;
+	
+	//StackFrame *sf = malloc(sizeof(StackFrame));
+	/*sf->child = NULL;
 	sf->parent = NULL;
 	sf->size = 3;
 	sf->data = malloc(sizeof(Data) * 3);
 	sf->data[0].name = "A";
 	sf->data[0].type = t_int;
 	sf->data[0].value.v_int = 5;
-
-	sf->data[2].name = "B";
-	sf->data[2].type = t_double;
-	sf->data[2].value.v_double = 1;
-
-	sf->data[1].name = "C";
-	sf->data[1].type = t_string;
-	sf->data[1].value.v_string = "hello";
 
 	testWriteOutFrame(sf);
 
@@ -151,11 +138,88 @@ void testInsterpret() {
 
 	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "C"}, &(Operand) { name, .value.name = "C" }, NULL });
 
-	interpret(list, sf);
-
-	testWriteOutFrame(sf);
-
 	*/
+/*
+Class Main{
+	static void Main.run(){
+		int a=5;
+		int b=1;
+		a=a+b;
+		ifj16.print("Hello World");
+		ifj16.print(a);
+	}
+}
+*/
+
+//TS
+	printf("Vyvarim TS Main\n");
+	HashTable glob = createHashTable(HASH_TABLE_SIZE);
+	addToHashTable(glob,"Main.run","FV",0,0);
+	hashWriteOut(glob);
+
+	printf("Vyvarim TS Main.run\n");
+	HashTable local = createHashTable(HASH_TABLE_SIZE);
+	addToHashTable(local, "a", "VI", 0, 0); // pormenna a
+	addToHashTable(local, "b", "VI", 0, 1);
+	hashWriteOut(local);
+
+/*Instr
+	mov a 5
+	mov b 1
+	add a b
+	write "Hello World"
+	//write a
+	ret
+*/
+
+	printf("Vytvarim instrukcni pasku\n");
+	tInstrList list;
+	instrListInit(&list);
+	printf("test wout\n");
+
+	tInstr ins;
+	Operand *op = malloc(sizeof(Operand));
+	op->type = c_int;
+	op->value.v_int = 1;
+
+	ins.addr1 = op;
+	ins.addr2 = NULL;
+	ins.addr3 = NULL;
+	ins.instr = I_WRITE;
+
+
+	printf("now adding instr to list\n");
+	
+	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_int, .value.v_int = 1 }, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.name = "b" }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!"}, NULL, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
+	testWriteOutInstr(list);
+
+
+//Tree
+	printf("Vyvarim TsTree a vlozim ts\n");
+	TsTree root;
+	tsTreeInit(&root);
+	tsAdd(&root, "Main", 0, NULL, glob);
+	tsAdd(&root, "Main.run", 0, NULL, local);
+	tsWriteOutTree(root);
+
+
+	printf("Running interpret\n");
+	interpret(list,&root);
+
+
+
+	// vytvorim nekolik ruznych TS
+	// ulozim je do stromu
+	// vytvorim instrukcni pasku s dvema funkcemi main.run + naka dalasi
+	// vypisu si vsechno co sem ezatim vztvoril
+	
+
+	//spustim interpreta uvidim co to udela :D 
+
+
 }
 
 //testovaci vypis obsahu struktury
@@ -186,10 +250,10 @@ void testWriteOutFrame(StackFrame *sf) {
 
 void testWriteOutInstr(tInstrList list) {
 	static const char *INSTR_STRING[] = {
-		//FOREACH_INSTR(GENERATE_STRING_INSTR)
+		FOREACH_INSTR(GENERATE_STRING_INSTR)
 	};
 
-	printf("WriteOut Instruction list");
+	printf("WriteOut Instruction list...\n");
 	for (tInstrListItem *tmp = list.first; tmp != NULL; tmp = tmp->next) {
 		printf("%s ",INSTR_STRING[tmp->instr.instr]);
 		if (tmp->instr.addr1 != NULL) {
@@ -210,8 +274,8 @@ void testWriteOutInstr(tInstrList list) {
 			}
 		}
 		else printf("NULL ");
-
 		if (tmp->instr.addr2 != NULL) {
+			//printf("not null");
 			switch (tmp->instr.addr1->type) {
 			case c_int:
 				printf("%d ", tmp->instr.addr2->value.v_int);
@@ -229,7 +293,7 @@ void testWriteOutInstr(tInstrList list) {
 			}
 		}
 		else printf("NULL ");
-
+		/*
 		if (tmp->instr.addr3 != NULL) {
 			switch (tmp->instr.addr3->type) {
 			case c_int:
@@ -247,7 +311,7 @@ void testWriteOutInstr(tInstrList list) {
 			default: break;
 			}
 		}
-		else printf("NULL ");
+		else printf("NULL ");*/
 		printf("\n");
 	}
 	printf("End of Instr\n");
