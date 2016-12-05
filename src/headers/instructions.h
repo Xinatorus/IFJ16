@@ -1,6 +1,9 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define FOREACH_INSTR(INS) \
         INS(I_JMP) \
 		INS(I_MOV) \

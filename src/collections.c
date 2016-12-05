@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers/collections.h"
 
 /////////////////////////////
@@ -13,12 +14,12 @@ bool cStack_init(cStack *stack, unsigned size) {
 
 bool cStack_push(cStack *stack, cItem item) {
     if (stack->used >= stack->cap) {
-        cItem *new_ = realloc(stack->items, sizeof(cItem) * 2 * stack->cap);
-        if (new_ == NULL) {
+        cItem *resized = realloc(stack->items, sizeof(cItem) * 2 * stack->cap);
+        if (resized == NULL) {
             return false;
         }
         else {
-            stack->items = new_;
+            stack->items = resized;
         }
         stack->cap *= 2;
     }
@@ -82,11 +83,11 @@ bool cQueue_insert(cQueue *queue, cItem item) {
         elem->next = NULL;
         elem->item = item;
         queue->size++;
+        return true;
     }
 }
 
 cItem cQueue_first(cQueue *queue) {
-    cItem item;
     if (cQueue_isempty(queue)) {
         cItem item;
         item.type = IT_ERROR;

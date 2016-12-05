@@ -1,6 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\instructions.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 void instrListInit(tInstrList *list) {
 	list->first = NULL;

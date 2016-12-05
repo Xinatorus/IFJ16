@@ -1,8 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\framework.h"
-#include "headers\strings.h"
-#include <stdio.h>
-#include <stdlib.h>
-
 
 //vraci odkaz na promenou
 Data *findInFrame(char *name, StackFrame *sf) {

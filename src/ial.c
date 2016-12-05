@@ -1,11 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\ial.h"
-#include "headers\error.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-
 
 int	findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 

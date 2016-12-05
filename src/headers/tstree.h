@@ -1,8 +1,13 @@
 #ifndef TSTREE_H
 #define TSTREE_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "ial.h"
 #include "valgrind.h"
+#include "strings.h"
+#include "ial.h"
 
 typedef struct tsTree{
 	char *name; //identifikator

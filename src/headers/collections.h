@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_H
 #define COLLECTIONS_H
-/*
+
 #include <stdbool.h>
 #include "lex_anal.h"
 #include "synt_structures.h"
@@ -59,8 +59,8 @@ void cStack_free(cStack *stack);
 /////////// QUEUE ///////////
 /////////////////////////////
 
-typedef struct {
-    cQueueElem *next; // Next element
+typedef struct cQueueElem {
+    struct cQueueElem *next; // Next element
     cItem item; // Data (item)
 } cQueueElem;
 
@@ -81,6 +81,5 @@ bool cQueue_pop(cQueue *queue);
 bool cQueue_isempty(cQueue *queue);
 // Free all elements of Queue
 void cQueue_free(cQueue *queue);
-*/
 
 #endif // include guard

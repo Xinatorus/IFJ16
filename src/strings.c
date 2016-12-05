@@ -1,7 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\strings.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {

@@ -1,16 +1,17 @@
+#define _CRT_SECURE_NO_WARNINGS  pro zruseni warningu visual studia
 #include "headers\valgrind.h"
+#include "headers\testWriteOut.h"
+#include "headers\synt_anal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "headers\ial.h"
-#include "headers\tstree.h"
-#include "headers\testWriteOut.h"
 
-
-#define LEX_TEST 0      // Lexical analysis test
+#define LEX_TEST 0       //Lexical analysis test
+#define VALGRIND_TEST 0  //Valgrind test
 
 int main(int argc, char* argv[]) {
 	
+
 //
 //	// Missing parameter
 //	if (argc < 2) {
@@ -45,4 +46,3 @@ int main(int argc, char* argv[]) {
 	getchar();
 	return 0;
 }
-

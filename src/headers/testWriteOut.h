@@ -1,12 +1,10 @@
-#ifndef  TESTWRITEOUT_H
+#ifndef TESTWRITEOUT_H
 #define TESTWRITEOUT_H
-
-#include "valgrind.h"
-
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "valgrind.h"
 #include "ial.h"
 #include "instructions.h"
 #include "lex_anal.h"
@@ -16,6 +14,7 @@
 #include "strings.h"
 #include "tstree.h"
 #include "instructions.h"
+#include "interpret.h"
 
 
 //ial

@@ -1,4 +1,4 @@
-#include <string.h>
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\synt_anal.h"
 
 #define SYNT_DEBUG 1    // Debug messages for syntax analysis
