@@ -5,8 +5,18 @@
 /* Datum:   30.11.2016                                                                 */
 /* =================================================================================== */
 /* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
-#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
-#include "headers\io.h"
+//#include "headers\io.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//#include "headers\ial.h"
+//#include "headers\instructions.h"
+//#include "headers\lex_anal.h"
+//#include "headers\error.h"
+//#include "headers\framework.h"
+//#include "headers\interpret.h"
+#include <stdbool.h>
+#include <limits.h>
 /* ----------------------------------------------------------------------------------- */
 
 #define STR_MAX 100000
@@ -76,9 +86,7 @@ bool readInt()
             else if (i == (pocet_znaku - 1))
             {
                 // prevod na cislo
-                int vysledek = (int) strtol(cislo, NULL, 10);
-
-                printf("%d\n", vysledek);
+                int *vysledek = (int) strtol(cislo, NULL, 10);
                 return true;
             }
         }
@@ -93,10 +101,237 @@ bool readInt()
     }
 }
 /* ----------------------------------------------------------------------------------- */
-
+/* ------------------------------READ DOUBLE------------------------------------------ */
+// nacte retezec, ktery prevede na realne cislo, nebo vrati chybu, pokud retezec neodpovida
 double readDouble()
 {
+    // nacteni ze stdin
+    char *cislo = readString();
+    int stav = 0;
 
+    int pocet_znaku = strlen(cislo);
+
+    // nacteni ze stdin
+    if (cislo != NULL)
+    {
+        for (int i = 0; i <= pocet_znaku; i++)
+        {
+            switch (stav)
+            {
+                case 0:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 01;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 01:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 01;
+                    }
+
+                    else if (cislo[i] == '.')
+                    {
+                        stav = 20;
+                    }
+
+                    else if (cislo[i] == 'e' || cislo[i] == 'E')
+                    {
+                        stav = 10;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 10:
+
+                    if (cislo[i] == '+' || cislo[i] == '-')
+                    {
+                        stav = 11;
+                    }
+
+                    else if (isdigit(cislo[i]))
+                    {
+                        stav = 17;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 17:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 17;
+                    }
+
+                    else if (cislo[i] == '\0')
+                    {
+                        double vysledek = strtod(cislo, NULL);
+                        return true;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+
+                case 11:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 12;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 12:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 12;
+                    }
+
+                    else if (cislo[i] == '\0')
+                    {
+                        double vysledek = (double) strtod(cislo, NULL);
+                        return true;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                case 20:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 22;
+                    }
+
+                    else
+                    {
+                       stav = 99;
+                    }
+
+                    break;
+
+                case 22:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 22;
+                    }
+
+                    else if (cislo[i] == 'e' || cislo[i] == 'E')
+                    {
+                        stav = 23;
+                    }
+
+                    else if (cislo[i] == '\0')
+                    {
+                        double vysledek = (double) strtod(cislo, NULL);
+                        return true;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 23:
+
+                    if (cislo[i] == '+' || cislo[i] == '-')
+                    {
+                        stav = 24;
+                    }
+
+                    else if (isdigit(cislo[i]))
+                    {
+                        stav = 25;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 24:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 25;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 25:
+
+                    if (isdigit(cislo[i]))
+                    {
+                        stav = 25;
+                    }
+
+                    else if (cislo[i] == '\0')
+                    {
+                        double vysledek = (double) strtod(cislo, NULL);
+                        return true;
+                    }
+
+                    else
+                    {
+                        stav = 99;
+                    }
+
+                    break;
+
+                case 99:
+
+                    return false;
+            }
+        }
+    }
+
+    else
+    {
+        fprintf(stderr, "stderr int - fgets\n");
+        return false;
+    }
 }
 /* ----------------------------------------------------------------------------------- */
 /* ------------------------------FCE LENGTH------------------------------------------- */
@@ -138,4 +373,3 @@ int compare(char *s1, char *s2)
     return (strcmp(s2,s2));
 }
 /* ----------------------------------------------------------------------------------- */
-
