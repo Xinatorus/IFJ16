@@ -5,21 +5,7 @@
 /* Datum:   30.11.2016                                                                 */
 /* =================================================================================== */
 /* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
-//#include "headers\io.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//#include "headers\ial.h"
-//#include "headers\instructions.h"
-//#include "headers\lex_anal.h"
-//#include "headers\error.h"
-//#include "headers\framework.h"
-//#include "headers\interpret.h"
-#include <stdbool.h>
-#include <limits.h>
-/* ----------------------------------------------------------------------------------- */
-
-#define STR_MAX 100000
+#include "headers\io.h"
 
 /* ------------------------------READ STRING------------------------------------------ */
 // ze standartiho vstupu nacte retezec ukonceny koncem radkem, nebo koncem
