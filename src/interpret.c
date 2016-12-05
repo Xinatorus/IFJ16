@@ -23,7 +23,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
 //TODO pokud jsou dve NULL 
-
+/*
 
 		// Priradim zdroje a cile
 		if (ins.addr3 == NULL) {
@@ -46,6 +46,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 		else src1T = destT; // pokud byla dvou src1 je kopie dest
 		if(src2)
 		src2T = getType(src2);
+*/
 //ENDTODO
 
 		printf("switch");
