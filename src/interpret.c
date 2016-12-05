@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\interpret.h"
+#include "headers\testWriteOut.h"
 
 void interpret(tInstrList iList,TsTree *ts) {
 	//stack pro vnitrni mezi vypocty a parametry fci
@@ -19,7 +20,9 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 	// prochazim seznam instrukci az do konce
 	while (!instrListGetActiveInstr(&iList, &ins)) {	
-
+		printf("### TEST SF wOut\n");
+		testWriteOutFrame(sf);
+		printf("### END TEST SF wOut\n");
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
 //TODO pokud jsou dve NULL 
@@ -35,10 +38,22 @@ void interpret(tInstrList iList,TsTree *ts) {
 			src1T = destT;
 		}
 		else if (ins.addr3 == NULL) { // dest/src1 src2 NULL
+			dest = ins.addr1;
+			src1 = dest;
+			src2 = ins.addr2;
 
+			destT = getType(dest);
+			src1T = destT;
+			src2T = getType(src2);
 		}
 		else { // src1 src2 dest
+			dest = ins.addr3;
+			src1 = ins.addr1;
+			src2 = ins.addr2;
 
+			destT = getType(dest);
+			src1T = getType(src1);
+			src2T = getType(src2);
 		}
 
 		//if (ins.addr3 == NULL) {
@@ -73,14 +88,14 @@ void interpret(tInstrList iList,TsTree *ts) {
 		case I_MOV:
 			switch (destT) {
 				case t_int:
-					findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+					findInFrame(dest->value.name, sf)->value.v_int = byType(src2);
 					break;
 				case t_double:
-					findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
+					findInFrame(dest->value.name, sf)->value.v_double = byType(src2);
 					break;
 				case t_string:
 				//TODO nema se udelat kopie retezce??
-					findInFrame(dest->value.name, sf)->value.v_string = makeString((dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+					findInFrame(dest->value.name, sf)->value.v_string = makeString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_string : src2->value.v_string);
 					break;
 				default: break;
 			}

@@ -34,6 +34,7 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 		sf->child = parent->child; // melo by byt VZDY null! 
 		parent->child = sf;
 	}
+	else sf->child = NULL;
 	sf->parent = parent;
 	sf->lastActive = lastActive;
 	sf->ret = ret;

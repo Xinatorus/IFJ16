@@ -15,6 +15,7 @@
 #include "tstree.h"
 #include "valgrind.h"
 
+
 // zkraceni zapisu
 #define valueByType(var,typ) ((var->type == name) ? findInFrame(var->value.name, sf)->value.typ : var->value.typ)
 #define byType(var) (var##T == t_int) ? valueByType(var, v_int) : valueByType(var, v_double)

@@ -184,19 +184,23 @@ Class Main{
 	op->type = c_int;
 	op->value.v_int = 1;
 
-	ins.addr1 = op;
-	ins.addr2 = NULL;
+	Operand *opp = malloc(sizeof(Operand));
+	opp->type = name;
+	opp->value.name = "b";
+
+	ins.addr1 = opp;
+	ins.addr2 = op;
 	ins.addr3 = NULL;
-	ins.instr = I_WRITE;
+	ins.instr = I_MOV;
 
 
 	printf("now adding instr to list\n");
 	
-	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_int, .value.v_int = 1 }, NULL });
+	instrListAddInstr(&list,ins);
 	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.name = "b" }, NULL });
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!"}, NULL, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
-	testWriteOutInstr(list);
+	//testWriteOutInstr(list);
 
 
 //Tree
@@ -226,7 +230,7 @@ Class Main{
 
 //testovaci vypis obsahu struktury
 void testWriteOutFrame(StackFrame *sf) {
-	printf("+FRAME: %d (%d %d)\n", sf, sf->parent, sf->parent);
+	printf("+FRAME: %s (%d %d) [%d]\n", sf->identifier, sf->parent, sf->parent);
 	printf("+------------------------------------------------------------------------------+\n");
 	printf("+                          ID +       TYPE +                                VALUE +\n");
 
@@ -295,7 +299,7 @@ void testWriteOutInstr(tInstrList list) {
 			}
 		}
 		else printf("NULL ");
-		/*
+		
 		if (tmp->instr.addr3 != NULL) {
 			switch (tmp->instr.addr3->type) {
 			case c_int:
@@ -313,7 +317,7 @@ void testWriteOutInstr(tInstrList list) {
 			default: break;
 			}
 		}
-		else printf("NULL ");*/
+		else printf("NULL ");
 		printf("\n");
 	}
 	printf("End of Instr\n");
