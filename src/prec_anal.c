@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\synt_anal.h"
 
 Ttoken *token_param = NULL; // Token got from prec_analysis() call

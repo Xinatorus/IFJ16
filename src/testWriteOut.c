@@ -1,6 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\testWriteOut.h"
-#include "headers\interpret.h"
-#include "headers\instructions.h"
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC 1
@@ -186,7 +185,7 @@ void testWriteOutFrame(StackFrame *sf) {
 
 void testWriteOutInstr(tInstrList list) {
 	static const char *INSTR_STRING[] = {
-		//FOREACH_INSTR(GENERATE_STRING_INSTR)
+		FOREACH_INSTR(GENERATE_STRING_INSTR)
 	};
 
 	printf("WriteOut Instruction list");

@@ -1,11 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\tstree.h"
-#include "headers\strings.h"
-#include "headers\ial.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-
 
 void tsTreeInit(TsTree *root) {
 	*root = NULL;

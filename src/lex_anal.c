@@ -1,9 +1,3 @@
-/* ========================================================================== */
-/* Jmena:   .......                                                           */
-/* Soubor:  lex_anal.c                                                        */
-/* Faze:    Lexikalni analyzator                                              */
-/* Datum:   24.10.2016                                                        */
-/* ========================================================================== */
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\lex_anal.h"
 

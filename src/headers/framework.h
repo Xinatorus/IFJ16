@@ -1,10 +1,14 @@
 #ifndef FRAMEWORK_H
 #define FRAMEWORK_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "stack.h"
 #include "ial.h"
 #include "tstree.h"
 #include "instructions.h"
+#include "strings.h"
 
 
 typedef struct sFrame {

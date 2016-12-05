@@ -1,6 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\stack.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 Stack stackInit(unsigned int size) {
 	Stack stack;

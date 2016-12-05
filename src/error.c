@@ -5,8 +5,7 @@
 /* Datum:   24.10.2016                                                        */
 /* ========================================================================== */
 
-#include <stdio.h>
-#include <stdlib.h>
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers/error.h"
 
 

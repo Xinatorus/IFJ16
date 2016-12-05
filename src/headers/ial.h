@@ -1,6 +1,12 @@
 ﻿#ifndef IAL_H
 #define IAL_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "valgrind.h"
+#include "error.h"
+
 //Boyer-Moore
 int findSubstring(char *s, char *search);
 

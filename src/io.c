@@ -5,18 +5,8 @@
 /* Datum:   30.11.2016                                                                 */
 /* =================================================================================== */
 /* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
-//#include "headers\io.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//#include "headers\ial.h"
-//#include "headers\instructions.h"
-//#include "headers\lex_anal.h"
-//#include "headers\error.h"
-//#include "headers\framework.h"
-//#include "headers\interpret.h"
-#include <stdbool.h>
-#include <limits.h>
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
+#include "headers\io.h"
 /* ----------------------------------------------------------------------------------- */
 
 #define STR_MAX 100000
@@ -86,7 +76,7 @@ bool readInt()
             else if (i == (pocet_znaku - 1))
             {
                 // prevod na cislo
-                int *vysledek = (int) strtol(cislo, NULL, 10);
+                int vysledek = (int) strtol(cislo, NULL, 10);
 
                 printf("%d\n", vysledek);
                 return true;
@@ -148,11 +138,4 @@ int compare(char *s1, char *s2)
     return (strcmp(s2,s2));
 }
 /* ----------------------------------------------------------------------------------- */
-int main()
-{
-        readInt();
-
-        return 0;
-}
-
 

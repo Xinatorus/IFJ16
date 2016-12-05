@@ -1,13 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\interpret.h"
-#include "headers\strings.h"
-#include "headers\ial.h"
-#include "headers\framework.h"
-#include "headers\io.h"
-#include "headers\tstree.h"
-#include "headers\valgrind.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 void interpret(tInstrList iList,TsTree *ts) {
 	//stack pro vnitrni mezi vypocty a parametry fci
