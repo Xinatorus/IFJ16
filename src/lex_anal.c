@@ -37,7 +37,7 @@ void loadSource(char* path) {
 	// otevreme zdrojovy soubor, pokud se to nepovede -> chyba
 	subor = fopen(path, "r");
 	if (subor == NULL) {
-		error(INTER_ERROR);
+		error(ERR_INTER);
 	}
 }
 
@@ -712,7 +712,7 @@ Ttoken* getNextToken()
 			case LEXIKALNI_CHYBA:
 
 				//fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
-				error(LEXIK_ERROR);
+				error(ERR_LEX);
 				return NULL;
 
 				break;

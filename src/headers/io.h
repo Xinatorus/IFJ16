@@ -1,5 +1,7 @@
+#ifndef IO_H
+#define IO_H
+
 /* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
-#include "headers\io.h"
 #include "headers\ial.h"
 #include "headers\instructions.h"
 #include "headers\lex_anal.h"
@@ -15,3 +17,5 @@ bool readInt();
 double readDouble();
 int length(char* s);
 int compare(char *s1, char *s2);
+
+#endif // include guard

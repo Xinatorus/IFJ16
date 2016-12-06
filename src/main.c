@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 	
 	// Missing parameter
 	if (argc < 2) {
-		error(INTER_ERROR);
+		error(ERR_INTER);
 	}
 
 	// Load source file
