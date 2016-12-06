@@ -1,6 +1,9 @@
 #ifndef SYNT_ANAL_H
 #define SYNT_ANAL_H
 
+#define PREC_DEBUG 1    // Debug messages for precedence analysis
+#define SYNT_DEBUG 1    // Debug messages for syntax analysis
+
 #include <stdbool.h>
 #include <string.h>
 #include "collections.h"

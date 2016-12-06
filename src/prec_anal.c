@@ -1,8 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\synt_anal.h"
 
-#define PREC_DEBUG 1    // Debug messages for precedence analysis
-
 Ttoken *token_param = NULL; // Token got from prec_analysis() call
 
 char prec_rules[17][17] = {

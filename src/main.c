@@ -50,7 +50,8 @@ int main(int argc, char* argv[]) {
     #endif
 
     #if OUTPUT_TIME == 1
-        printf("Time taken: %.3fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+        printf("OUTPUT_TIME is active, turn off all debugs for accurate results !\n");
+        printf("  -> Time taken: %.3fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     #endif
 
     return 0;
