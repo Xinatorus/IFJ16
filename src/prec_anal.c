@@ -1,27 +1,36 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\synt_anal.h"
 
+#define PREC_DEBUG 1    // Debug messages for precedence analysis
+
 Ttoken *token_param = NULL; // Token got from prec_analysis() call
 
-int prec_rules[14][14] = {
-//     i     (     )     +     -     *     /     <     >     <=    >=    ==    !=    $
-    { 'X' , 'X' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_VALUE
-    { '<' , '<' , '=' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' } , // PS_LRB
-    { 'X' , 'X' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_RRB
-    { '<' , '<' , '>' , '>' , '>' , '<' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_PLUS
-    { '<' , '<' , '>' , '>' , '>' , '<' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_MINUS
-    { '<' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_STAR
-    { '<' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' } , // PS_SLASH
-    { '<' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , '>' } , // PS_LTHAN
-    { '<' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , '>' } , // PS_RTHAN
-    { '<' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , '>' } , // PS_LTHANEQ
-    { '<' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , '>' } , // PS_RTHANEQ
-    { '<' , '<' , '>' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , '>' } , // PS_EQ
-    { '<' , '<' , '>' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , '>' } , // PS_NEQ
-    { '<' , '<' , 'X' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'E' }   // PS_DOLLAR
+char prec_rules[17][17] = {
+//     i    ESYS   (     )     +     -     *     /     <     >     <=    >=    ==    !=   LSYS  RSYS   $
+    { 'X' , 'X' , 'X' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , 'X' , 'X' , '>' } , // PS_VALUE
+    { 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' } , // PS_ESYS
+    { '<' , 'X' , '<' , '=' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' } , // PS_LRB
+    { 'X' , 'X' , 'X' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , 'X' , 'X' , '>' } , // PS_RRB
+    { '<' , 'X' , '<' , '>' , '>' , '>' , '<' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , 'X' , 'X' , '>' } , // PS_PLUS
+    { '<' , 'X' , '<' , '>' , '>' , '>' , '<' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , 'X' , 'X' , '>' } , // PS_MINUS
+    { '<' , 'X' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , 'X' , 'X' , '>' } , // PS_STAR
+    { '<' , 'X' , '<' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , '>' , 'X' , 'X' , '>' } , // PS_SLASH
+    { '<' , 'X' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , 'X' , 'X' , '>' } , // PS_LTHAN
+    { '<' , 'X' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , 'X' , 'X' , '>' } , // PS_RTHAN
+    { '<' , 'X' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , 'X' , 'X' , '>' } , // PS_LTHANEQ
+    { '<' , 'X' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , 'X' , 'X' , '>' } , // PS_RTHANEQ
+    { '<' , 'X' , '<' , '>' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' } , // PS_EQ
+    { '<' , 'X' , '<' , '>' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' } , // PS_NEQ
+    { 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' } , // PS_LSYS
+    { 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' , 'X' } , // PS_RSYS
+    { '<' , 'X' , '<' , 'X' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'E' }   // PS_DOLLAR
 };
 
 char getPrecedenceOperation(PType top, PType input) {
+
+    #if PREC_DEBUG == 1
+        fprintf(stdout, "  [PREC_DEBUG] getPrecedenceOperation(%s, %s)\n", PType_string[top], PType_string[input]);
+    #endif
 
     return prec_rules[top][input];
 }
@@ -127,9 +136,15 @@ void insert_cqueue_token(Ttoken *token, cQueue *queue) {
 }
 
 void prec_analysis(Ttoken *token) {
+    #if PREC_DEBUG == 1
+        fprintf(stdout, "  [PREC_DEBUG]   === PRECEDENCE ANALYSIS STARTED ===\n");
+    #endif
+
     token_param = token; // We need to process this first
 
-    // First step - push $ on top
+    // First step - there is T_EXPRESSION on top, pop it
+    cStack_pop(&stack);
+    // Second step - push $ on top
     push_cstack_psymbol(PS_DOLLAR, &stack);
 
     char operation;
@@ -138,6 +153,10 @@ void prec_analysis(Ttoken *token) {
     cStack temporary; // Because we need sometimes to read prec.symbol more deeply from stack
     cStack_init(&temporary, 5);
     do {
+        #if PREC_DEBUG == 1
+            fprintf(stdout, "    - - -\n");
+        #endif
+
         top = cStack_top(&stack);
         if (top.type == IT_ERROR) {
             error(ERR_INTER);
@@ -162,6 +181,10 @@ void prec_analysis(Ttoken *token) {
             cStack_pop(&temporary);
             top = cStack_top(&stack);
         }
+
+        #if PREC_DEBUG == 1
+            fprintf(stdout, "  [PREC_DEBUG]  Operation = '%c'\n", operation);
+        #endif
 
         /* Apply operation */
         if (operation == '<') {
@@ -247,8 +270,24 @@ void prec_analysis(Ttoken *token) {
 
     } while (operation != 'E');
 
+    // Now, there should be $E on the top
+    if (top.type != IT_PSYMBOL || top.content.psymbol.type != PS_ESYS) {
+        error(ERR_SYNT);
+    }
+    cStack_pop(&stack);
+    top = cStack_top(&stack);
+    // Now, there should be $ on the top
+    if (top.type != IT_PSYMBOL || top.content.psymbol.type != PS_DOLLAR) {
+        error(ERR_SYNT);
+    }
+    cStack_pop(&stack);
+
 
     cStack_free(&temporary);
+
+    #if PREC_DEBUG == 1
+        fprintf(stdout, "  [PREC_DEBUG]   === PRECEDENCE ANALYSIS FINISHED ===\n");
+    #endif
 
     return;
 }

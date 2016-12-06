@@ -525,7 +525,7 @@ void execute() {
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_EXPRESSION) {
                     #if SYNT_DEBUG == 1
-                        fprintf(stdout, "[SYNT_DEBUG] ~~~~~~~~~~ RUNNING PRECEDENCE ANALYSIS ~~~~~~~~~~\n");
+                        fprintf(stdout, "[SYNT_DEBUG] ~~~~ > Calling precedence analysis... < ~~~~\n");
                     #endif
                     prec_analysis(input.token);
                 }
