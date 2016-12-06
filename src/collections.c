@@ -98,7 +98,7 @@ cItem cQueue_first(cQueue *queue) {
 }
 
 bool cQueue_pop(cQueue *queue) {
-    if (cQueue_isempty) {
+    if (cQueue_isempty(queue)) {
         return false;
     }
     else {
@@ -111,7 +111,7 @@ bool cQueue_pop(cQueue *queue) {
 }
 
 bool cQueue_isempty(cQueue *queue) {
-    return queue->size == 0;
+    return (queue->size == 0);
 }
 
 void cQueue_free(cQueue *queue) {

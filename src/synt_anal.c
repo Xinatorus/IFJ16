@@ -315,12 +315,25 @@ Terminal getNextTerminal() {
     Ttoken *token = NULL; // Token to work with
     Terminal terminal; // Terminal to return
 
+    #if SYNT_DEBUG == 1
+        fprintf(stdout, "[SYNT_DEBUG] getNextTerminal()\n");
+    #endif
+
     // Something is left in token archive, we must use that
     if (!cQueue_isempty(&token_archive)) {
         token = cQueue_first(&token_archive).content.token;
+        #if SYNT_DEBUG == 1
+            fprintf(stdout, "[SYNT_DEBUG]  -> get from token archive (TA %d->", token_archive.size);
+        #endif
         cQueue_pop(&token_archive);
+        #if SYNT_DEBUG == 1
+            fprintf(stdout, "%d)\n", token_archive.size);
+        #endif
     }
     else {
+        #if SYNT_DEBUG == 1
+            fprintf(stdout, "[SYNT_DEBUG]  -> get from getNextToken()\n");
+        #endif
         token = getNextToken();
     }
 
@@ -396,7 +409,13 @@ Terminal getNextTerminal() {
         cItem toinsert;
         toinsert.content.token = following;
         toinsert.type = IT_TOKEN;
+        #if SYNT_DEBUG == 1
+            fprintf(stdout, "[SYNT_DEBUG]  -> Using another token! (TA %d->", token_archive.size);
+        #endif
         cQueue_insert(&token_archive, toinsert);
+        #if SYNT_DEBUG == 1
+            fprintf(stdout, "%d)\n", token_archive.size);
+        #endif
         // identificator followed by operator is surely an expression
         if (following->type == SCITANI ||
             following->type == ODECITANI ||
@@ -496,12 +515,14 @@ void execute() {
                 #endif
                 error(ERR_SYNT);
             }
+
+            continue;
         }
 
         // We have terminal on top -> if it is the same as terminal from input, process
         if (top.type == IT_TERMINAL) {
             #if SYNT_DEBUG == 1
-                fprintf(stdout, "[SYNT_DEBUG]   ~ Top must be same type like input\n");
+                fprintf(stdout, "[SYNT_DEBUG]   ~ Top must be same type as input type\n");
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_EXPRESSION) {
@@ -518,6 +539,8 @@ void execute() {
                 #endif
                 error(ERR_SYNT);
             }
+
+            continue;
         }
 
         // We have non-terminal on top -> try to find and apply LL rule
@@ -535,6 +558,8 @@ void execute() {
             else {
                 applyRule(rule, &stack);
             }
+
+            continue;
         }
 
     } while (input.type != T_EOF);

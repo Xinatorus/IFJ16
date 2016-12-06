@@ -170,6 +170,7 @@ void prec_analysis(Ttoken *token) {
             input = getNextPrecSymbol();
         }
         else if (operation == '>') {
+
             // pushni PS_RSYS do stacku - to vlastne neni treba, nedelej to
             // popuj stack, postupuj ve stavovem automatu az dojdes k PS_LSYS
             // podle typu stavoveho automatu proved push leve strany pravidla
