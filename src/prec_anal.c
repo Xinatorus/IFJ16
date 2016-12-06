@@ -175,11 +175,13 @@ void prec_analysis(Ttoken *token) {
         }
         // Finally get precedence operation
         operation = getPrecedenceOperation(top.content.psymbol.type, input.type);
-        // We have to push everything "borrowed" back
-        while (!cStack_isempty(&temporary)) {
-            push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
-            cStack_pop(&temporary);
-            top = cStack_top(&stack);
+        if (operation != '<') {
+            // We have to push everything "borrowed" back (the check for < is there because operation < does it by itself)
+            while (!cStack_isempty(&temporary)) {
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
+                cStack_pop(&temporary);
+                top = cStack_top(&stack);
+            }
         }
 
         #if PREC_DEBUG == 1
@@ -188,7 +190,13 @@ void prec_analysis(Ttoken *token) {
 
         /* Apply operation */
         if (operation == '<') {
-            push_cstack_psymbol(PS_LSYS, &stack);
+            push_cstack_psymbol(PS_LSYS, &stack); // This is pushed just after non-SYS prec. symbol
+            // We have to push everything "borrowed" back
+            while (!cStack_isempty(&temporary)) {
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
+                cStack_pop(&temporary);
+                top = cStack_top(&stack);
+            }
             push_cstack_psymbol(input.type, &stack);
             input = getNextPrecSymbol();
         }
