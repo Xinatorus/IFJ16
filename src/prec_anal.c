@@ -18,7 +18,7 @@ int prec_rules[14][14] = {
     { '<' , '<' , '>' , '<' , '<' , '<' , '<' , 'X' , 'X' , 'X' , 'X' , '>' , '>' , '>' } , // PS_RTHANEQ
     { '<' , '<' , '>' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , '>' } , // PS_EQ
     { '<' , '<' , '>' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'X' , 'X' , '>' } , // PS_NEQ
-    { '<' , '<' , 'X' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '>' }   // PS_DOLLAR
+    { '<' , '<' , 'X' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , '<' , 'E' }   // PS_DOLLAR
 };
 
 char getPrecedenceOperation(PType top, PType input) {
@@ -171,21 +171,81 @@ void prec_analysis(Ttoken *token) {
         }
         else if (operation == '>') {
 
-            // pushni PS_RSYS do stacku - to vlastne neni treba, nedelej to
-            // popuj stack, postupuj ve stavovem automatu az dojdes k PS_LSYS
-            // podle typu stavoveho automatu proved push leve strany pravidla
-            // stavovy automat detekuje neplatne (chybove) stavy
+            // (E) -> E
+            if (top.content.psymbol.type == PS_RRB) { // )>
+                cStack_pop(&stack);
+                top = cStack_top(&stack);
+                if (top.content.psymbol.type == PS_ESYS) { // E)>
+                    cStack_pop(&stack);
+                    top = cStack_top(&stack);
+                    if (top.content.psymbol.type == PS_LRB) { // (E)>
+                        cStack_pop(&stack);
+                        top = cStack_top(&stack);
+                        if (top.content.psymbol.type == PS_LSYS) { // <(E)>
+                            cStack_pop(&stack);
+                            top = cStack_top(&stack);
+                            push_cstack_psymbol(PS_ESYS, &stack); // <(E)> -> E
+                        }
+                        else error(ERR_SYNT);
+                    }
+                    else error(ERR_SYNT);
+                }
+                else error(ERR_SYNT);
+            }
+            // i -> E
+            else if (top.content.psymbol.type == PS_VALUE) { // i>
+                cStack_pop(&stack);
+                top = cStack_top(&stack);
+                if (top.content.psymbol.type == PS_LSYS) { // <i>
+                    cStack_pop(&stack);
+                    top = cStack_top(&stack);
+                    push_cstack_psymbol(PS_ESYS, &stack); // <i> -> E
+                }
+                else error(ERR_SYNT);
+            }
+            // E op E -> E
+            else if (top.content.psymbol.type == PS_ESYS) { // E>
+                cStack_pop(&stack);
+                top = cStack_top(&stack);
+                if (top.content.psymbol.type == PS_PLUS || 
+                    top.content.psymbol.type == PS_MINUS || 
+                    top.content.psymbol.type == PS_STAR || 
+                    top.content.psymbol.type == PS_SLASH || 
+                    top.content.psymbol.type == PS_LTHAN || 
+                    top.content.psymbol.type == PS_RTHAN || 
+                    top.content.psymbol.type == PS_LTHANEQ || 
+                    top.content.psymbol.type == PS_RTHANEQ || 
+                    top.content.psymbol.type == PS_EQ || 
+                    top.content.psymbol.type == PS_NEQ) { // op E>
+                    cStack_pop(&stack);
+                    top = cStack_top(&stack);
+                    if (top.content.psymbol.type == PS_ESYS) { // E op E>
+                        cStack_pop(&stack);
+                        top = cStack_top(&stack);
+                        if (top.content.psymbol.type == PS_LSYS) { // <E op E>
+                            cStack_pop(&stack);
+                            top = cStack_top(&stack);
+                            push_cstack_psymbol(PS_ESYS, &stack); // <E op E> -> E
+                        }
+                        else error(ERR_SYNT);
+                    }
+                    else error(ERR_SYNT);
+                }
+                else error(ERR_SYNT);
+            }
+            else error(ERR_SYNT);
+
         }
         else if (operation == '=') {
             push_cstack_psymbol(input.type, &stack);
             input = getNextPrecSymbol();
         }
-        else {
+        else if (operation != 'E') {
             // Unknown operation? X = error
             error(ERR_SYNT);
         }
 
-    } while (input.type != PS_DOLLAR);
+    } while (operation != 'E');
 
 
     cStack_free(&temporary);

@@ -515,17 +515,18 @@ void execute() {
                 #endif
                 error(ERR_SYNT);
             }
-
-            continue;
         }
 
         // We have terminal on top -> if it is the same as terminal from input, process
-        if (top.type == IT_TERMINAL) {
+        else if (top.type == IT_TERMINAL) {
             #if SYNT_DEBUG == 1
                 fprintf(stdout, "[SYNT_DEBUG]   ~ Top must be same type as input type\n");
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_EXPRESSION) {
+                    #if SYNT_DEBUG == 1
+                        fprintf(stdout, "[SYNT_DEBUG] ~~~~~~~~~~ RUNNING PRECEDENCE ANALYSIS ~~~~~~~~~~\n");
+                    #endif
                     prec_analysis(input.token);
                 }
                 else {
@@ -539,12 +540,10 @@ void execute() {
                 #endif
                 error(ERR_SYNT);
             }
-
-            continue;
         }
 
         // We have non-terminal on top -> try to find and apply LL rule
-        if (top.type == IT_NTTYPE) {
+        else if (top.type == IT_NTTYPE) {
             #if SYNT_DEBUG == 1
                 fprintf(stdout, "[SYNT_DEBUG]   ~ Try to find LL rule\n");
             #endif
@@ -558,11 +557,15 @@ void execute() {
             else {
                 applyRule(rule, &stack);
             }
-
-            continue;
         }
 
     } while (input.type != T_EOF);
+
+    #if SYNT_DEBUG == 1
+        fprintf(stdout, "---------------------------------\n");
+        fprintf(stdout, "[SYNT_DEBUG] Syntax analysis finished\n");
+        fprintf(stdout, "---------------------------------\n");
+    #endif
 
     cStack_free(&stack);
     cQueue_free(&token_archive);
