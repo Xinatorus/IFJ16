@@ -559,7 +559,7 @@ Ttoken* getNextToken()
 
 			case DESETINNY_LITERAL_2:
 
-				// v pripade cisla pokracujeme jako double (popø. double s kombinací)
+				// v pripade cisla pokracujeme jako double (popÃ¸. double s kombinacÃ­)
 				if (isdigit(c))
 				{
 					addChar(token->attr, c);
@@ -748,6 +748,9 @@ TokenType najdiKlucoveSlovo2(string* s)
 	// pomocne promenne
 	int j;
 	char *str, *str2;
+	
+	char vysledek[100000];
+	strcpy(vysledek, s);
 
 	str = strtok(s->str, ".");
 	str2 = strtok(NULL, " ");
@@ -764,6 +767,7 @@ TokenType najdiKlucoveSlovo2(string* s)
 		if ((strcmp(str, rezervovaneSlova[j]) == 0) || ((strcmp(str2, rezervovaneSlova[j])) == 0))
 			return REZERVOVANE_SLOVO;
 
+	token->attr = vysledek;
 	return IDENTIFIKATOR;
 }
 
