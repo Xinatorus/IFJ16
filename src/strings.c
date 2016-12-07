@@ -18,7 +18,7 @@ char *cat(char *s1, char *s2) {
 	return str;
 }
 
-//Vrati string reprezentaci non-string promenne
+//TODO Vrati string reprezentaci non-string promenne
 char *varToString(Data *var) {
 	char *s;
 	switch (var->type) {
@@ -46,3 +46,45 @@ char *doubleToString(double x) {
 char *getSubString(char *str, int index, int size) {
 
 }
+
+/* ----------------------------------------------------------------------------------- */
+/* ------------------------------FCE LENGTH------------------------------------------- */
+// vrati delku retezce zadaneho jedinym parametrem s
+int length(char* s)
+{
+	// chybove hlaseni v pripade nuloveho znaku
+	if (s == NULL)
+	{
+		fprintf(stderr, "stderr - length of string\n");
+		return false;
+	}
+
+	// pruchod jednotlivych znaku a prepocet pocitadla znaku
+	int pocet = 0;
+	for (int i = 0; s[i] != '\0'; i++)
+	{
+
+		if (s[i] == '/')
+		{
+			i++;
+		}
+
+		pocet++;
+	}
+
+	// vraci pocet znkau retezce
+	return pocet;
+}
+
+/* ----------------------------------------------------------------------------------- */
+/* ------------------------------FCE COMPARE------------------------------------------ */
+// porovna 2 zadane retezce s1 a s2 a vrati
+// 0    ,kdyz se rovnaji
+// 1    ,kdyz je s1 > s2
+// -1   ,kdyz je s1 < s2
+
+int compare(char *s1, char *s2)
+{
+	return (strcmp(s2, s2));
+}
+/* ----------------------------------------------------------------------------------- */

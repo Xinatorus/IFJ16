@@ -46,7 +46,7 @@ char *readString()
 /* ----------------------------------------------------------------------------------- */
 /* ------------------------------READ INT--------------------------------------------- */
 // nacte retezec, ktery prevede na cele cislo, nebo vrati chybu, pokud retezec neodpovida
-bool readInt()
+bool readInt(int *out)
 {
     // nacteni ze stdin
     char *cislo = readString();
@@ -72,7 +72,7 @@ bool readInt()
             else if (i == (pocet_znaku - 1))
             {
                 // prevod na cislo
-                int *vysledek = (int) strtol(cislo, NULL, 10);
+                *out = (int) strtol(cislo, NULL, 10);
                 return true;
             }
         }
@@ -89,7 +89,7 @@ bool readInt()
 /* ----------------------------------------------------------------------------------- */
 /* ------------------------------READ DOUBLE------------------------------------------ */
 // nacte retezec, ktery prevede na realne cislo, nebo vrati chybu, pokud retezec neodpovida
-double readDouble()
+double readDouble(double *out)
 {
     // nacteni ze stdin
     char *cislo = readString();
@@ -170,7 +170,7 @@ double readDouble()
 
                     else if (cislo[i] == '\0')
                     {
-                        double vysledek = strtod(cislo, NULL);
+						*out = strtod(cislo, NULL);
                         return true;
                     }
 
@@ -205,7 +205,7 @@ double readDouble()
 
                     else if (cislo[i] == '\0')
                     {
-                        double vysledek = (double) strtod(cislo, NULL);
+						*out = (double) strtod(cislo, NULL);
                         return true;
                     }
 
@@ -242,7 +242,7 @@ double readDouble()
 
                     else if (cislo[i] == '\0')
                     {
-                        double vysledek = (double) strtod(cislo, NULL);
+						*out = (double) strtod(cislo, NULL);
                         return true;
                     }
 
@@ -295,7 +295,7 @@ double readDouble()
 
                     else if (cislo[i] == '\0')
                     {
-                        double vysledek = (double) strtod(cislo, NULL);
+                        *out = (double) strtod(cislo, NULL);
                         return true;
                     }
 
@@ -311,7 +311,9 @@ double readDouble()
                     return false;
             }
         }
-    }
+    
+
+	}
 
     else
     {
@@ -319,43 +321,5 @@ double readDouble()
         return false;
     }
 }
-/* ----------------------------------------------------------------------------------- */
-/* ------------------------------FCE LENGTH------------------------------------------- */
-// vrati delku retezce zadaneho jedinym parametrem s
-int length(char* s)
-{
-    // chybove hlaseni v pripade nuloveho znaku
-    if (s == NULL)
-    {
-        fprintf(stderr, "stderr - length of string\n");
-        return false;
-    }
 
-    // pruchod jednotlivych znaku a prepocet pocitadla znaku
-    int pocet = 0;
-    for (int i = 0; s[i] != '\0'; i++)
-    {
 
-        if (s[i] == '/')
-        {
-            i++;
-        }
-
-        pocet++;
-    }
-
-    // vraci pocet znkau retezce
-    return pocet;
-}
-/* ----------------------------------------------------------------------------------- */
-/* ------------------------------FCE COMPARE------------------------------------------ */
-// porovna 2 zadane retezce s1 a s2 a vrati
-// 0    ,kdyz se rovnaji
-// 1    ,kdyz je s1 > s2
-// -1   ,kdyz je s1 < s2
-
-int compare(char *s1, char *s2)
-{
-    return (strcmp(s2,s2));
-}
-/* ----------------------------------------------------------------------------------- */
