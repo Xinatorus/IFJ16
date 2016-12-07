@@ -32,7 +32,7 @@ void tsWriteOutTreeTS(TsTree root);
 void tsTest();
 
 //interpret
-void testInsterpret();
+void testInterpret();
 
 //ramce
 void testWriteOutFrame(StackFrame *sf);
