@@ -1,6 +1,9 @@
 #ifndef SYNT_ANAL_H
 #define SYNT_ANAL_H
 
+#define PREC_DEBUG 1    // Debug messages for precedence analysis
+#define SYNT_DEBUG 1    // Debug messages for syntax analysis
+
 #include <stdbool.h>
 #include <string.h>
 #include "collections.h"
@@ -19,22 +22,22 @@ void applyRule(int rule, cStack *stack);
 Terminal getNextTerminal();
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
-char getPrecedenceOperation(PType p, TType t);
+char getPrecedenceOperation(PType top, PType input);
 
 /* Get next precedence symbol (from getNextToken() OR token archive) */
 Psymbol getNextPrecSymbol();
 
-/* Apply precedence operation identified by its character to stack */
-void applyPrecedenceOperation(char operation, cStack *stack);
-
 /* Auxiliary function to push terminal on stack (token will be NULL) */
-void push_terminal(TType type, cStack *stack);
+void push_cstack_terminal(TType type, cStack *stack);
 
 /* Auxiliary function to push non-terminal on stack */
-void push_nonterminal(NTType type, cStack *stack);
+void push_cstack_nonterminal(NTType type, cStack *stack);
 
 /* Auxiliary function to push precedence symbol on stack */
-void push_psymbol(PType type, cStack *stack);
+void push_cstack_psymbol(PType type, cStack *stack);
+
+/* Auxiliary function to insert token into queue */
+void insert_cqueue_token(Ttoken *token, cQueue *queue);
 
 /* Run precedence analysis */
 void prec_analysis(Ttoken *token);
@@ -42,4 +45,4 @@ void prec_analysis(Ttoken *token);
 /* Run syntax analysis */
 void execute();
 
-#endif  include guard
+#endif  // include guard

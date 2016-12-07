@@ -1,26 +1,21 @@
 #ifndef IO_H
 #define IO_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <limits.h>
-#include <ctype.h>
+/* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
+#include "headers\ial.h"
+#include "headers\instructions.h"
+#include "headers\lex_anal.h"
+#include "headers\error.h"
+#include "headers\framework.h"
+#include "headers\interpret.h"
+/* ----------------------------------------------------------------------------------- */
 
-/*
-#include "ial.h"
-#include "instructions.h"
-#include "lex_anal.h"
-#include "error.h"
-#include "framework.h"
-#include "interpret.h"
-*/
+#define STR_MAX 100000
 
-//input-output
-
+char *readString();
 bool readInt();
 double readDouble();
-char *readString();
+int length(char* s);
+int compare(char *s1, char *s2);
 
-#endif // !IO
+#endif // include guard
