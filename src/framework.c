@@ -54,7 +54,7 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 				if (item->type[0] == 'V') { // pokud je pormenna
 					debug(" [FRAMEWORK] Add to frame..  id: %s, type: %s\n", item->key, item->type);
 					sf->data[item->index].name = makeString(item->key);// jmeno promenne
-
+					sf->data[item->index].defined = false;
 					switch (item->type[1]) { //datovy typ
 					case 'I':
 						sf->data[item->index].type = t_int;
@@ -64,6 +64,7 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 						break;
 					case 'S':
 						sf->data[item->index].type = t_string;
+						sf->data[item->index].value.v_string = NULL;
 						break;
 					default: break;
 					}

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 typedef struct {
 	char *name;
@@ -16,6 +17,7 @@ typedef struct {
 		double v_double;
 		char *v_string;
 	}value;
+	bool defined;
 }Data;
 
 typedef struct {

@@ -68,26 +68,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 			src2T = getType(src2);
 		}
 
-		//if (ins.addr3 == NULL) {
-		//	dest = ins.addr1;
-		//	src1 = ins.addr1;
-		//	src2 = ins.addr2;
-		//}
-		//else {
-		//	dest = ins.addr3;
-		//	src1 = ins.addr1;
-		//	src2 = ins.addr2;
-		//}
-
-		////typy operandu
-		//int destT, src1T, src2T;
-		//if(dest->type == name)
-		//	destT = findInFrame(dest->value.name, sf)->type; // cil
-		//if (dest != src1) // pokud nebyla dvou operandova instrukce
-		//	src1T = getType(src1); //typ src1
-		//else src1T = destT; // pokud byla dvou src1 je kopie dest
-		//if(src2)
-		//src2T = getType(src2);
+		
 
 //ENDTODO
 
@@ -97,18 +78,24 @@ void interpret(tInstrList iList,TsTree *ts) {
 			//ADD
 			break;
 		case I_MOV:
-			switch (destT) {
-				case t_int:
-					findInFrame(dest->value.name, sf)->value.v_int = byType(src2);
-					break;
-				case t_double:
-					findInFrame(dest->value.name, sf)->value.v_double = byType(src2);
-					break;
-				case t_string:
-				//TODO nema se udelat kopie retezce??
-					findInFrame(dest->value.name, sf)->value.v_string = makeString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_string : src2->value.v_string);
-					break;
-				default: break;
+			findInFrame(dest->value.name, sf)->defined = true; // definuju dest
+			if(src2->type != name || findInFrame(src2->value.name, sf)->defined == true) //byl src definovany? 
+				switch (destT) {
+					case t_int:
+						findInFrame(dest->value.name, sf)->value.v_int = byType(src2);
+						break;
+					case t_double:
+						findInFrame(dest->value.name, sf)->value.v_double = byType(src2);
+						break;
+					case t_string:
+					//TODO nema se udelat kopie retezce??
+						findInFrame(dest->value.name, sf)->value.v_string = makeString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_string : src2->value.v_string);
+						break;
+					default: break;
+				}
+			else {
+				//TODO ADD END frees
+				error(ERR_RUN_INIT);
 			}
 			break;
 		case I_CALL:
@@ -130,6 +117,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 			//prepnu se z5
 			//pokud jsem v NULL tak je konec Main.run
 			if (ins.addr1 && sf->ret) {
+				sf->ret->defined = true;
 				switch (destT) {
 				case t_int:
 					sf->ret->value.v_int = byType(src1);
@@ -149,26 +137,33 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 			break;
 		case I_PUSH:
-			switch (destT){
-				case t_int: 
-				case t_double: 
-					tmpData = *findInFrame(dest->value.name, sf);
-					stackPush(interStack,tmpData);
-				case t_string: 
-					tmpData = *findInFrame(dest->value.name, sf);
-					tmpData.value.v_string = makeString(tmpData.value.v_string); // novou kopii 
-					stackPush(interStack, tmpData); // vlozim na stack
+			if (dest->type != name || findInFrame(dest->value.name, sf)->defined == true)
+				switch (destT){
+					case t_int: 
+					case t_double: 
+						tmpData = *findInFrame(dest->value.name, sf);
+						stackPush(interStack,tmpData);
+					case t_string: 
+						tmpData = *findInFrame(dest->value.name, sf);
+						tmpData.value.v_string = makeString(tmpData.value.v_string); // novou kopii 
+						stackPush(interStack, tmpData); // vlozim na stack
+						break;
+					default:
 					break;
-				default:
-				break;
+				}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
 			}
 			break;
 		case I_POP:
+			findInFrame(dest->value.name, sf)->defined = true;
 			switch (destT){
+				case t_string:
+					if (dest->value.v_string) free(dest->value.v_string); // prepisovani puvodniho retezce
 				case t_int:
 				case t_double:
-				case t_string: // retezec je vytvoren pres push, nemusim tvorit novy 
-			//TODO mozna oprava u str free puvodni str
+				 // retezec je vytvoren pres push, nemusim tvorit novy 
 					stackPop(interStack,&tmpData);
 					findInFrame(dest->value.name, sf)->value = tmpData.value; // NERUCIM za spravnost 
 				default:
@@ -178,12 +173,59 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 //JMPs
 		case I_JMP: break;
-		case I_JMPE: break;
-		case I_JMPNE: break;
-		case I_JMPL: break;
-		case I_JMPLE: break;
-		case I_JMPG: break;
-		case I_JMPGE: break;
+		case I_JMPE: 
+			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
+
+			}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
+			}
+			break;
+		case I_JMPNE: 
+			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
+
+			}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
+			}break;
+		case I_JMPL: 
+			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
+
+			}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
+			}
+			break;
+		case I_JMPLE: 
+			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
+
+			}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
+			}
+			break;
+		case I_JMPG: 
+			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
+
+			}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
+			}
+			break;
+		case I_JMPGE: 
+			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
+
+			}
+			else {
+				//TODO free
+				error(ERR_RUN_INIT);
+			}
+			break;
 
 
 //Matematicke operace
@@ -217,20 +259,25 @@ void interpret(tInstrList iList,TsTree *ts) {
 						tmpStr1 = (src1->type == name) ? findInFrame(src1->value.name, sf)->value.v_string : src1->value.v_string;
 					}
 					else if (src1T == t_int) {
+						debug(" [INTERPRET] Converting int1 to string");
 						tmpStr1 = intToString((src1->type == name) ? findInFrame(src1->value.name, sf)->value.v_int : src1->value.v_int);
 					}
 					else {
-						tmpStr1 = intToString((src1->type == name) ? findInFrame(src1->value.name, sf)->value.v_double : src1->value.v_double);
+						debug(" [INTERPRET] Converting double1 to string");
+						tmpStr1 = doubleToString((src1->type == name) ? findInFrame(src1->value.name, sf)->value.v_double : src1->value.v_double);
 					}
 
-					if (src2 == t_string) {
-						tmpStr1 = (src1->type == name) ? findInFrame(src2->value.name, sf)->value.v_string : src2->value.v_string;
+					if (src2T == t_string) {
+						
+						tmpStr2 = (src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_string : src2->value.v_string;
 					}
 					else if (src2T == t_int) {
-						tmpStr1 = intToString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_int : src2->value.v_int);
+						debug(" [INTERPRET] Converting int2 to string");
+						tmpStr2 = intToString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_int : src2->value.v_int);
 					}
 					else {
-						tmpStr1 = intToString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_double : src2->value.v_double);
+						debug(" [INTERPRET] Converting double2 to string");
+						tmpStr2 = doubleToString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_double : src2->value.v_double);
 					}
 					findInFrame(dest->value.name, sf)->value.v_string = cat(tmpStr1,tmpStr2);
 					//printf("stringOP\n");
@@ -279,11 +326,19 @@ void interpret(tInstrList iList,TsTree *ts) {
 					if (dest != src1) {
 						findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
 					}
+					if (byType(src2) == 0) {
+						//TODO free
+						error(ERR_RUN_DEV);
+					}
 					findInFrame(dest->value.name, sf)->value.v_int /= byType(src2);
 					break;
 				case t_double:
 					if (dest != src1) {
 						findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
+					}
+					if (byType(src2) == 0) {
+						//TODO free
+						error(ERR_RUN_DEV);
 					}
 					findInFrame(dest->value.name, sf)->value.v_double /= byType(src2);
 					break;
@@ -316,27 +371,32 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 //Vstup - vystup
 		case I_READ:
-			switch(destT) {
-				case t_int: 
-					if (!readInt(&tmpInt)) { //TODO skonceni
-						error(ERR_RUN_NUM);
-					}
-					findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
-					break;
-				case t_double: 
-					if (!readDouble(&tmpDouble)) {
-						error(ERR_RUN_NUM);
-					}
-					findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
-					break;
-				case t_string: 
-					findInFrame(dest->value.name, sf)->value.v_string = readString();
-					break;
-				default: break;
+			if (src1->type != name || findInFrame(src1->value.name, sf)->defined == true)
+				switch(destT) {
+					case t_int: 
+						if (!readInt(&tmpInt)) { //TODO skonceni
+							error(ERR_RUN_NUM);
+						}
+						findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
+						break;
+					case t_double: 
+						if (!readDouble(&tmpDouble)) {
+							error(ERR_RUN_NUM);
+						}
+						findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
+						break;
+					case t_string: 
+						findInFrame(dest->value.name, sf)->value.v_string = readString();
+						break;
+					default: break;
+				}
+			else {
+				//TODO add free
+				error(ERR_RUN_INIT);
 			}
 			break;
 		case I_WRITE:
-		
+			findInFrame(dest->value.name, sf)->defined = true;
 			//TODO pretyp pak write
 			switch (dest->type) {
 				case c_int: 

@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\strings.h"
+#include "headers\testWriteOut.h"
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {
@@ -37,14 +38,16 @@ char *varToString(Data *var) {
 }
 
 char *intToString(int x) {
-	char tmp[50];
-	sprintf(tmp, "%d", x);
-	printf("conv to %s\n", tmp);
+	debug(" [INTTOSTRING] converting\n");
+	char *tmp = malloc(50);
+	snprintf(tmp,50, "%d", x);
+	
 	return tmp;
 }
 char *doubleToString(double x) {
-	char tmp[50];
-	sprintf(tmp,"%g",x);
+	debug(" [DOUBLETOSTRING] converting %g\n",x);
+	char *tmp = malloc(50);
+	snprintf(tmp,50,"%g",x);
 	return tmp;
 }
 

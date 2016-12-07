@@ -119,39 +119,6 @@ void tsTest() {
 
 
 void testInterpret() {
-	//vytvorim nekolik instrukci ADD
-	//vytvorim pravidlo ramec
-	//interpretuju
-	//vypisu ramec
-	
-	//StackFrame *sf = malloc(sizeof(StackFrame));
-	/*sf->child = NULL;
-	sf->parent = NULL;
-	sf->size = 3;
-	sf->data = malloc(sizeof(Data) * 3);
-	sf->data[0].name = "A";
-	sf->data[0].type = t_int;
-	sf->data[0].value.v_int = 5;
-
-	testWriteOutFrame(sf);
-
-	tInstrList list;
-	instrListInit(&list);
-
-	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "C"}, &(Operand) { name, .value.name = "C" }, NULL });
-
-	*/
-/*
-Class Main{
-	static void Main.run(){
-		int a=5;
-		int b=1;
-		a=a+b;
-		ifj16.print("Hello World");
-		ifj16.print(a);
-	}
-}
-*/
 
 //TS
 	printf("Vyvarim TS Main\n");
@@ -162,17 +129,10 @@ Class Main{
 	printf("Vyvarim TS Main.run\n");
 	HashTable local = createHashTable(HASH_TABLE_SIZE);
 	addToHashTable(local, "a", "VI", 0, 0); // pormenna a
-	addToHashTable(local, "b", "VI", 0, 1);
+	addToHashTable(local, "b", "VD", 0, 1);
+	addToHashTable(local, "c", "VS", 0, 2);
 	hashWriteOut(local);
 
-/*Instr
-	mov a 5
-	mov b 1
-	add a b
-	write "Hello World"
-	//write a
-	ret
-*/
 
 	printf("Vytvarim instrukcni pasku\n");
 	tInstrList list;
@@ -180,12 +140,30 @@ Class Main{
 
 	printf("now adding instr to list\n");
 	
-	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_int, .value.v_int = 1 }, NULL });
-	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.v_int = 5 }, NULL });
-	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { name, .value.name = "b" }, NULL });
-	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!\n"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_double, .value.v_double = 1.8 }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand){name, .value.name = "a"}, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "c"}, &(Operand) { c_string, .value.v_string = "slovo" }, NULL });
+
+	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { name, .value.name = "b" }, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!\n"}, NULL, NULL });
+
+
+	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "b"}, &(Operand){name, .value.name = "a"}, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "c"}, &(Operand){c_string, .value.v_string = "######"}, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "c"}, &(Operand){name, .value.name = "b"}, NULL });
+
+	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	/*
 	instrListAddInstr(&list, (tInstr) { I_READ, &(Operand){name, .value.name = "a"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_READ, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_READ, &(Operand){name, .value.name = "c"}, NULL, NULL });
+
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "c"}, NULL, NULL });*/
+
 	printf("test writeout isntructions list\n");
 	testWriteOutInstr(list);
 
@@ -196,8 +174,9 @@ Class Main{
 	printf("Vyvarim TsTree a vlozim ts\n");
 	TsTree root;
 	tsTreeInit(&root);
+
 	tsAdd(&root, "Main", 0, NULL, glob);
-	tsAdd(&root, "Main.run", 2, NULL, local);
+	tsAdd(&root, "Main.run", 3, NULL, local);
 	tsWriteOutTree(root);
 
 
@@ -223,15 +202,19 @@ void testWriteOutFrame(StackFrame *sf) {
 	debug(" [FRAMEWORK] +                          ID +       TYPE +                                VALUE +\n");
 
 	for (int i = 0; i < sf->size; i++) {
+		if (sf->data[i].defined != true) {
+			debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string", "UNDEFINED");
+			continue;
+		}
 		switch (sf->data[i].type) {
 		case t_int:
 			debug(" [FRAMEWORK] +%28s +%11s +%37d +\n", sf->data[i].name, "int", sf->data[i].value.v_int);
 			break;
 		case t_double:
-			debug(" [FRAMEWORK] +%28s +%11s +%37lf +\n", sf->data[i].name, "double", sf->data[i].value.v_double);
+			debug(" [FRAMEWORK] +%28s +%11s +%37g +\n", sf->data[i].name, "double",sf->data[i].value.v_double);
 			break;
 		case t_string:
-			debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string", sf->data[i].value.v_string);
+			debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string",sf->data[i].value.v_string);
 			break;
 		default: debug(" [FRAMEWORK] + ERROR TYPE\n");
 			break;
