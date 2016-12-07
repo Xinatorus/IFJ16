@@ -16,34 +16,34 @@ void error(int chyba)
 		case ERR_OK:
 			break;
 		case ERR_LEX:
-			fprintf(stderr," - Chyba v programe v ramci lexikalnej analyzy (chybna struktura aktualneho lexemu).\n");
+			fprintf(stderr,"%d - Chyba v programe v ramci lexikalnej analyzy (chybna struktura aktualneho lexemu).\n",chyba);
 			break;
 		case ERR_SYNT:
-			fprintf(stderr," - Chyba v programe v ramci syntaktickej analyzy (chybna syntax struktury programu).\n");
+			fprintf(stderr,"%d - Chyba v programe v ramci syntaktickej analyzy (chybna syntax struktury programu).\n", chyba);
 			break;
 		case ERR_SEM_DEF:
-			fprintf(stderr," - Semanticka chyba - nedefinovana funkcia/premenna, pokus o redefinovanie funkcie/premennej. \n");
+			fprintf(stderr,"%d - Semanticka chyba - nedefinovana funkcia/premenna, pokus o redefinovanie funkcie/premennej. \n", chyba);
 			break;
 		case ERR_SEM_TYPE:
-			fprintf(stderr," - Semanticka chyba typovej kompatibility v aritmeticktych, retazcovych a relacnych vyrazoch, pripadne nespravny pocet ci typ parametrov pri volani funkcie.\n");
+			fprintf(stderr,"%d - Semanticka chyba typovej kompatibility v aritmeticktych, retazcovych a relacnych vyrazoch, pripadne nespravny pocet ci typ parametrov pri volani funkcie.\n", chyba);
 			break;
 		case ERR_SEM_OTHER:
-			fprintf(stderr," - Ostatne semanticke chyby.\n");
+			fprintf(stderr,"%d - Ostatne semanticke chyby.\n", chyba);
 			break;
 		case ERR_RUN_NUM:
-			fprintf(stderr," - Behova chyba pri nacitani ciselnej hodnoty zo vstupu.\n");
+			fprintf(stderr,"%d - Behova chyba pri nacitani ciselnej hodnoty zo vstupu.\n", chyba);
 			break;
 		case ERR_RUN_INIT:
-			fprintf(stderr," - Behova chyba pri praci s neinicializovanou premennou.\n");
+			fprintf(stderr,"%d - Behova chyba pri praci s neinicializovanou premennou.\n", chyba);
 			break;
 		case ERR_RUN_DEV:
-			fprintf(stderr," - Behova chyba delenie nulou.\n");
+			fprintf(stderr,"%d - Behova chyba delenie nulou.\n", chyba);
 			break;
 		case ERR_RUN_OTHER:
-			fprintf(stderr," - Ostatne behove chyby.\n");
+			fprintf(stderr,"%d - Ostatne behove chyby.\n", chyba);
 			break;
 		case ERR_INTER:
-			fprintf(stderr," - Interna chyba interpretu tj. neovplyvnitelna vstupnym programom (napr. chyba alokacie pamati, chyba pri otvarani suboru s riadiacim programom, nespravne parametre prikazoveho riadku).\n");
+			fprintf(stderr,"%d - Interna chyba interpretu tj. neovplyvnitelna vstupnym programom (napr. chyba alokacie pamati, chyba pri otvarani suboru s riadiacim programom, nespravne parametre prikazoveho riadku).\n", chyba);
 			break;
 	}
 	if (chyba != ERR_OK)

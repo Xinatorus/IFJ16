@@ -6,26 +6,32 @@
 #include <stdlib.h>
 
 #define FOREACH_INSTR(INS) \
-		INS(I_MOV) \
-		INS(I_CALL) \
-		INS(I_RET) \
-		INS(I_PUSH) \
-		INS(I_POP) \
-		INS(I_JMP) \
-		INS(I_JMPE) \
-		INS(I_JMPNE) \
-		INS(I_JMPL) \
-		INS(I_JMPLE) \
-		INS(I_JMPG) \
-		INS(I_JMPGE) \
-		INS(I_ADD) \
-		INS(I_SUB) \
-		INS(I_MUL) \
-		INS(I_DIV) \
-		INS(I_INC) \
-		INS(I_DEC) \
-		INS(I_READ) \
-		INS(I_WRITE) \
+	INS(I_MOV) \
+	INS(I_CALL) \
+	INS(I_RET) \
+	INS(I_PUSH) \
+	INS(I_POP) \
+	INS(I_JMP) \
+	INS(I_JMPE) \
+	INS(I_JMPNE) \
+	INS(I_JMPL) \
+	INS(I_JMPLE) \
+	INS(I_JMPG) \
+	INS(I_JMPGE) \
+	INS(I_ADD) \
+	INS(I_SUB) \
+	INS(I_MUL) \
+	INS(I_DIV) \
+	INS(I_INC) \
+	INS(I_DEC) \
+	INS(I_READ) \
+	INS(I_WRITE) \
+	INS(I_LEN)\
+	INS(I_SUBS)\
+	INS(I_CMP)\
+	INS(I_FIND)\
+	INS(I_SORT)\
+
 
 #define GENERATE_ENUM_INSTR(ENUM) ENUM,
 #define GENERATE_STRING_INSTR(STRING) #STRING,

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
+#define PATRIK_TO_NECHCE 1
 #define LEX_TEST 0        Lexical analysis test
 #define VALGRIND_TEST 0   Valgrind test
 #define OUTPUT_TIME 1     Output execution time 
@@ -14,6 +14,7 @@
 
 int main(int argc, char* argv[]) {
 
+#if PATRIK_TO_NECHCE != 1
 #if OUTPUT_TIME == 1
         clock_t tStart = clock();
     #endif
@@ -54,6 +55,15 @@ int main(int argc, char* argv[]) {
         printf("OUTPUT_TIME is active, turn off all debugs for accurate results !\n");
         printf("  -> Time taken: %.3fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
     #endif
+
+#else
+	// patrikuv pisecek
+
+	testInterpret();
+	//getchar();
+
+#endif
+
 
     return 0;
 
