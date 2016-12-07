@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\framework.h"
+#include "headers\testWriteOut.h"
 
 //vraci odkaz na promenou
 Data *findInFrame(char *name, StackFrame *sf) {
@@ -17,12 +18,14 @@ Data *findInFrame(char *name, StackFrame *sf) {
 
 //vklada novy ramec na VRCHOL,
 StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tInstrListItem *lastActive) {
+	debug(" [FRAMEWORK] Creating new frame: %s\n",name);
 
-	TsTree ts = tsFind(root, name);
+	TsTree tsTree = tsFind(root, name);
 
-	int size = ts->varCount; // pocet promennych, dohledat v TS
+	int size = tsTree->varCount; // pocet promennych, dohledat v TS
 	StackFrame *sf = malloc(sizeof(StackFrame));
 	if (sf == NULL) return NULL;
+
 	sf->data = malloc(sizeof(Data)*size);
 	if (sf->data == NULL) {
 		free(sf);
@@ -34,29 +37,38 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 		sf->child = parent->child; // melo by byt VZDY null! 
 		parent->child = sf;
 	}
+	else sf->child = NULL;
 	sf->parent = parent;
 	sf->lastActive = lastActive;
 	sf->ret = ret;
+	sf->size = size;
 	//TODO vlozeni jmen podle TS
+	
+	debug(" [FRAMEWORK] Add vars by hash table\n");
+	hashWriteOut(tsTree->ts);
 	
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		//sloupec
-		for (HashTable item = ts->ts[i].next; item != NULL; item = item->next) {
-			if (item->type[0] == 'V') { // pokud je pormenna
-				sf->data[item->index].name = makeString(item->key);// jmeno promenne
+		if (tsTree->ts[i].key != NULL) {
+			for (struct hItem *item = &(tsTree->ts[i]); item != NULL; item = item->next) {
+				if (item->type[0] == 'V') { // pokud je pormenna
+					debug(" [FRAMEWORK] Add to frame..  id: %s, type: %s\n", item->key, item->type);
+					sf->data[item->index].name = makeString(item->key);// jmeno promenne
 
-				switch (item->type[1]) { //datovy typ
-				case 'I': 
-					sf->data[item->index].type = t_int;
-					break;
-				case 'D': 
-					sf->data[item->index].type = t_double;
-					break;
-				case 'S': 
-					sf->data[item->index].type = t_string;
-					break;
-				default: break;
+					switch (item->type[1]) { //datovy typ
+					case 'I':
+						sf->data[item->index].type = t_int;
+						break;
+					case 'D':
+						sf->data[item->index].type = t_double;
+						break;
+					case 'S':
+						sf->data[item->index].type = t_string;
+						break;
+					default: break;
+					}
 				}
+				
 			}
 		}
 	}

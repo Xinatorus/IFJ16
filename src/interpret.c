@@ -1,7 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\interpret.h"
+#include "headers\testWriteOut.h"
 
 void interpret(tInstrList iList,TsTree *ts) {
+	debug("[INTERPRET] Staring interpret...\n");
 	//stack pro vnitrni mezi vypocty a parametry fci
 	Stack interStack = stackInit(100);
 
@@ -9,6 +11,10 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 	// tabulka ramcu
 	StackFrame *sf = newFrame(NULL,*ts,"Main.run",NULL,NULL);
+
+	
+	//printf("### END TEST SF wOut\n");
+
 	//StackFrame *sf = ts; // POUZE PRO TEST
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
@@ -17,49 +23,88 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 	instrListSetActiveFirst(&iList);
 
+
+	debug("[INTERPRET] Content of FRAME before first execute\n");
+	testWriteOutFrame(sf);
+
 	// prochazim seznam instrukci az do konce
 	while (!instrListGetActiveInstr(&iList, &ins)) {	
+		
+		debug("[INTERPRET] Instruction execute: \n ");
+		testWriteOutI(ins);
 
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
+//TODO pokud jsou dve NULL 
+
+
+		int destT, src1T, src2T;
 		// Priradim zdroje a cile
-		if (ins.addr3 == NULL) {
+		if (ins.addr2 == NULL && ins.addr3 == NULL) { // dest NULL NULL
 			dest = ins.addr1;
-			src1 = ins.addr1;
-			src2 = ins.addr2;
+			src1 = dest;
+
+			destT = getType(dest);
+			src1T = destT;
 		}
-		else {
+		else if (ins.addr3 == NULL) { // dest/src1 src2 NULL
+			dest = ins.addr1;
+			src1 = dest;
+			src2 = ins.addr2;
+
+			destT = getType(dest);
+			src1T = destT;
+			src2T = getType(src2);
+		}
+		else { // src1 src2 dest
 			dest = ins.addr3;
 			src1 = ins.addr1;
 			src2 = ins.addr2;
+
+			destT = getType(dest);
+			src1T = getType(src1);
+			src2T = getType(src2);
 		}
 
-		//typy operandu
-		int destT, src1T, src2T;
+		//if (ins.addr3 == NULL) {
+		//	dest = ins.addr1;
+		//	src1 = ins.addr1;
+		//	src2 = ins.addr2;
+		//}
+		//else {
+		//	dest = ins.addr3;
+		//	src1 = ins.addr1;
+		//	src2 = ins.addr2;
+		//}
 
-		destT = findInFrame(dest->value.name, sf)->type; // cil
-		if (dest != src1) // pokud nebyla dvou operandova instrukce
-			src1T = getType(src1); //typ src1
-		else src1T = destT; // pokud byla dvou src1 je kopie dest
-		src2T = getType(src2);
+		////typy operandu
+		//int destT, src1T, src2T;
+		//if(dest->type == name)
+		//	destT = findInFrame(dest->value.name, sf)->type; // cil
+		//if (dest != src1) // pokud nebyla dvou operandova instrukce
+		//	src1T = getType(src1); //typ src1
+		//else src1T = destT; // pokud byla dvou src1 je kopie dest
+		//if(src2)
+		//src2T = getType(src2);
 
+//ENDTODO
 
+		//printf("switch");
 		switch (ins.instr) {
 //Zakladni operace
-		case I_JMP:
 			//ADD
 			break;
 		case I_MOV:
 			switch (destT) {
 				case t_int:
-					findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+					findInFrame(dest->value.name, sf)->value.v_int = byType(src2);
 					break;
 				case t_double:
-					findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
+					findInFrame(dest->value.name, sf)->value.v_double = byType(src2);
 					break;
 				case t_string:
 				//TODO nema se udelat kopie retezce??
-					findInFrame(dest->value.name, sf)->value.v_string = makeString((dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+					findInFrame(dest->value.name, sf)->value.v_string = makeString((src2->type == name) ? findInFrame(src2->value.name, sf)->value.v_string : src2->value.v_string);
 					break;
 				default: break;
 			}
@@ -82,7 +127,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 			// odstnim ramec
 			//prepnu se z5
 			//pokud jsem v NULL tak je konec Main.run
-			if (ins.addr1) {
+			if (ins.addr1 && sf->ret) {
 				switch (destT) {
 				case t_int:
 					sf->ret->value.v_int = byType(src1);
@@ -129,25 +174,14 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			break;
 
-//Logicke operace predelat asi na JMPx
-		case I_EQ:
-			//ADD
-			break;
-		case I_NEQ:
-			//ADD
-			break;
-		case I_LES:
-			//ADD
-			break;
-		case I_LESE:
-			//ADD
-			break;
-		case I_GRE:
-			//ADD
-			break;
-		case I_GREE:
-			//ADD
-			break;
+//JMPs
+		case I_JMP: break;
+		case I_JMPE: break;
+		case I_JMPNE: break;
+		case I_JMPL: break;
+		case I_JMPLE: break;
+		case I_JMPG: break;
+		case I_JMPGE: break;
 
 
 //Matematicke operace
@@ -294,19 +328,39 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			break;
 		case I_WRITE:
-			printf("%s", (dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
+
+			//TODO pretyp pak write
+			switch (destT) {
+				case c_int: 
+					printf("%d", dest->value.v_int);
+					break;
+				case c_double: 
+					printf("%g", dest->value.v_double);
+					break;
+				case c_string: 
+					printf("%s", dest->value.v_string);
+					break;
+				case name: 
+					printf("%s", varToString(findInFrame(dest->value.name,sf)));
+					break;
+			}
+
+
 			break;
 		default: break;
 		}
 
+		debug("[INTERPRET] Content of FRAME after execute\n");
+		testWriteOutFrame(sf);
+
 		instrListSetActiveNext(&iList); // posunu aktivitu na další 
 	}//while ins
-
+	debug("[INTERPRET] Ending inrepret...\n");
 }
 
-//extrahuje parametry funkce
+//TODO extrahuje parametry funkce
 void extractParams(StackFrame *sf, TsTree ts, Stack stack) {
-	int cpar = 0; // pocet parametru
+	int cpar = 0; // TODO pocet parametru
 	Data tmp;
 
 	for (int i = cpar; i >= 0; i--) {

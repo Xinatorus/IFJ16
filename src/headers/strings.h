@@ -11,10 +11,12 @@
 
 char *makeString(char *str);
 char *cat(char *s1, char *s2);
-char *varToString(Data var);
+char *varToString(Data *var);
 char *intToString(int x);
 char *doubleToString(double x);
 char *getSubString(char *str, int index, int size);
+int length(char* s);
+int compare(char *s1, char *s2);
 
 
 #endif // include guard

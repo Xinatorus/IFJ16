@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\instructions.h"
+#include "headers\testWriteOut.h"
 
 void instrListInit(tInstrList *list) {
 	list->first = NULL;
@@ -12,6 +13,7 @@ void instrListFree(tInstrList *list) {
 	while (list->first != NULL) {
 		tmp = list->first;
 		list->first = list->first->next;
+		//TODO + operandy
 		free(tmp);
 	}
 }
@@ -19,6 +21,9 @@ void instrListFree(tInstrList *list) {
 int instrListAddInstr(tInstrList *list, tInstr instr) {
 	tInstrListItem *instrItem = malloc(sizeof(tInstrListItem));
 	if (instrItem == NULL) return 1;
+
+	debug("[INSTR] Add:");
+	testWriteOutI(instr);
 
 	instrItem->instr = instr;
 	instrItem->next = NULL;

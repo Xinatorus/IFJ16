@@ -11,9 +11,10 @@
 #define VALGRIND_TEST 0  // Valgrind test
 #define OUTPUT_TIME 1    // Output execution time 
 
+
 int main(int argc, char* argv[]) {
 
-    #if OUTPUT_TIME == 1
+#if OUTPUT_TIME == 1
         clock_t tStart = clock();
     #endif
 
@@ -56,4 +57,11 @@ int main(int argc, char* argv[]) {
 
     return 0;
 
+
+	
+	
+	//valgrind();
+	printf("\n\nhit enter to end\n");
+	getchar();
+	return 0;
 }

@@ -17,6 +17,11 @@
 #include "interpret.h"
 
 
+
+#define debug(...) do{ fprintf( stdout, __VA_ARGS__ ); } while( false )
+//#define debug(...) do{ } while ( false )
+
+
 //ial
 void hashWriteOut(HashTable hashTable);
 void hashTest();
@@ -33,6 +38,7 @@ void testInsterpret();
 void testWriteOutFrame(StackFrame *sf);
 
 void testWriteOutInstr(tInstrList list);
+void testWriteOutI(tInstr ins);
 
 #endif // ! TESTWRITEOUT_H
 

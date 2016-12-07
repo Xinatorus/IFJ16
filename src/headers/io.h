@@ -13,9 +13,8 @@
 #define STR_MAX 100000
 
 char *readString();
-bool readInt();
-double readDouble();
-int length(char* s);
-int compare(char *s1, char *s2);
+bool readInt(int *out);
+double readDouble(double *out);
+
 
 #endif // include guard
