@@ -9,6 +9,7 @@
 #define LEX_TEST 0       //Lexical analysis test
 #define VALGRIND_TEST 0  //Valgrind test
 
+
 int main(int argc, char* argv[]) {
 	
 
@@ -40,6 +41,8 @@ int main(int argc, char* argv[]) {
 	//tsTest();
 	testInsterpret();
 
+
+	
 	
 	//valgrind();
 	printf("\n\nhit enter to end\n");

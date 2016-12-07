@@ -3,6 +3,7 @@
 #include "headers\testWriteOut.h"
 
 void interpret(tInstrList iList,TsTree *ts) {
+	debug("[INTERPRET] Staring interpret...\n");
 	//stack pro vnitrni mezi vypocty a parametry fci
 	Stack interStack = stackInit(100);
 
@@ -10,6 +11,10 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 	// tabulka ramcu
 	StackFrame *sf = newFrame(NULL,*ts,"Main.run",NULL,NULL);
+
+	
+	//printf("### END TEST SF wOut\n");
+
 	//StackFrame *sf = ts; // POUZE PRO TEST
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
@@ -18,11 +23,16 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 	instrListSetActiveFirst(&iList);
 
+
+	debug("[INTERPRET] Content of FRAME before first execute\n");
+	testWriteOutFrame(sf);
+
 	// prochazim seznam instrukci az do konce
 	while (!instrListGetActiveInstr(&iList, &ins)) {	
-		printf("### TEST SF wOut\n");
-		testWriteOutFrame(sf);
-		printf("### END TEST SF wOut\n");
+		
+		debug("[INTERPRET] Instruction execute: \n ");
+		testWriteOutI(ins);
+
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
 //TODO pokud jsou dve NULL 
@@ -82,7 +92,6 @@ void interpret(tInstrList iList,TsTree *ts) {
 		//printf("switch");
 		switch (ins.instr) {
 //Zakladni operace
-		case I_JMP:
 			//ADD
 			break;
 		case I_MOV:
@@ -118,7 +127,7 @@ void interpret(tInstrList iList,TsTree *ts) {
 			// odstnim ramec
 			//prepnu se z5
 			//pokud jsem v NULL tak je konec Main.run
-			if (ins.addr1) {
+			if (ins.addr1 && sf->ret) {
 				switch (destT) {
 				case t_int:
 					sf->ret->value.v_int = byType(src1);
@@ -165,25 +174,14 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			break;
 
-//Logicke operace predelat asi na JMPx
-		case I_EQ:
-			//ADD
-			break;
-		case I_NEQ:
-			//ADD
-			break;
-		case I_LES:
-			//ADD
-			break;
-		case I_LESE:
-			//ADD
-			break;
-		case I_GRE:
-			//ADD
-			break;
-		case I_GREE:
-			//ADD
-			break;
+//JMPs
+		case I_JMP: break;
+		case I_JMPE: break;
+		case I_JMPNE: break;
+		case I_JMPL: break;
+		case I_JMPLE: break;
+		case I_JMPG: break;
+		case I_JMPGE: break;
 
 
 //Matematicke operace
@@ -330,16 +328,34 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			break;
 		case I_WRITE:
-			//TODO podle typu
-			printf("%s", (dest->type == name) ? findInFrame(dest->value.name, sf)->value.v_string : dest->value.v_string);
-			//printf("%s", dest->value.v_string);
+
+			//TODO pretyp pak write
+			switch (destT) {
+				case c_int: 
+					printf("%d", dest->value.v_int);
+					break;
+				case c_double: 
+					printf("%g", dest->value.v_double);
+					break;
+				case c_string: 
+					printf("%s", dest->value.v_string);
+					break;
+				case name: 
+					printf("%s", varToString(findInFrame(dest->value.name,sf)));
+					break;
+			}
+
+
 			break;
 		default: break;
 		}
 
+		debug("[INTERPRET] Content of FRAME after execute\n");
+		testWriteOutFrame(sf);
+
 		instrListSetActiveNext(&iList); // posunu aktivitu na další 
 	}//while ins
-
+	debug("[INTERPRET] Ending inrepret...\n");
 }
 
 //TODO extrahuje parametry funkce

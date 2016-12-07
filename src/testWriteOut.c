@@ -7,20 +7,20 @@
 
 
 void hashWriteOut(HashTable hashTable) {
-	printf("+-------------TS-------------\n");
+	debug("  [HASHTABLE] Hash table:\n");
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		//sloupec
 		if (hashTable[i].key != NULL) {
-			printf("[%3d]: %10s %5s", i, hashTable[i].key, hashTable[i].type);
+			debug("  [HASHTABLE] [%3d]: %10s %5s", i, hashTable[i].key, hashTable[i].type);
 			if (hashTable[i].next != NULL) {
 				for (HashTable item = hashTable[i].next; item != NULL; item = item->next) {
-					printf(", %10s %5s", item->key,item->type);
+					debug(", %10s %5s", item->key,item->type);
 				}
 			}
-			printf("\n");
+			debug("\n");
 		}
 	}
-	printf("+------------END-------------\n");
+	debug("  [HASHTABLE] End of hash table.\n");
 }
 
 void hashTest() {/*
@@ -62,18 +62,18 @@ void hashTest() {/*
 
 //testovaci vypis struktury TS
 void tsWriteOutTree(TsTree root) {
+	debug(" [TSTREE] TsTree:\n");
 	if (root == NULL) {
-		printf("Tree is empty\n");
+		debug(" [TSTREE] TsTreeis empty.\n");
 		return;
 	}
 
-	printf("---------TREE---------\n");
 	for (TsTree x = root; x != NULL; x = x->next) {
-		printf("%c %s\n",195, x->name);
+		debug(" [TSTREE] %c %s\n",195, x->name);
 		for (TsTree t = x->child; t != NULL; t = t->next)
-			printf("%c %c%c %s\n",179,192,196, t->name);
+			debug(" [TSTREE] %c %c%c %s\n",179,192,196, t->name);
 	}
-	printf("----------------------\n");
+	debug(" [TSTREE] End of TsTree.\n");
 }
 
 void tsWriteOutTreeTS(TsTree root) {
@@ -177,7 +177,6 @@ Class Main{
 	printf("Vytvarim instrukcni pasku\n");
 	tInstrList list;
 	instrListInit(&list);
-	printf("test wout\n");
 
 	tInstr ins;
 	Operand *op = malloc(sizeof(Operand));
@@ -193,14 +192,20 @@ Class Main{
 	ins.addr3 = NULL;
 	ins.instr = I_MOV;
 
+	//printf("Created inst: %d\n",ins.addr2->value.v_int);
+	//testWriteOutI(ins);
 
 	printf("now adding instr to list\n");
 	
 	instrListAddInstr(&list,ins);
-	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.name = "b" }, NULL });
-	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!"}, NULL, NULL });
-	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
-	//testWriteOutInstr(list);
+	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.v_int = 1 }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { name, .value.name = "b" }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!\n"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
+	printf("test writeout isntructions list\n");
+	testWriteOutInstr(list);
+
+
 
 
 //Tree
@@ -208,11 +213,11 @@ Class Main{
 	TsTree root;
 	tsTreeInit(&root);
 	tsAdd(&root, "Main", 0, NULL, glob);
-	tsAdd(&root, "Main.run", 0, NULL, local);
+	tsAdd(&root, "Main.run", 2, NULL, local);
 	tsWriteOutTree(root);
 
 
-	printf("Running interpret\n");
+	//printf("Running interpret\n");
 	interpret(list,&root);
 
 
@@ -230,95 +235,100 @@ Class Main{
 
 //testovaci vypis obsahu struktury
 void testWriteOutFrame(StackFrame *sf) {
-	printf("+FRAME: %s (%d %d) [%d]\n", sf->identifier, sf->parent, sf->parent);
-	printf("+------------------------------------------------------------------------------+\n");
-	printf("+                          ID +       TYPE +                                VALUE +\n");
+	debug(" [FRAMEWORK] + FRAME: %s (%s %d) [%d]\n", sf->identifier, (sf->parent ? sf->parent->identifier : "NULL"), sf->child,sf->size);
+	debug(" [FRAMEWORK] +                          ID +       TYPE +                                VALUE +\n");
 
 	for (int i = 0; i < sf->size; i++) {
 		switch (sf->data[i].type) {
 		case t_int:
-			printf("+%28s +%11s +%37d +\n", sf->data[i].name, "int", sf->data[i].value.v_int);
+			debug(" [FRAMEWORK] +%28s +%11s +%37d +\n", sf->data[i].name, "int", sf->data[i].value.v_int);
 			break;
 		case t_double:
-			printf("+%28s +%11s +%37lf +\n", sf->data[i].name, "double", sf->data[i].value.v_double);
+			debug(" [FRAMEWORK] +%28s +%11s +%37lf +\n", sf->data[i].name, "double", sf->data[i].value.v_double);
 			break;
 		case t_string:
-			printf("+%28s +%11s +%37s +\n", sf->data[i].name, "string", sf->data[i].value.v_string);
+			debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string", sf->data[i].value.v_string);
 			break;
-		default: printf("ERROR TYPE");
+		default: debug(" [FRAMEWORK] + ERROR TYPE\n");
 			break;
 		}
 	}
 
-	printf("\n");
+	//debug("\n");
 
 }
 
 void testWriteOutInstr(tInstrList list) {
-	static const char *INSTR_STRING[] = {
-		FOREACH_INSTR(GENERATE_STRING_INSTR)
-	};
-
-	printf("WriteOut Instruction list...\n");
+	
+		 debug(" [INSTR] Instruction list:\n");
 	for (tInstrListItem *tmp = list.first; tmp != NULL; tmp = tmp->next) {
-		printf("%s ",INSTR_STRING[tmp->instr.instr]);
-		if (tmp->instr.addr1 != NULL) {
-			switch(tmp->instr.addr1->type) {
-				case c_int: 
-					printf("%d ", tmp->instr.addr1->value.v_int);
-					break;
-				case c_double: 
-					printf("%g ", tmp->instr.addr1->value.v_double);
-					break;
-				case c_string: 
-					printf("%s ", tmp->instr.addr1->value.v_string);
-					break;
-				case name: 
-					printf("%s ",tmp->instr.addr1->value.name);
-					break;
-				default: break;
-			}
-		}
-		else printf("NULL ");
-		if (tmp->instr.addr2 != NULL) {
-			//printf("not null");
-			switch (tmp->instr.addr1->type) {
-			case c_int:
-				printf("%d ", tmp->instr.addr2->value.v_int);
-				break;
-			case c_double:
-				printf("%g ", tmp->instr.addr2->value.v_double);
-				break;
-			case c_string:
-				printf("%s ", tmp->instr.addr2->value.v_string);
-				break;
-			case name:
-				printf("%s ", tmp->instr.addr2->value.name);
-				break;
-			default: break;
-			}
-		}
-		else printf("NULL ");
-		
-		if (tmp->instr.addr3 != NULL) {
-			switch (tmp->instr.addr3->type) {
-			case c_int:
-				printf("%d ", tmp->instr.addr3->value.v_int);
-				break;
-			case c_double:
-				printf("%g ", tmp->instr.addr3->value.v_double);
-				break;
-			case c_string:
-				printf("%s ", tmp->instr.addr3->value.v_string);
-				break;
-			case name:
-				printf("%s ", tmp->instr.addr3->value.name);
-				break;
-			default: break;
-			}
-		}
-		else printf("NULL ");
-		printf("\n");
+		printf("    |");
+		testWriteOutI(tmp->instr);
 	}
-	printf("End of Instr\n");
+	debug(" [INSTR] End of Instruction list\n");
+}
+
+void testWriteOutI(tInstr ins) {
+	debug(" [INSTR]  %s ", INSTR_STRING[ins.instr]);
+
+	if (ins.addr1 != NULL) {
+		//debug("type %d: ", ins.addr1->type);
+		switch (ins.addr1->type) {
+		case c_int:
+			debug("%d ", ins.addr1->value.v_int);
+			break;
+		case c_double:
+			debug("%g ", ins.addr1->value.v_double);
+			break;
+		case c_string:
+			debug("\"%s\" ", ins.addr1->value.v_string);
+			break;
+		case name:
+			debug("%s ", ins.addr1->value.name);
+			break;
+		default: break;
+		}
+	}
+	else debug("NULL ");
+
+	if (ins.addr2 != NULL) {
+		//printf("not null"); ins.addr2->value.v_int
+		//debug("type %d:", ins.addr2->type);
+		switch (ins.addr2->type) {
+		case c_int:
+			debug("%d ", ins.addr2->value.v_int);
+			break;
+		case c_double:
+			debug("%g ", ins.addr2->value.v_double);
+			break;
+		case c_string:
+			debug("\"%s\" ", ins.addr2->value.v_string);
+			break;
+		case name:
+			debug("%s ", ins.addr2->value.name);
+			break;
+		default: break;
+		}
+	}
+	else debug("NULL ");
+
+	if (ins.addr3 != NULL) {
+		switch (ins.addr3->type) {
+		case c_int:
+			debug("%d ", ins.addr3->value.v_int);
+			break;
+		case c_double:
+			debug("%g ", ins.addr3->value.v_double);
+			break;
+		case c_string:
+			debug("\"%s\" ", ins.addr3->value.v_string);
+			break;
+		case name:
+			debug("%s ", ins.addr3->value.name);
+			break;
+		default: break;
+		}
+	}
+	else debug("NULL ");
+	debug("\n");
 }

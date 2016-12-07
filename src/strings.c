@@ -19,21 +19,21 @@ char *cat(char *s1, char *s2) {
 }
 
 //Vrati string reprezentaci non-string promenne
-char *varToString(Data var) {
+char *varToString(Data *var) {
 	char *s;
-	switch (var.type) {
+	switch (var->type) {
 		case t_int: 
 			
 			break;
 		case t_double: 
 			
 			break;
-		default: 
+		default: //?
 			
 			break;
 	}
 
-	return s;
+	return "var to string not implemented yet...";
 }
 
 char *intToString(int x) {

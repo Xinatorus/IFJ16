@@ -6,18 +6,18 @@
 #include <stdlib.h>
 
 #define FOREACH_INSTR(INS) \
-        INS(I_JMP) \
 		INS(I_MOV) \
 		INS(I_CALL) \
 		INS(I_RET) \
 		INS(I_PUSH) \
 		INS(I_POP) \
-		INS(I_EQ) \
-		INS(I_NEQ) \
-		INS(I_LES) \
-		INS(I_LESE) \
-		INS(I_GRE) \
-		INS(I_GREE) \
+		INS(I_JMP) \
+		INS(I_JMPE) \
+		INS(I_JMPNE) \
+		INS(I_JMPL) \
+		INS(I_JMPLE) \
+		INS(I_JMPG) \
+		INS(I_JMPGE) \
 		INS(I_ADD) \
 		INS(I_SUB) \
 		INS(I_MUL) \
@@ -29,6 +29,10 @@
 
 #define GENERATE_ENUM_INSTR(ENUM) ENUM,
 #define GENERATE_STRING_INSTR(STRING) #STRING,
+
+static const char *INSTR_STRING[] = {
+	FOREACH_INSTR(GENERATE_STRING_INSTR)
+};
 
 
 // Instrunkci sada
