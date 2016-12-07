@@ -118,7 +118,7 @@ void tsTest() {
 }
 
 
-void testInsterpret() {
+void testInterpret() {
 	//vytvorim nekolik instrukci ADD
 	//vytvorim pravidlo ramec
 	//interpretuju
@@ -178,29 +178,13 @@ Class Main{
 	tInstrList list;
 	instrListInit(&list);
 
-	tInstr ins;
-	Operand *op = malloc(sizeof(Operand));
-	op->type = c_int;
-	op->value.v_int = 1;
-
-	Operand *opp = malloc(sizeof(Operand));
-	opp->type = name;
-	opp->value.name = "b";
-
-	ins.addr1 = opp;
-	ins.addr2 = op;
-	ins.addr3 = NULL;
-	ins.instr = I_MOV;
-
-	//printf("Created inst: %d\n",ins.addr2->value.v_int);
-	//testWriteOutI(ins);
-
 	printf("now adding instr to list\n");
 	
-	instrListAddInstr(&list,ins);
-	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.v_int = 1 }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_int, .value.v_int = 1 }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "a"}, &(Operand) { c_int, .value.v_int = 5 }, NULL });
 	instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { name, .value.name = "b" }, NULL });
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!\n"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_READ, &(Operand){name, .value.name = "a"}, NULL, NULL });
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
 	printf("test writeout isntructions list\n");
 	testWriteOutInstr(list);

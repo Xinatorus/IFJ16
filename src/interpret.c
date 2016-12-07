@@ -20,6 +20,8 @@ void interpret(tInstrList iList,TsTree *ts) {
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 	char *tmpStr1,*tmpStr2;
 	Data tmpData;
+	int tmpInt;
+	double tmpDouble;
 
 	instrListSetActiveFirst(&iList);
 
@@ -316,21 +318,27 @@ void interpret(tInstrList iList,TsTree *ts) {
 		case I_READ:
 			switch(destT) {
 				case t_int: 
-					//findInFrame(dest->value.name, sf)->value.v_int = readInt();
+					if (!readInt(&tmpInt)) { //TODO skonceni
+						error(ERR_RUN_NUM);
+					}
+					findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
 					break;
 				case t_double: 
-					//findInFrame(dest->value.name, sf)->value.v_double = readDouble();
+					if (!readDouble(&tmpDouble)) {
+						error(ERR_RUN_NUM);
+					}
+					findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
 					break;
 				case t_string: 
-					//findInFrame(dest->value.name, sf)->value.v_string = readString();
+					findInFrame(dest->value.name, sf)->value.v_string = readString();
 					break;
 				default: break;
 			}
 			break;
 		case I_WRITE:
-
+		
 			//TODO pretyp pak write
-			switch (destT) {
+			switch (dest->type) {
 				case c_int: 
 					printf("%d", dest->value.v_int);
 					break;
@@ -341,7 +349,18 @@ void interpret(tInstrList iList,TsTree *ts) {
 					printf("%s", dest->value.v_string);
 					break;
 				case name: 
-					printf("%s", varToString(findInFrame(dest->value.name,sf)));
+					switch (destT) {
+					case t_int:
+						printf("%d", findInFrame(dest->value.name, sf)->value.v_int);
+						break;
+					case t_double:
+						printf("%g", findInFrame(dest->value.name, sf)->value.v_double);
+						break;
+					case t_string:
+						printf("%s", findInFrame(dest->value.name, sf)->value.v_string);
+						break;
+					default: break;
+					}
 					break;
 			}
 

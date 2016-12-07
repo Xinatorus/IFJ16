@@ -23,57 +23,34 @@ char *varToString(Data *var) {
 	char *s;
 	switch (var->type) {
 		case t_int: 
-			
+		//	s = intToString(var->value.v_int);
 			break;
 		case t_double: 
-			
+		//	s = intToString(var->value.v_double);
 			break;
 		default: //?
-			
 			break;
 	}
 
-	return "var to string not implemented yet...";
+	//printf("conv to %s\n", s);
+	return "tohle vubec nefunguje";
 }
 
 char *intToString(int x) {
-	//TODO int toString
+	char tmp[50];
+	sprintf(tmp, "%d", x);
+	printf("conv to %s\n", tmp);
+	return tmp;
 }
 char *doubleToString(double x) {
-	//TODO double toString
+	char tmp[50];
+	sprintf(tmp,"%g",x);
+	return tmp;
 }
 
-char *getSubString(char *str, int index, int size) {
+//vytvori pod retezec od indexu startindex o velikosti size
+char *getSubString(char *str, int startindex, int size) {
 
-}
-
-/* ----------------------------------------------------------------------------------- */
-/* ------------------------------FCE LENGTH------------------------------------------- */
-// vrati delku retezce zadaneho jedinym parametrem s
-int length(char* s)
-{
-	// chybove hlaseni v pripade nuloveho znaku
-	if (s == NULL)
-	{
-		fprintf(stderr, "stderr - length of string\n");
-		return false;
-	}
-
-	// pruchod jednotlivych znaku a prepocet pocitadla znaku
-	int pocet = 0;
-	for (int i = 0; s[i] != '\0'; i++)
-	{
-
-		if (s[i] == '/')
-		{
-			i++;
-		}
-
-		pocet++;
-	}
-
-	// vraci pocet znkau retezce
-	return pocet;
 }
 
 /* ----------------------------------------------------------------------------------- */

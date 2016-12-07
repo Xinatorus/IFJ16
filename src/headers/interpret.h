@@ -14,6 +14,7 @@
 #include "io.h"
 #include "tstree.h"
 #include "valgrind.h"
+#include "error.h"
 
 
 // zkraceni zapisu
