@@ -25,7 +25,7 @@ typedef struct hItem {
 HashTable createHashTable(unsigned int size);
 void deleteHashTable(HashTable hashTable);
 int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data,unsigned int index);
-HashTable searchInHashTable(HashTable hashTable, char *key);
+HashTable searchInHashTable(HashTable hashTable, char *key);t
 unsigned int hash(char *key);
 
 

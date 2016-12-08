@@ -37,8 +37,6 @@ void interpret(tInstrList iList,TsTree *root) {
 
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
-//TODO pokud jsou dve NULL 
-
 
 		int destT, src1T, src2T;
 		// Priradim zdroje a cile
@@ -439,6 +437,25 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 
 
+// Vestavene funkce dest je cil kam se uklada vysledek
+		case I_LEN: 
+			
+			break;
+		case I_SUBS: 
+			
+			break;
+		case I_CMP: 
+			
+			break;
+		case I_FIND: 
+			
+			break;
+		case I_SORT: 
+			
+			break;
+
+
+
 			break;
 		default: break;
 		}
@@ -451,7 +468,7 @@ void interpret(tInstrList iList,TsTree *root) {
 	debug("[INTERPRET] Ending inrepret...\n");
 }
 
-//TODO extrahuje parametry funkce
+// extrahuje parametry funkce
 void extractParams(StackFrame *sf, TsTree root, Stack stack) {
 	debug("[INTERPRET] Looking for params");
 
@@ -467,10 +484,11 @@ void extractParams(StackFrame *sf, TsTree root, Stack stack) {
 
 	for (int i = cpar; i >= 0; i--) {
 		stackPop(stack, &tmp);
-		sf->data[i].value = tmp.value;
+		sf->data[i].value = tmp.value; //TODO test
 	}
 }
 
+// Vycisti veskerou doposud alokovanou pamet 
 void clearAll(StackFrame sf, TsTree root, Stack interStack, tInstrList iList) {
 	//docastne promenne? nebo jine?
 	//identifikatory, hash table, data ramce, stringy v ramci, istrukce, 

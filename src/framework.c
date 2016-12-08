@@ -42,7 +42,6 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 	sf->lastActive = lastActive;
 	sf->ret = ret;
 	sf->size = size;
-	//TODO vlozeni jmen podle TS
 	
 	debug(" [FRAMEWORK] Add vars by hash table\n");
 	hashWriteOut(tsTree->ts);

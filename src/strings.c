@@ -4,7 +4,6 @@
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {
-	//TODO neni potreba vlozit \0 ? 
 	char *s = malloc(strlen(str) + 1);
 	strcpy(s, str);
 	return s;
