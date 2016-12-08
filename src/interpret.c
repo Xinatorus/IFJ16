@@ -238,7 +238,19 @@ void interpret(tInstrList iList,TsTree *root) {
 
 //Matematicke operace
 		case I_ADD:
-			//printf("type2: %d\n", getType(src2));
+			// ? src2 ? // src2 je vzdy
+			if (src2 && src2T == name && findInFrame(src2->value.name,sf)->defined == false) {
+				//ERR
+			} // src1 src2 dest
+			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+				//ERR
+			}	// dest src2
+			else if (findInFrame(dest->value.name, sf)->defined == false) {
+					//ERR
+			}
+			findInFrame(dest->value.name, sf)->defined = true;
+
+			//test pro dvou adresni
 
 			//typ destinace
 			switch (destT) { 
@@ -295,6 +307,16 @@ void interpret(tInstrList iList,TsTree *root) {
 
 			break;
 		case I_SUB:
+			if (src2 && src2T == name && findInFrame(src2->value.name, sf)->defined == false) {
+				//ERR
+			} // src1 src2 dest
+			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+				//ERR
+			}	// dest src2
+			else if (findInFrame(dest->value.name, sf)->defined == false) {
+				//ERR
+			}
+			findInFrame(dest->value.name, sf)->defined = true;
 			switch (destT) {
 				case t_int:
 					if (dest != src1) {
@@ -312,6 +334,16 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 			break;
 		case I_MUL:
+			if (src2 && src2T == name && findInFrame(src2->value.name, sf)->defined == false) {
+				//ERR
+			} // src1 src2 dest
+			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+				//ERR
+			}	// dest src2
+			else if (findInFrame(dest->value.name, sf)->defined == false) {
+				//ERR
+			}
+			findInFrame(dest->value.name, sf)->defined = true;
 			switch (destT) {
 				case t_int:
 					if (dest != src1) {
@@ -329,6 +361,16 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 			break;
 		case I_DIV:
+			if (src2 && src2T == name && findInFrame(src2->value.name, sf)->defined == false) {
+				//ERR
+			} // src1 src2 dest
+			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+				//ERR
+			}	// dest src2
+			else if (findInFrame(dest->value.name, sf)->defined == false) {
+				//ERR
+			}
+			findInFrame(dest->value.name, sf)->defined = true;
 			switch (destT) {
 				case t_int:
 					if (dest != src1) {
@@ -438,20 +480,44 @@ void interpret(tInstrList iList,TsTree *root) {
 
 
 // Vestavene funkce dest je cil kam se uklada vysledek
-		case I_LEN: 
-			
+		case I_LEN: // int lenght(String)
+			findInFrame(dest->value.name,sf)->defined = true;
+			stackPop(interStack, &tmpData);
+			findInFrame(dest->value.name,sf)->value.v_int = strlen(tmpData.value.v_string);
 			break;
-		case I_SUBS: 
-			
+		case I_SUBS: // String substr(String s, int i, int n)
+			findInFrame(dest->value.name, sf)->defined = true;
+			stackPop(interStack, &tmpData);
+			tmpStr1 = tmpData.value.v_string;
+			stackPop(interStack, &tmpData);
+			int tmpInt1 = tmpData.value.v_string;
+			stackPop(interStack, &tmpData);
+			int tmpInt2 = tmpData.value.v_string;
+			findInFrame(dest->value.name, sf)->value.v_string = getSubString(tmpStr1,tmpInt1,tmpInt2);
 			break;
-		case I_CMP: 
-			
+		case I_CMP: // int compare(String s1, String s2)
+			findInFrame(dest->value.name, sf)->defined = true;
+			stackPop(interStack, &tmpData);
+			tmpStr1 = tmpData.value.v_string;
+			stackPop(interStack, &tmpData);
+			tmpStr2 = tmpData.value.v_string;
+			findInFrame(dest->value.name, sf)->value.v_int = compare(tmpStr1, tmpStr2);
 			break;
-		case I_FIND: 
-			
+		case I_FIND: // int find(String s, String search) 
+			findInFrame(dest->value.name, sf)->defined = true;
+			stackPop(interStack, &tmpData);
+			tmpStr1 = tmpData.value.v_string;
+			stackPop(interStack, &tmpData);
+			tmpStr2 = tmpData.value.v_string;
+			findInFrame(dest->value.name, sf)->value.v_int = findSubstring(tmpStr1,tmpStr2);
 			break;
-		case I_SORT: 
-			
+		case I_SORT: // String sort(String s)
+			findInFrame(dest->value.name, sf)->defined = true;
+			stackPop(interStack, &tmpData);
+			//TODO prepisy
+			findInFrame(dest->value.name, sf)->value.v_string = makeString(tmpData.value.v_string);
+			tmpStr1 = findInFrame(dest->value.name, sf)->value.v_string;
+			mergeSort(tmpStr1,strlen(tmpStr1));
 			break;
 
 
@@ -489,8 +555,13 @@ void extractParams(StackFrame *sf, TsTree root, Stack stack) {
 }
 
 // Vycisti veskerou doposud alokovanou pamet 
-void clearAll(StackFrame sf, TsTree root, Stack interStack, tInstrList iList) {
+void clearAll(StackFrame *sf, TsTree *root, Stack interStack, tInstrList *iList) {
 	//docastne promenne? nebo jine?
 	//identifikatory, hash table, data ramce, stringy v ramci, istrukce, 
 	//operandy instrukci podle toho jak se budou vytvaret
+
+	tsDel(root);
+	stackFree(interStack);
+	while ((sf=deleteFrame(sf)));
+	instrListFree(iList);
 }
