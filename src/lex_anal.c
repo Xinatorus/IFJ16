@@ -750,7 +750,7 @@ TokenType najdiKlucoveSlovo2(string* s)
 	char *str, *str2;
 	
 	char vysledek[100000];
-	strcpy(vysledek, s);
+	strcpy(vysledek, s->str);
 
 	str = strtok(s->str, ".");
 	str2 = strtok(NULL, " ");
