@@ -123,7 +123,7 @@ void testInterpret() {
 //TS
 	printf("Vyvarim TS Main\n");
 	HashTable glob = createHashTable(HASH_TABLE_SIZE);
-	addToHashTable(glob,"Main.run","FV",0,0);
+	addToHashTable(glob,"Main.run","FVI",0,0);
 	hashWriteOut(glob);
 
 	printf("Vyvarim TS Main.run\n");
@@ -141,7 +141,7 @@ void testInterpret() {
 	printf("now adding instr to list\n");
 	
 	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_double, .value.v_double = 1.8 }, NULL });
-	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand){name, .value.name = "a"}, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand){name, .value.name = "a"}, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "c"}, &(Operand) { c_string, .value.v_string = "slovo" }, NULL });
 
 	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { name, .value.name = "b" }, NULL });
@@ -153,7 +153,7 @@ void testInterpret() {
 	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "c"}, &(Operand){name, .value.name = "b"}, NULL });
 
 	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
-	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
 	/*
 	instrListAddInstr(&list, (tInstr) { I_READ, &(Operand){name, .value.name = "a"}, NULL, NULL });
@@ -163,6 +163,8 @@ void testInterpret() {
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
 	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "c"}, NULL, NULL });*/
+
+	instrListAddInstr(&list, (tInstr) { I_RET, NULL, NULL, NULL });
 
 	printf("test writeout isntructions list\n");
 	testWriteOutInstr(list);
@@ -198,6 +200,10 @@ void testInterpret() {
 
 //testovaci vypis obsahu struktury
 void testWriteOutFrame(StackFrame *sf) {
+	if (sf == NULL) {
+		debug(" [FRAMEWORK] Undefined frame\n");
+		return;
+	}
 	debug(" [FRAMEWORK] + FRAME: %s (%s %d) [%d]\n", sf->identifier, (sf->parent ? sf->parent->identifier : "NULL"), sf->child,sf->size);
 	debug(" [FRAMEWORK] +                          ID +       TYPE +                                VALUE +\n");
 
