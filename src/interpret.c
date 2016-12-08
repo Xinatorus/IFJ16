@@ -2,7 +2,7 @@
 #include "headers\interpret.h"
 #include "headers\testWriteOut.h"
 
-void interpret(tInstrList iList,TsTree *ts) {
+void interpret(tInstrList iList,TsTree *root) {
 	debug("[INTERPRET] Staring interpret...\n");
 	//stack pro vnitrni mezi vypocty a parametry fci
 	Stack interStack = stackInit(100);
@@ -10,8 +10,8 @@ void interpret(tInstrList iList,TsTree *ts) {
 	tInstr ins; // aktualni instrukce
 
 	// tabulka ramcu
-	StackFrame *sf = newFrame(NULL,*ts,"Main.run",NULL,NULL);
-
+	StackFrame *sf = newFrame(NULL,*root,"Main.run",NULL,NULL);
+	extractParams(sf, *root, interStack);
 	
 	//printf("### END TEST SF wOut\n");
 
@@ -37,12 +37,13 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
 
-//TODO pokud jsou dve NULL 
-
 
 		int destT, src1T, src2T;
 		// Priradim zdroje a cile
-		if (ins.addr2 == NULL && ins.addr3 == NULL) { // dest NULL NULL
+		if (ins.addr1 == NULL) { //only return
+			
+		}
+		else if (ins.addr2 == NULL && ins.addr3 == NULL) { // dest NULL NULL
 			dest = ins.addr1;
 			src1 = dest;
 
@@ -105,9 +106,10 @@ void interpret(tInstrList iList,TsTree *ts) {
 			//nactu paramety
 			//continue a pokracuju v instrukcich 
 
-			sf = newFrame(sf, *ts, ins.addr1->value.name, ins.addr3, iList.active);
-			instrListSetActive(&iList, tsFind(ts, ins.addr1->value.name)->addr);
-			extractParams(sf, ts, interStack);
+			sf = newFrame(sf, *root, ins.addr1->value.name, ins.addr3, iList.active);
+			debug("[INTERPRET] Switched to frame: %s",sf->identifier);
+			instrListSetActive(&iList, tsFind(root, ins.addr1->value.name)->addr);
+			extractParams(sf, root, interStack);
 			continue;
 
 			break;
@@ -133,8 +135,14 @@ void interpret(tInstrList iList,TsTree *ts) {
 			}
 			
 			instrListSetActive(&iList,sf->lastActive); // pokud je konec Main.run tak je to null a smycka konci
+			if (sf->parent) {
+				debug("[INTERPRET] Switched to frame: %s", sf->parent->identifier);
+			}
+			else {
+				debug("[INTERPRET] Switched out of Main.run -> End \n");
+			}
 			sf = deleteFrame(sf); // navraceni otcovskeho ramce		
-
+			
 			break;
 		case I_PUSH:
 			if (dest->type != name || findInFrame(dest->value.name, sf)->defined == true)
@@ -371,44 +379,42 @@ void interpret(tInstrList iList,TsTree *ts) {
 
 //Vstup - vystup
 		case I_READ:
-			if (src1->type != name || findInFrame(src1->value.name, sf)->defined == true)
-				switch(destT) {
-					case t_int: 
-						if (!readInt(&tmpInt)) { //TODO skonceni
-							error(ERR_RUN_NUM);
-						}
-						findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
-						break;
-					case t_double: 
-						if (!readDouble(&tmpDouble)) {
-							error(ERR_RUN_NUM);
-						}
-						findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
-						break;
-					case t_string: 
-						findInFrame(dest->value.name, sf)->value.v_string = readString();
-						break;
-					default: break;
-				}
-			else {
-				//TODO add free
-				error(ERR_RUN_INIT);
+			findInFrame(dest->value.name, sf)->defined = true;
+			switch(destT) {
+				case t_int: 
+					if (!readInt(&tmpInt)) { //TODO skonceni
+						error(ERR_RUN_NUM);
+					}
+					findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
+					break;
+				case t_double: 
+					if (!readDouble(&tmpDouble)) {
+						error(ERR_RUN_NUM);
+					}
+					findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
+					break;
+				case t_string: 
+					findInFrame(dest->value.name, sf)->value.v_string = readString();
+					break;
+				default: break;
 			}
+			
 			break;
 		case I_WRITE:
-			findInFrame(dest->value.name, sf)->defined = true;
-			//TODO pretyp pak write
-			switch (dest->type) {
-				case c_int: 
+			if (src1->type != name || findInFrame(src1->value.name, sf)->defined == true) {
+				debug("[OUTPUT] ");
+				//TODO pretyp pak write
+				switch (dest->type) {
+				case c_int:
 					printf("%d", dest->value.v_int);
 					break;
-				case c_double: 
+				case c_double:
 					printf("%g", dest->value.v_double);
 					break;
-				case c_string: 
+				case c_string:
 					printf("%s", dest->value.v_string);
 					break;
-				case name: 
+				case name:
 					switch (destT) {
 					case t_int:
 						printf("%d", findInFrame(dest->value.name, sf)->value.v_int);
@@ -422,7 +428,32 @@ void interpret(tInstrList iList,TsTree *ts) {
 					default: break;
 					}
 					break;
+				}
+				debug("\n");
 			}
+			else {
+				//TODO add free
+				error(ERR_RUN_INIT);
+			}
+
+
+// Vestavene funkce dest je cil kam se uklada vysledek
+		case I_LEN: 
+			
+			break;
+		case I_SUBS: 
+			
+			break;
+		case I_CMP: 
+			
+			break;
+		case I_FIND: 
+			
+			break;
+		case I_SORT: 
+			
+			break;
+
 
 
 			break;
@@ -437,13 +468,29 @@ void interpret(tInstrList iList,TsTree *ts) {
 	debug("[INTERPRET] Ending inrepret...\n");
 }
 
-//TODO extrahuje parametry funkce
-void extractParams(StackFrame *sf, TsTree ts, Stack stack) {
-	int cpar = 0; // TODO pocet parametru
+// extrahuje parametry funkce
+void extractParams(StackFrame *sf, TsTree root, Stack stack) {
+	debug("[INTERPRET] Looking for params");
+
+	int cpar = 0;
+	for (TsTree x = root; x != NULL; x = x->next) 
+		if (isHisParent(sf->identifier, x->name)) {
+			cpar = strlen(searchInHashTable(x->ts, sf->identifier)->type) - 2;
+			break;
+		}
+	debug("[INTERPRET] found %d params for %s\n", cpar,sf->identifier);
+
 	Data tmp;
 
 	for (int i = cpar; i >= 0; i--) {
 		stackPop(stack, &tmp);
-		sf->data[i].value = tmp.value;
+		sf->data[i].value = tmp.value; //TODO test
 	}
+}
+
+// Vycisti veskerou doposud alokovanou pamet 
+void clearAll(StackFrame sf, TsTree root, Stack interStack, tInstrList iList) {
+	//docastne promenne? nebo jine?
+	//identifikatory, hash table, data ramce, stringy v ramci, istrukce, 
+	//operandy instrukci podle toho jak se budou vytvaret
 }

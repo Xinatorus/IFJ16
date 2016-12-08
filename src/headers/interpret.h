@@ -24,7 +24,8 @@
 
 
 void interpret(tInstrList instr,TsTree *root);
-void extractParams(StackFrame *sf, TsTree ts, Stack stack);
+void extractParams(StackFrame *sf, TsTree root, Stack stack);
+void clearAll(StackFrame sf, TsTree root, Stack interStack,tInstrList iList);
 
 //TODO obalit do makra
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;
