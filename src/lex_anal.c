@@ -767,7 +767,7 @@ TokenType najdiKlucoveSlovo2(string* s)
 		if ((strcmp(str, rezervovaneSlova[j]) == 0) || ((strcmp(str2, rezervovaneSlova[j])) == 0))
 			return REZERVOVANE_SLOVO;
 
-	//token->attr = vysledek;
+	s->str = vysledek;
 	return IDENTIFIKATOR;
 }
 
