@@ -819,6 +819,7 @@ Ttoken* vytvorToken()
 	token = (Ttoken *)malloc(sizeof(Ttoken));
 	token->attr = (string *)malloc(sizeof(string));
 	token->type = POC_STAV;
+    token->next = NULL;
 
 	// funkce implementovana vyse
 	stringInit(token->attr);
