@@ -90,6 +90,7 @@ void tsDel(TsTree *root) {
 
 TsTree tsFind(TsTree root, char *name) {
 	for (TsTree x = root; x != NULL; x = x->next) {
+		if (!strcmp(x->name, name)) return x;
 		if (isHisParent(name, x->name)) {
 			for (TsTree x = root->child; x != NULL; x = x->next) {
 				if (!strcmp(x->name, name)) {
