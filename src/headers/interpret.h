@@ -16,7 +16,6 @@
 #include "valgrind.h"
 #include "error.h"
 
-
 // zkraceni zapisu
 #define valueByType(var,typ) ((var->type == name) ? findInFrame(var->value.name, sf)->value.typ : var->value.typ)
 #define byType(var) (var##T == t_int) ? valueByType(var, v_int) : valueByType(var, v_double)
@@ -25,7 +24,7 @@
 
 void interpret(tInstrList instr,TsTree *root);
 void extractParams(StackFrame *sf, TsTree root, Stack stack);
-void clearAll(StackFrame sf, TsTree root, Stack interStack,tInstrList iList);
+void clearAll(StackFrame *sf, TsTree *root, Stack interStack,tInstrList *iList);
 
 //TODO obalit do makra
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;

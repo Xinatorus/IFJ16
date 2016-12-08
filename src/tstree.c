@@ -98,6 +98,7 @@ TsTree tsFind(TsTree root, char *name) {
 			}
 		}
 	}
+	return NULL;
 }
 
 int isHisParent(char *name, char *parent) {
