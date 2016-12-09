@@ -50,7 +50,7 @@ Psymbol getNextPrecSymbol() {
     }
     // Read token from input
     else {
-        token = getNextToken();
+        token = load_next_token();
     }
 
     symbol.token = token;

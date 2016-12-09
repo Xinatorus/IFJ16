@@ -1,8 +1,20 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\synt_anal.h"
 
-cQueue token_archive;
-cStack stack;
+cQueue token_archive; // Queue to store pre-used tokens
+cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
+Ttoken *token_list = NULL; // Token list, used for second pass
+bool first_analysis = true; // Whether this is first pass (static declarations)
+
+/* Semantic variables */
+TsTree root; // Main symbol table leaf
+int last_rule; // Last applied rule
+char *current_class; // Actual class
+char *current_func; // Actual function
+char *dec_types; // Actual types (var type of return type of func + params)
+char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
+int var_static_index; // order of saved static var in class symbol table
+int var_normal_index; // order of saved normal var in function symbol table
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -31,10 +43,41 @@ int synt_rules[23][20] = {
     { -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1 }   // NT_DOLLAR
 };
 
+Ttoken *load_next_token() {
+    Ttoken *token = NULL;
+    /* Get tokens from lexical analysis */
+    if (first_analysis) {
+        token = getNextToken();
+        /* First token in token_list */
+        if (token_list == NULL) {
+            token_list = token;
+        }
+        /* Add token to the end of token_list */
+        else
+        {
+            Ttoken *iterated = token_list;
+            while (iterated->next != NULL) {
+                iterated = iterated->next;
+            }
+            iterated->next = token;
+        }
+    }
+    /* Get tokens from token_list */
+    else {
+        token = token_list;
+        /* Remove loaded token from token_list */
+        if (token->next != NULL) { // In the end we always want to return EOF token
+            token_list = token->next;
+        }
+    }
+
+    return token;
+}
+
 int getRuleNumber(NTType nt, TType t) {
 
     #if SYNT_DEBUG == 1
-        fprintf(stdout, "[SYNT_DEBUG] getRuleNumber(%s, %s)\n", NTType_string[nt], TType_string[t]);
+        fprintf(stdout, "[SYNT_DEBUG #%d] getRuleNumber(%s, %s)\n", first_analysis ? 1 : 2, NTType_string[nt], TType_string[t]);
     #endif
 
     return synt_rules[nt][t];
@@ -46,8 +89,10 @@ void applyRule(int rule, cStack *stack) {
     }
 
     #if SYNT_DEBUG == 1
-        fprintf(stdout, "[SYNT_DEBUG] Applying rule #%d\n", rule);
+        fprintf(stdout, "[SYNT_DEBUG #%d] Applying rule #%d\n", first_analysis ? 1 : 2, rule);
     #endif
+    
+    last_rule = rule;
     // The reason for not automating this process is precedence analysis
     switch (rule) {
         case 1:
@@ -158,7 +203,7 @@ void applyRule(int rule, cStack *stack) {
         case 20:
             // NT_VSTUP_DALSI -> T_COMMA NT_VSTUP_KONEC
             cStack_pop(stack);
-            push_cstack_terminal(NT_VSTUP_KONEC, stack);
+            push_cstack_nonterminal(NT_VSTUP_KONEC, stack);
             push_cstack_terminal(T_COMMA, stack);
             break;
         case 21:
@@ -166,13 +211,15 @@ void applyRule(int rule, cStack *stack) {
             cStack_pop(stack);
             break;
         case 22:
-            // NT_VSTUP_KONEC -> T_EXPRESSION
+            // NT_VSTUP_KONEC -> T_EXPRESSION NT_VSTUP_DALSI
             cStack_pop(stack);
+            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
             push_cstack_terminal(T_EXPRESSION, stack);
             break;
         case 23:
-            // NT_VSTUP_KONEC -> T_IDENT
+            // NT_VSTUP_KONEC -> T_IDENT NT_VSTUP_DALSI
             cStack_pop(stack);
+            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
             push_cstack_terminal(T_IDENT, stack);
             break;
         case 24:
@@ -288,6 +335,7 @@ void applyRule(int rule, cStack *stack) {
             // NT_PRAVA_STRANA -> T_IDENT
             cStack_pop(stack);
             push_cstack_terminal(T_IDENT, stack);
+            break;
         case 43:
             // NT_PRAVA_STRANA -> T_FIDENT NT_VOLANI_FUNKCE
             cStack_pop(stack);
@@ -314,14 +362,14 @@ Terminal getNextTerminal() {
     Terminal terminal; // Terminal to return
 
     #if SYNT_DEBUG == 1
-        fprintf(stdout, "[SYNT_DEBUG] getNextTerminal()\n");
+        fprintf(stdout, "[SYNT_DEBUG #%d] getNextTerminal()\n", first_analysis ? 1 : 2);
     #endif
 
     // Something is left in token archive, we must use that
     if (!cQueue_isempty(&token_archive)) {
         token = cQueue_first(&token_archive).content.token;
         #if SYNT_DEBUG == 1
-            fprintf(stdout, "[SYNT_DEBUG]  -> get from token archive (TA %d->", token_archive.size);
+            fprintf(stdout, "[SYNT_DEBUG #%d]  -> get from token archive (TA %d->", first_analysis ? 1 : 2, token_archive.size);
         #endif
         cQueue_pop(&token_archive);
         #if SYNT_DEBUG == 1
@@ -330,9 +378,9 @@ Terminal getNextTerminal() {
     }
     else {
         #if SYNT_DEBUG == 1
-            fprintf(stdout, "[SYNT_DEBUG]  -> get from getNextToken()\n");
+            fprintf(stdout, "[SYNT_DEBUG #%d]  -> get from load_next_token()\n", first_analysis ? 1 : 2);
         #endif
-        token = getNextToken();
+        token = load_next_token();
     }
 
     terminal.token = token;
@@ -403,12 +451,12 @@ Terminal getNextTerminal() {
     // We must decide whether this will be an expression terminal or ident or identf terminal
     else if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
-        Ttoken *following = getNextToken(); // We have to use another token
+        Ttoken *following = load_next_token(); // We have to use another token
         cItem toinsert;
         toinsert.content.token = following;
         toinsert.type = IT_TOKEN;
         #if SYNT_DEBUG == 1
-            fprintf(stdout, "[SYNT_DEBUG]  -> Using another token! (TA %d->", token_archive.size);
+            fprintf(stdout, "[SYNT_DEBUG #%d]  -> Using another token! (TA %d->", first_analysis ? 1 : 2, token_archive.size);
         #endif
         cQueue_insert(&token_archive, toinsert);
         #if SYNT_DEBUG == 1
@@ -466,8 +514,49 @@ void push_cstack_nonterminal(NTType type, cStack *stack) {
 }
 
 void execute() {
+
+    /* SEMANTIC ACTIONS IN FIRST PASS
+        If fist pass is executed,
+        only classes & static vars + functions are saved
+    */
+
+    #if SYNT_DEBUG == 1
+    fprintf(stdout, "---------------------------------\n");
+    if (first_analysis) {
+        token_list = NULL;
+        fprintf(stdout, "[SYNT_DEBUG #%d] FIRST Syntax analysis started\n", first_analysis ? 1 : 2);
+    }
+    else
+        fprintf(stdout, "[SYNT_DEBUG #%d] SECOND Syntax analysis started\n", first_analysis ? 1 : 2);
+    fprintf(stdout, "---------------------------------\n");
+    #endif
+
+    last_rule = -1;
+    current_class = makeString("");
+    current_func = makeString("");
+    dec_types = makeString("");
+    dec_id = makeString("");
     cStack_init(&stack, 50);
     cQueue_init(&token_archive);
+
+    if (first_analysis) {
+        /* @SEM - Create symbol table for default if16 class */
+        #if SEM_DEBUG == 1
+        fprintf(stdout, "\t@ Declaring default ifj16 class\n");
+        #endif
+        tsTreeInit(&root);
+        HashTable ht_ifj16 = createHashTable(HASH_TABLE_SIZE);
+        tsAdd(&root, "ifj16", 0, NULL, ht_ifj16);
+        addToHashTable(ht_ifj16, "ifj16.readInt", "FI", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.readString", "FS", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.print", "FVS", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.length", "FIS", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.substr", "FSSIN", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.compare", "FISS", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.find", "FISS", true, 0);
+        addToHashTable(ht_ifj16, "ifj16.sort", "FSS", true, 0);
+    }
+
     /* First step - push NT_DOLLAR (NT version of EOF) and NT_PROGRAM to stack */
     push_cstack_nonterminal(NT_DOLLAR, &stack);
     push_cstack_nonterminal(NT_PROGRAM, &stack);
@@ -482,7 +571,7 @@ void execute() {
         top = cStack_top(&stack);
         if (top.type == IT_ERROR) {
             #if SYNT_DEBUG == 1
-                fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Stack was empty???\n");
+                fprintf(stdout, "[SYNT_DEBUG #%d] !!! Syntax error - Stack was empty???\n", first_analysis ? 1 : 2);
             #endif
             error(ERR_INTER);
         }
@@ -496,20 +585,20 @@ void execute() {
             else
                 debug_top = "ERROR - unknown type O_o";
             debug_input = TType_string[input.type];
-            fprintf(stdout, "[SYNT_DEBUG] ~~~ LOOP: top = %s, input = %s\n", debug_top, debug_input);
+            fprintf(stdout, "[SYNT_DEBUG #%d] ~~~ LOOP: top = %s, input = %s\n", first_analysis ? 1 : 2, debug_top, debug_input);
         #endif
 
         // We have NT_DOLLAR on top -> success or fail
         if (top.type == IT_NTTYPE && top.content.nttype == NT_DOLLAR) {
             #if SYNT_DEBUG == 1
-                fprintf(stdout, "[SYNT_DEBUG]   ~ T_EOF must be on input\n");
+                fprintf(stdout, "[SYNT_DEBUG #%d]   ~ T_EOF must be on input\n", first_analysis ? 1 : 2);
             #endif
             if (input.type == T_EOF) {
                 return;
             }
             else {
                 #if SYNT_DEBUG == 1
-                    fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - NT_DOLLAR on top but no T_EOF on input\n");
+                    fprintf(stdout, "[SYNT_DEBUG #%d] !!! Syntax error - NT_DOLLAR on top but no T_EOF on input\n", first_analysis ? 1 : 2);
                 #endif
                 error(ERR_SYNT);
             }
@@ -518,12 +607,265 @@ void execute() {
         // We have terminal on top -> if it is the same as terminal from input, process
         else if (top.type == IT_TERMINAL) {
             #if SYNT_DEBUG == 1
-                fprintf(stdout, "[SYNT_DEBUG]   ~ Top must be same type as input type\n");
+                fprintf(stdout, "[SYNT_DEBUG #%d]   ~ Top must be same type as input type\n", first_analysis ? 1 : 2);
             #endif
             if (top.content.terminal.type == input.type) {
+                if (input.type == T_IDENT) {
+                    if (last_rule == 3) {
+                        /* @SEM1 - Declaring class */
+                        if (first_analysis) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
+                            #endif
+                            if (get_declared_class(input.token->attr->str) != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Class %s is already declared!\n", input.token->attr->str);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring class %s\n", input.token->attr->str);
+                                #endif
+                                tsAdd(&root, input.token->attr->str, 0, NULL, createHashTable(HASH_TABLE_SIZE));
+                            }
+                        }
+                        /* @SEM12 - Entering class */
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Entering class %s\n", input.token->attr->str);
+                        #endif
+                        current_class = makeString(input.token->attr->str);
+                        var_static_index = 0;
+                    }
+                    else if (last_rule == 8) {
+                        /* @SEM1 - Declaring static variable */
+                        if (strlen(current_func) == 0) {
+                            if (first_analysis) {
+                                char *full_name = cat(cat(current_class, "."), input.token->attr->str);
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
+                                #endif
+                                TsTree class_tree = get_declared_class(current_class);
+                                if (searchInHashTable(class_tree->ts, full_name) != NULL) {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Static variable %s is already declared!\n", full_name);
+                                    #endif
+                                    error(ERR_SEM_DEF);
+                                }
+                                else {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Declaring static variable %s of type %s\n", full_name, dec_types);
+                                    #endif
+                                    addToHashTable(class_tree->ts, full_name, cat("V", dec_types), 0, var_static_index++);
+                                }
+                            }
+                        }
+                        /* @SEM2 - Declaring normal variable */
+                        else {
+                            if (!first_analysis) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
+                                #endif
+                                TsTree func_tree = get_declared_function(current_func, NULL);
+                                if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Normal variable %s in function %s is already declared!\n", input.token->attr->str, current_func);
+                                    #endif
+                                    error(ERR_SEM_DEF);
+                                }
+                                else {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Declaring normal variable %s of type %s in function %s\n", input.token->attr->str, dec_types, current_func);
+                                    #endif
+                                    addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                                }
+                            }
+                        }
+                    }
+                    /* @SEM2 - Declaring normal variables (parameters) */
+                    else if (last_rule == 14 || last_rule == 15) {
+                        if (!first_analysis) {
+                            char *full_name = cat(cat(current_class, "."), dec_id);
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring normal variable (parameter) %s of function %s\n", input.token->attr->str, full_name);
+                            #endif
+                            TsTree func_tree = get_declared_function(full_name, NULL);
+                            if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Normal variable (parameter) %s of function %s is already declared!\n", input.token->attr->str, full_name);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring normal variable (parameter) %s of type %s in function %s\n", input.token->attr->str, dec_types, full_name);
+                                #endif
+                                addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                            }
+                        }
+                    }
+                    else if (last_rule == 18 || last_rule == 23 || last_rule == 29 || last_rule == 38 || last_rule == 42) {
+                        /* @SEM2 - Using undeclared variables in functions */
+                        if (!first_analysis && strlen(current_func) > 0) {
+                            if (get_declared_variable(input.token->attr->str, current_class, current_func) == NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to use undeclared variable %s in function %s!\n", input.token->attr->str, current_func);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
+                        /* @SEM1 - Using undeclared variables in class body */
+                        if (first_analysis && strlen(current_func) == 0 && last_rule == 42) {
+                            if (get_declared_variable(input.token->attr->str, current_class, NULL) == NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to use undeclared static variable %s in static context of class %s!\n", input.token->attr->str, current_class);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
+                    }
+                }
+                else if (input.type == T_FIDENT) {
+                    /* @SEM12 - Save function identificator for later use */
+                    if (last_rule == 11) {
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
+                        #endif
+                        dec_id = makeString(input.token->attr->str);
+                    }
+                    /* @SEM1 - Using function call outside function */
+                    if (last_rule == 43) {
+                        if (first_analysis && strlen(current_func) == 0) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Using function %s in static context!\n", input.token->attr->str);
+                            #endif
+                            error(ERR_SEM_DEF);
+                        }
+                    }
+                    /* @SEM2 - Using undeclared function inside function */
+                    if (last_rule == 30 || last_rule == 43) {
+                        if (!first_analysis && strlen(current_func) > 0) {
+                            if (get_declared_function(input.token->attr->str, current_class) == NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to use undeclared function %s in function %s!\n", input.token->attr->str, current_func);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
+                    }
+                }
+                else if (input.type == T_RRB) {
+                    if (last_rule == 16 || last_rule == 13) {
+                        char *full_name = cat(cat(current_class, "."), dec_id);
+                        /* @SEM1 - Declaring function */
+                        if (first_analysis) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring static function %s\n", full_name);
+                            #endif
+                            if (get_declared_function(full_name, NULL) != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Static function %s is already declared!\n", full_name);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring static function %s with types %s\n", full_name, dec_types);
+                                #endif
+                                HashTable ht = createHashTable(HASH_TABLE_SIZE);
+                                tsAdd(&root, full_name, 0, NULL, ht);
+                                addToHashTable(ht, full_name, cat("F", dec_types), 0, 0);
+                            }
+                        }
+                        /* @SEM12 - Entering function */
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Entering static function %s\n", full_name);
+                        #endif
+                        current_func = makeString(full_name);
+                        var_normal_index = 0;
+                    }
+                }
+                else if (input.type == T_RCB) {
+                    /* @SEM12 - Leaving class */
+                    if (last_rule == 5) {
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Leaving class %s\n", current_class);
+                        #endif
+                        current_class = makeString("");
+                    }
+                    /* @SEM12 - Leaving function */
+                    if (last_rule == 26) {
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Leaving static function %s\n", current_func);
+                        #endif
+                        current_func = makeString("");
+                    }
+                }
+                else if (input.type == T_TYPE) {
+                    bool save_type = false;
+                    /* @SEM12 - Save first primitive type of static func/var for later use */
+                    if (last_rule == 45 || last_rule == 27) {
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Saving first type %s for later use\n", input.token->attr->str);
+                        #endif
+                        dec_types = makeString("");
+                        save_type = true;
+                    }
+                    if (first_analysis) {
+                        /* @SEM1 - Save first parameter type of static func for later use */
+                        if (last_rule == 14) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Saving first static function parameter type %s for later use\n", input.token->attr->str);
+                            #endif
+                            save_type = true;
+                        }
+                        /* @SEM1 - Save another parameter type of static func for later use */
+                        else if (last_rule == 15) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Saving another static function parameter type %s for later use\n", input.token->attr->str);
+                            #endif
+                            save_type = true;
+                        }
+                    }
+                    else {
+                        /* @SEM2 - Save parameter type for later use */
+                        if (last_rule == 14 || last_rule == 15) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Saving normal variable (parameter) type %s for later use\n", input.token->attr->str);
+                            #endif
+                            dec_types = makeString("");
+                            save_type = true;
+                        }
+                    }
+                    if (save_type) {
+                        if (strcmp(input.token->attr->str, "int") == 0)
+                            dec_types = cat(dec_types, "I");
+                        else if (strcmp(input.token->attr->str, "double") == 0)
+                            dec_types = cat(dec_types, "D");
+                        else if (strcmp(input.token->attr->str, "String") == 0)
+                            dec_types = cat(dec_types, "S");
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ (dec_types is now: %s)\n", dec_types);
+                        #endif
+                    }
+                }
+                else if (input.type == T_VOID) {
+                    /* @SEM1 - Save first void type of static func/var for later use */
+                    if (first_analysis) {
+                        if (last_rule == 44) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Saving first static type %s for later use\n", input.token->attr->str);
+                            #endif
+                            dec_types = makeString("V");
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ (dec_types is now: %s)\n", dec_types);
+                            #endif
+                        }
+                    }
+                }
                 if (input.type == T_EXPRESSION) {
                     #if SYNT_DEBUG == 1
-                        fprintf(stdout, "[SYNT_DEBUG] ~~~~ > Calling precedence analysis... < ~~~~\n");
+                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Calling precedence analysis... < ~~~~\n", first_analysis ? 1 : 2);
                     #endif
                     prec_analysis(input.token);
                 }
@@ -534,7 +876,7 @@ void execute() {
             }
             else {
                 #if SYNT_DEBUG == 1
-                    fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Terminal on top not same like terminal on input\n");
+                    fprintf(stdout, "[SYNT_DEBUG #%d] !!! Syntax error - Terminal on top not same like terminal on input\n", first_analysis ? 1 : 2);
                 #endif
                 error(ERR_SYNT);
             }
@@ -543,12 +885,12 @@ void execute() {
         // We have non-terminal on top -> try to find and apply LL rule
         else if (top.type == IT_NTTYPE) {
             #if SYNT_DEBUG == 1
-                fprintf(stdout, "[SYNT_DEBUG]   ~ Try to find LL rule\n");
+                fprintf(stdout, "[SYNT_DEBUG #%d]   ~ Try to find LL rule\n", first_analysis ? 1 : 2);
             #endif
             int rule = getRuleNumber(top.content.nttype, input.type);
             if (rule == -1) {
                 #if SYNT_DEBUG == 1
-                    fprintf(stdout, "[SYNT_DEBUG] !!! Syntax error - Rule not found\n");
+                    fprintf(stdout, "[SYNT_DEBUG #%d] !!! Syntax error - Rule not found\n", first_analysis ? 1 : 2);
                 #endif
                 error(ERR_SYNT);
             }
@@ -561,11 +903,98 @@ void execute() {
 
     #if SYNT_DEBUG == 1
         fprintf(stdout, "---------------------------------\n");
-        fprintf(stdout, "[SYNT_DEBUG] Syntax analysis finished\n");
+        if (first_analysis)
+            fprintf(stdout, "[SYNT_DEBUG #%d] FIRST Syntax analysis finished\n", first_analysis ? 1 : 2);
+        else
+            fprintf(stdout, "[SYNT_DEBUG #%d] SECOND Syntax analysis finished\n", first_analysis ? 1 : 2);
         fprintf(stdout, "---------------------------------\n");
     #endif
 
     cStack_free(&stack);
     cQueue_free(&token_archive);
+
+    if (first_analysis) {
+        /* @SEM1 - Check for class main & function run presence & check correct types */
+        #if SEM_DEBUG == 1
+            fprintf(stdout, "\t@ Checking whether class main exists\n");
+        #endif
+        if (get_declared_class("main") == NULL) {
+            #if SEM_DEBUG == 1
+                fprintf(stdout, "\t@ Class main not declared!\n");
+            #endif
+            error(3);
+        }
+        #if SEM_DEBUG == 1
+            fprintf(stdout, "\t@ Checking whether function main.run exists\n");
+        #endif
+        TsTree main_run = get_declared_function("main.run", NULL);
+        if (main_run == NULL) {
+            #if SEM_DEBUG == 1
+                fprintf(stdout, "\t@ Function main.run not declared!\n");
+            #endif
+            error(3);
+        }
+        #if SEM_DEBUG == 1
+            fprintf(stdout, "\t@ Checking whether function main.run is void without params\n");
+        #endif
+        if (strcmp(searchInHashTable(main_run->ts, "main.run")->type, "FV") != 0) {
+            #if SEM_DEBUG == 1
+                fprintf(stdout, "\t@ Function main.run has incorrect types!\n");
+            #endif
+            error(3);
+        }
+
+        first_analysis = false;
+        execute();
+    }
 }
 
+TsTree get_declared_class(char *name) {
+    return tsFind(root, name);
+}
+
+TsTree get_declared_function(char *name, char *p_class) {
+    /* Full identifier - definitely static */
+    if (strchr(name, '.') != NULL) {
+        return tsFind(root, name);
+    }
+    /* Short identifier - look into class */
+    else {
+        return tsFind(root, cat(cat(p_class, "."), name));
+    }
+}
+
+HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
+    TsTree tree;
+    /* Full identifier - definitely static */
+    if (strchr(name, '.') != NULL) {
+        tree = tsFind(root, explodeFullIdentifier(name, true));
+        if (tree != NULL)
+            return searchInHashTable(tree->ts, name);
+        else
+            return NULL;
+    }
+    /* Short identifier - look into function and then into class */
+    else {
+        HashTable returned = NULL;
+        if (p_function != NULL && strlen(p_function) > 0) {
+            /* Search in function */
+            if (strchr(p_function, '.') != NULL) { // Long function identifier
+                tree = tsFind(root, p_function);
+                if (tree != NULL)
+                    returned = searchInHashTable(tree->ts, name);
+            }
+            else { // Short function identifier
+                tree = tsFind(root, cat(cat(p_class, "."), p_function));
+                if (tree != NULL)
+                    returned = searchInHashTable(tree->ts, name);
+            }
+        }
+        /* Search in class */
+        if (returned == NULL) {
+            returned = searchInHashTable(tsFind(root, p_class)->ts, cat(cat(p_class, "."), name));
+        }
+
+        return returned;
+    }
+}

@@ -64,6 +64,28 @@ char *getSubString(char *str, int startindex, int size) {
 
 int compare(char *s1, char *s2)
 {
-	return (strcmp(s2, s2));
+	return (strcmp(s1, s2));
 }
 /* ----------------------------------------------------------------------------------- */
+
+char *explodeFullIdentifier(char *id, bool left) {
+    char *pos;
+    if ((pos = strchr(id, '.')) == NULL) // No dot, no fun :(
+        return (char *) malloc(strlen(id) * sizeof(char));
+    else {
+        char *exploded; int length;
+        if (left) {
+            length = pos - id;
+            exploded = (char *) malloc(length * sizeof(char) + 1);
+            strncpy(exploded, id, length);
+            exploded[length] = '\0';
+        }
+        else {
+            length = strlen(id) - (pos - id) - 1;
+            exploded = (char *) malloc(length * sizeof(char) + 1);
+            strncpy(exploded, pos+1, length);
+            exploded[length] = '\0';
+        }
+        return exploded;
+    }
+}

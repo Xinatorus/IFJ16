@@ -18,5 +18,10 @@ char *doubleToString(double x);
 char *getSubString(char *str, int startindex, int size);
 int compare(char *s1, char *s2);
 
+/* Extract part from full identifier
+   For example:
+       - explodeFullIdentifier("class.ident", false) -> "class"
+       - explodeFullIdentifier("class.ident", true)  -> "ident" */
+char *explodeFullIdentifier(char *id, bool left);
 
 #endif // include guard

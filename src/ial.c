@@ -36,8 +36,8 @@ int	findSubstring(char *s, char *search) {
 HashTable createHashTable(unsigned int size) {
 	HashTable htab;
 	htab = malloc(sizeof(struct hItem)*size);
-	if (htab == NULL)
-		return NULL;
+    if (htab == NULL)
+        error(ERR_INTER);
 
 	memset(htab, 0, sizeof(struct hItem)*size);
 

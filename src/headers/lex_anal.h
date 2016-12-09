@@ -88,10 +88,11 @@ typedef struct{
 	int length;
 }string;
 
-typedef struct{
+typedef struct token{
 	string* attr;
 	TokenType type;
 	int cisloRiadku;
+    struct token *next; // Pouziva syntakticka analyza, lex s tim nic nedela
 }Ttoken;
 
 // funkce vytvarejici token 
