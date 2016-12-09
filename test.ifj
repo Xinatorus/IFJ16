@@ -1,13 +1,17 @@
-class main
-{  
-    static void run()
-    {
-    }
-}
-
-class lol
+class test
 {
     static int function(int param1, String param2)
     {
     }
+}
+
+class test2
+{
+    static int function(int string)
+    {
+    }
+    static int function(int string)
+    {
+    }
+
 }

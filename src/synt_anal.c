@@ -12,7 +12,7 @@ int last_rule; // Last applied rule
 char *current_class; // Actual class
 char *current_func; // Actual function
 char *dec_types; // Actual types (var type of return type of func + params)
-char *dec_ident; // Actual declared identificator
+char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -530,7 +530,7 @@ void execute() {
     current_class = makeString("");
     current_func = makeString("");
     dec_types = makeString("");
-    dec_ident = makeString("");
+    dec_id = makeString("");
     cStack_init(&stack, 50);
     cQueue_init(&token_archive);
 
@@ -613,7 +613,7 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
                             #endif
-                            if (class_declared(root, input.token->attr->str)) {
+                            if (tsFind(root, input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Class %s is already declared!\n", input.token->attr->str);
                                 #endif
@@ -623,15 +623,55 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Declaring class %s\n", input.token->attr->str);
                                 #endif
-                                HashTable ht = createHashTable(HASH_TABLE_SIZE);
-                                tsAdd(&root, input.token->attr->str, 0, NULL, ht);
+                                tsAdd(&root, input.token->attr->str, 0, NULL, createHashTable(HASH_TABLE_SIZE));
                             }
                         }
                         /* @SEM - Entering class */
                         #if SEM_DEBUG == 1
-                        fprintf(stdout, "\t@ Entering class %s\n", input.token->attr->str);
+                            fprintf(stdout, "\t@ Entering class %s\n", input.token->attr->str);
                         #endif
                         current_class = makeString(input.token->attr->str);
+                    }
+                }
+                else if (input.type == T_FIDENT) {
+                    if (first_analysis) {
+                        /* @SEM - Save function identificator for later use */
+                        if (last_rule == 11) {
+                            #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
+                            #endif
+                            dec_id = makeString(input.token->attr->str);
+                        }
+                    }
+                }
+                else if (input.type == T_RRB) {
+                    if (last_rule == 16) {
+                        char *full_name = cat(cat(current_class, "."), dec_id);
+                        if (first_analysis) {
+                            /* @SEM - Declaring function */
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring function %s\n", full_name);
+                            #endif
+                            if (tsFind(root, full_name) != NULL) { // TODO FIX
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Function %s is already declared!\n", full_name);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring function %s with types %s\n", full_name, dec_types);
+                                #endif
+                                HashTable ht = createHashTable(HASH_TABLE_SIZE);
+                                tsAdd(&root, full_name, 0, NULL, ht);
+                                addToHashTable(ht, full_name, cat("F", dec_types), 0, 0);
+                            }
+                        }
+                        /* @SEM - Entering function */
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Entering function %s\n", full_name);
+                        #endif
+                        current_func = makeString(dec_id);
                     }
                 }
                 else if (input.type == T_RCB) {
@@ -640,30 +680,38 @@ void execute() {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving class %s\n", current_class);
                         #endif
-                            current_class = makeString("");
+                        current_class = makeString("");
+                    }
+                    /* @SEM - Leaving function */
+                    if (last_rule == 26) {
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Leaving function %s\n", cat(cat(current_class, "."), current_func));
+                        #endif
+                        current_func = makeString("");
                     }
                 }
                 else if (input.type == T_TYPE) {
                     bool save_type = false;
                     if (first_analysis) {
-                        /* @SEM - First primitive type of static func/var */
+                        /* @SEM - Save first primitive type of static func/var for later use */
                         if (last_rule == 45) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving first static type %s\n", input.token->attr->str);
+                                fprintf(stdout, "\t@ Saving first static type %s for later use\n", input.token->attr->str);
                             #endif
+                            dec_types = makeString("");
                             save_type = true;
                         }
-                        /* @SEM - First parameter type of static func */
+                        /* @SEM - Save first parameter type of static func for later use */
                         else if (last_rule == 14) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving first function parameter type %s\n", input.token->attr->str);
+                                fprintf(stdout, "\t@ Saving first function parameter type %s for later use\n", input.token->attr->str);
                             #endif
                             save_type = true;
                         }
-                        /* @SEM - Another parameter type of static func */
+                        /* @SEM - Save another parameter type of static func for later use */
                         else if (last_rule == 15) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving another function parameter type %s\n", input.token->attr->str);
+                                fprintf(stdout, "\t@ Saving another function parameter type %s for later use\n", input.token->attr->str);
                             #endif
                             save_type = true;
                         }
@@ -673,21 +721,24 @@ void execute() {
                             dec_types = cat(dec_types, "I");
                         else if (strcmp(input.token->attr->str, "double") == 0)
                             dec_types = cat(dec_types, "D");
-                        else if (strcmp(input.token->attr->str, "string") == 0)
+                        else if (strcmp(input.token->attr->str, "String") == 0)
                             dec_types = cat(dec_types, "S");
                         #if SEM_DEBUG == 1
-                            fprintf(stdout, "\t@ Saving another function parameter type %s\n", input.token->attr->str);
+                            fprintf(stdout, "\t@ (dec_types is now: %s)\n", dec_types);
                         #endif
                     }
                 }
                 else if (input.type == T_VOID) {
+                    /* @SEM - Save first void type of static func/var for later use */
                     if (first_analysis) {
-                        /* @SEM - First void type of static func/var */
-                        if (last_rule == 45) {
+                        if (last_rule == 44) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving first static type %s\n", input.token->attr->str);
+                                fprintf(stdout, "\t@ Saving first static type %s for later use\n", input.token->attr->str);
                             #endif
                             dec_types = makeString("V");
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ (dec_types is now: %s)\n", dec_types);
+                            #endif
                         }
                     }
                 }
@@ -745,24 +796,4 @@ void execute() {
         first_analysis = false;
         execute();
     }
-}
-
-//////////////////////////////////////////////
-///////////// SEMANTIC FUNCTIONS /////////////
-//////////////////////////////////////////////
-
-bool class_declared(TsTree root, char *name) {
-    TsTree iterated = root;
-    while (iterated != NULL) {
-        if (strcmp(name, iterated->name) == 0) {
-            return true;
-        }
-        iterated = iterated->next;
-    }
-
-    return false;
-}
-
-bool function_declared(TsTree root, char *name) {
-
 }

@@ -12,6 +12,7 @@
 #include "tstree.h"
 #include "ial.h"
 #include "strings.h"
+#include "testWriteOut.h"
 
 extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
@@ -53,13 +54,5 @@ Ttoken *load_next_token();
 
 /* Run syntax analysis */
 void execute();
-
-//////////////////////////////////////////////
-///////////// SEMANTIC FUNCTIONS /////////////
-//////////////////////////////////////////////
-
-/* Check whether class was already declared */
-bool class_declared(TsTree root, char *name);
-
 
 #endif  // include guard
