@@ -704,14 +704,54 @@ void execute() {
                             }
                         }
                     }
+                    else if (last_rule == 18 || last_rule == 23 || last_rule == 29 || last_rule == 38 || last_rule == 42) {
+                        /* @SEM2 - Using undeclared variables in functions */
+                        if (!first_analysis && strlen(current_func) > 0) {
+                            if (get_declared_variable(input.token->attr->str, current_class, current_func) == NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to use undeclared variable %s in function %s!\n", input.token->attr->str, current_func);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
+                        /* @SEM1 - Using undeclared variables in class body */
+                        if (first_analysis && strlen(current_func) == 0 && last_rule == 42) {
+                            if (get_declared_variable(input.token->attr->str, current_class, NULL) == NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to use undeclared static variable %s in static context of class %s!\n", input.token->attr->str, current_class);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
+                    }
                 }
                 else if (input.type == T_FIDENT) {
                     /* @SEM12 - Save function identificator for later use */
                     if (last_rule == 11) {
                         #if SEM_DEBUG == 1
-                        fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
+                            fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
                         #endif
                         dec_id = makeString(input.token->attr->str);
+                    }
+                    /* @SEM1 - Using function call outside function */
+                    if (last_rule == 43) {
+                        if (first_analysis && strlen(current_func) == 0) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Using function %s in static context!\n", input.token->attr->str);
+                            #endif
+                            error(ERR_SEM_DEF);
+                        }
+                    }
+                    /* @SEM2 - Using undeclared function inside function */
+                    if (last_rule == 30 || last_rule == 43) {
+                        if (!first_analysis && strlen(current_func) > 0) {
+                            if (get_declared_function(input.token->attr->str, current_class) == NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to use undeclared function %s in function %s!\n", input.token->attr->str, current_func);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
                     }
                 }
                 else if (input.type == T_RRB) {
@@ -925,23 +965,34 @@ TsTree get_declared_function(char *name, char *p_class) {
 }
 
 HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
+    TsTree tree;
     /* Full identifier - definitely static */
     if (strchr(name, '.') != NULL) {
-        return searchInHashTable(tsFind(root, explodeFullIdentifier(name, true))->ts, explodeFullIdentifier(name, false));
+        tree = tsFind(root, explodeFullIdentifier(name, true));
+        if (tree != NULL)
+            return searchInHashTable(tree->ts, name);
+        else
+            return NULL;
     }
     /* Short identifier - look into function and then into class */
     else {
         HashTable returned = NULL;
-        /* Search in function */
-        if (strchr(p_function, '.') != NULL) { // Long function identifier
-            returned = searchInHashTable(tsFind(root, p_function)->ts, name);
-        }
-        else { // Short function identifier
-            returned = searchInHashTable(tsFind(root, cat(cat(p_class, "."), p_function))->ts, name);
+        if (p_function != NULL && strlen(p_function) > 0) {
+            /* Search in function */
+            if (strchr(p_function, '.') != NULL) { // Long function identifier
+                tree = tsFind(root, p_function);
+                if (tree != NULL)
+                    returned = searchInHashTable(tree->ts, name);
+            }
+            else { // Short function identifier
+                tree = tsFind(root, cat(cat(p_class, "."), p_function));
+                if (tree != NULL)
+                    returned = searchInHashTable(tree->ts, name);
+            }
         }
         /* Search in class */
         if (returned == NULL) {
-            returned = searchInHashTable(tsFind(root, p_class)->ts, name);
+            returned = searchInHashTable(tsFind(root, p_class)->ts, cat(cat(p_class, "."), name));
         }
 
         return returned;
