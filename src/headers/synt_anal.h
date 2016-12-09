@@ -43,7 +43,7 @@ void push_cstack_terminal(TType type, cStack *stack);
 void push_cstack_nonterminal(NTType type, cStack *stack);
 
 /* Auxiliary function to push precedence symbol on stack */
-void push_cstack_psymbol(PType type, cStack *stack);
+void push_cstack_psymbol(PType type, cStack *stack, char data);
 
 /* Auxiliary function to insert token into queue */
 void insert_cqueue_token(Ttoken *token, cQueue *queue);
@@ -67,12 +67,9 @@ TsTree get_declared_function(char *name, char *p_class);
    In case of short name, function (short or long, if provided) is checked before class */
 HashTable get_declared_variable(char *name, char *p_class, char *p_function);
 
-/* Checks, whether given types are compatible with used operator
-   Accepted params:
-       Operands -> I/D/S/B
-       Operator -> + - * / < > <= >= == !=
-   Returns:
-       I/D/S/B/E (error) */
-char get_result_type(char first, char second, char *op);
+/* Gets resulting type of operation with two operators
+   Accepts types I/D/S/B
+   Returns types I/D/S/B/E (error) */
+char get_result_type(char first, char second, PType op);
 
 #endif  // include guard

@@ -1000,8 +1000,36 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
     }
 }
 
-/*char get_result_type(char first, char second, char *op) {
-    if (strcmp())
-    if (first == 'I' && second == 'I')
+char get_result_type(char first, char second, PType op) {
+    char oper = '?';
+    if (op == PS_PLUS ||
+        op == PS_MINUS ||
+        op == PS_STAR ||
+        op == PS_SLASH)
+        oper = 'A';
+    if (op == PS_LTHAN ||
+        op == PS_RTHAN ||
+        op == PS_LTHANEQ ||
+        op == PS_RTHANEQ ||
+        op == PS_EQ ||
+        op == PS_NEQ)
+        oper = 'R';
 
-}*/
+    if (oper == '?')
+        return 'E';
+
+    if (first == 'I' && second == 'I' && oper == 'A')
+        return 'I';
+
+    if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'A')
+        return 'D';
+
+    if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'R')
+        return 'B';
+
+    if (((first == 'S' && (second == 'I' || second == 'D' || second == 'S')) ||
+        (second == 'S' && (first == 'I' || first == 'D' || first == 'S'))) && op == PS_PLUS)
+        return 'S';
+
+    return 'E';
+}

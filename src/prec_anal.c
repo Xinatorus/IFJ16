@@ -240,12 +240,14 @@ void prec_analysis(Ttoken *token) {
             input = getNextPrecSymbol();
         }
         else if (operation == '>') {
+            /* ??? Nebylo by lepsi davat na Stack rovnou ty psymboly se vsemi daty naraz ? */
 
             // (E) -> E
             if (top.content.psymbol.type == PS_RRB) { // )>
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_ESYS) { // E)>
+                    char result_type = top.content.psymbol.data; // Save type of E
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
                     if (top.content.psymbol.type == PS_LRB) { // (E)>
@@ -254,7 +256,7 @@ void prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <(E)>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack, '-'); // <(E)> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, result_type); // <(E)> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -264,17 +266,19 @@ void prec_analysis(Ttoken *token) {
             }
             // i -> E
             else if (top.content.psymbol.type == PS_VALUE) { // i>
+                char result_type = top.content.psymbol.data; // Save type of i
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
-                    push_cstack_psymbol(PS_ESYS, &stack, '-'); // <i> -> E
+                    push_cstack_psymbol(PS_ESYS, &stack, result_type); // <i> -> E
                 }
                 else error(ERR_SYNT);
             }
             // E op E -> E
             else if (top.content.psymbol.type == PS_ESYS) { // E>
+                char first = top.content.psymbol.data; // Save type of first E
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_PLUS || 
@@ -287,15 +291,30 @@ void prec_analysis(Ttoken *token) {
                     top.content.psymbol.type == PS_RTHANEQ || 
                     top.content.psymbol.type == PS_EQ || 
                     top.content.psymbol.type == PS_NEQ) { // op E>
+                    PType op = top.content.psymbol.type; // Save operator
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
                     if (top.content.psymbol.type == PS_ESYS) { // E op E>
+                        char second = top.content.psymbol.data; // Save type of second E
                         cStack_pop(&stack);
                         top = cStack_top(&stack);
                         if (top.content.psymbol.type == PS_LSYS) { // <E op E>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack, '-'); // <E op E> -> E
+
+                            char result_type = get_result_type(first, second, op);
+
+                            /* @SEM2 - Check for operands compatibility */
+                            if (!first_analysis) {
+                                if (result_type == 'E') {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first, second, PType_string[op]);
+                                    #endif
+                                    error(ERR_SEM_TYPE);
+                                }
+                            }
+
+                            push_cstack_psymbol(PS_ESYS, &stack, result_type); // <E op E> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -328,7 +347,6 @@ void prec_analysis(Ttoken *token) {
         error(ERR_SYNT);
     }
     cStack_pop(&stack);
-
 
     cStack_free(&temporary);
 
