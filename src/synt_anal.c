@@ -335,6 +335,7 @@ void applyRule(int rule, cStack *stack) {
             // NT_PRAVA_STRANA -> T_IDENT
             cStack_pop(stack);
             push_cstack_terminal(T_IDENT, stack);
+            break;
         case 43:
             // NT_PRAVA_STRANA -> T_FIDENT NT_VOLANI_FUNKCE
             cStack_pop(stack);
@@ -616,7 +617,7 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
                             #endif
-                            if (tsFind(root, input.token->attr->str) != NULL) {
+                            if (get_declared_class(input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Class %s is already declared!\n", input.token->attr->str);
                                 #endif
@@ -644,7 +645,7 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
                                 #endif
-                                TsTree class_tree = tsFind(root, current_class);
+                                TsTree class_tree = get_declared_class(current_class);
                                 if (searchInHashTable(class_tree->ts, full_name) != NULL) {
                                     #if SEM_DEBUG == 1
                                         fprintf(stdout, "\t@ Static variable %s is already declared!\n", full_name);
@@ -665,7 +666,7 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
                                 #endif
-                                TsTree func_tree = tsFind(root, current_func);
+                                TsTree func_tree = get_declared_function(current_func, NULL);
                                 if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
                                     #if SEM_DEBUG == 1
                                         fprintf(stdout, "\t@ Normal variable %s in function %s is already declared!\n", input.token->attr->str, current_func);
@@ -688,7 +689,7 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring normal variable (parameter) %s of function %s\n", input.token->attr->str, full_name);
                             #endif
-                            TsTree func_tree = tsFind(root, full_name);
+                            TsTree func_tree = get_declared_function(full_name, NULL);
                             if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Normal variable (parameter) %s of function %s is already declared!\n", input.token->attr->str, full_name);
@@ -721,7 +722,7 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring static function %s\n", full_name);
                             #endif
-                            if (tsFind(root, full_name) != NULL) {
+                            if (get_declared_function(full_name, NULL) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Static function %s is already declared!\n", full_name);
                                 #endif

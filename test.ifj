@@ -3,10 +3,17 @@ class main
 {
     static void run()
     {
-        a;
-        b();
-        c(a);
-        d(a, b);
-        e(a, b, c);
+
+        v1; // prikaz - jen tak identifikator
+        v2(); // prikaz - volani funkce
+        v3(x); // volani funkce - prvni parametr
+        v4(x, y); // volani funkce - kazdy dalsi parametr
+
+        int t1 = n1; // prirazeni z promenne - pri definici
+        t2 = n2; // prirazeni z promenne - pri volani
+        int t3 = f1(); // prirazeni z funkce - pri definici
+        t4 = f2(); // prirazeni z funkce - pri volani
+
+        return a; // neco vraci
     }
 }
