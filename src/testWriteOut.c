@@ -61,25 +61,25 @@ void hashTest() {/*
 }
 
 //testovaci vypis struktury TS
-void tsWriteOutTree(TsTree root) {
-	debug(" [TSTREE] TsTree:\n");
+void tsWriteOutTreeTS(TsTree root) {
+	debug(" [TSTREE] TsTree with hash tables:\n");
 	if (root == NULL) {
 		debug(" [TSTREE] TsTreeis empty.\n");
 		return;
 	}
 
 	for (TsTree x = root; x != NULL; x = x->next) {
-		debug(" [TSTREE] %c %s\n",195, x->name);
+		debug(" [TSTREE] %s:\n", x->name);
 		hashWriteOut(x->ts);
 		for (TsTree t = x->child; t != NULL; t = t->next) {
-			hashWriteOut(x->ts);
-			debug(" [TSTREE] %c %c%c %s\n", 179, 192, 196, t->name);
+			debug(" [TSTREE] %s:\n", t->name);
+			hashWriteOut(t->ts);
 		}
 	}
 	debug(" [TSTREE] End of TsTree.\n");
 }
 
-void tsWriteOutTreeTS(TsTree root) {
+void tsWriteOutTree(TsTree root) {
 	debug(" [TSTREE] TsTree:\n");
 	if (root == NULL) {
 		debug(" [TSTREE] TsTreeis empty.\n");
@@ -197,9 +197,9 @@ void testInterpret() {
 	tsAdd(&root, "Main.run", 3, NULL, local);
 	tsWriteOutTree(root);
 
-
+	tsWriteOutTreeTS(root);
 	//printf("Running interpret\n");
-	interpret(list,&root);
+	//interpret(list,&root);
 
 
 
