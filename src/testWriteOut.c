@@ -61,6 +61,24 @@ void hashTest() {/*
 }
 
 //testovaci vypis struktury TS
+void tsWriteOutTreeTS(TsTree root) {
+	debug(" [TSTREE] TsTree with hash tables:\n");
+	if (root == NULL) {
+		debug(" [TSTREE] TsTreeis empty.\n");
+		return;
+	}
+
+	for (TsTree x = root; x != NULL; x = x->next) {
+		debug(" [TSTREE] %s:\n", x->name);
+		hashWriteOut(x->ts);
+		for (TsTree t = x->child; t != NULL; t = t->next) {
+			debug(" [TSTREE] %s:\n", t->name);
+			hashWriteOut(t->ts);
+		}
+	}
+	debug(" [TSTREE] End of TsTree.\n");
+}
+
 void tsWriteOutTree(TsTree root) {
 	debug(" [TSTREE] TsTree:\n");
 	if (root == NULL) {
@@ -69,15 +87,11 @@ void tsWriteOutTree(TsTree root) {
 	}
 
 	for (TsTree x = root; x != NULL; x = x->next) {
-		debug(" [TSTREE] %c %s\n",195, x->name);
+		debug(" [TSTREE] %c %s\n", 195, x->name);
 		for (TsTree t = x->child; t != NULL; t = t->next)
-			debug(" [TSTREE] %c %c%c %s\n",179,192,196, t->name);
+			debug(" [TSTREE] %c %c%c %s\n", 179, 192, 196, t->name);
 	}
 	debug(" [TSTREE] End of TsTree.\n");
-}
-
-void tsWriteOutTreeTS(TsTree root) {
-
 }
 
 void tsTest() {
@@ -124,12 +138,14 @@ void testInterpret() {
 	printf("Vyvarim TS Main\n");
 	HashTable glob = createHashTable(HASH_TABLE_SIZE);
 	addToHashTable(glob,"Main.run","FVI",0,0);
+	addToHashTable(glob, "b", "VD", 0, 1);
+	addToHashTable(glob, "c", "VS", 0, 2);
 	hashWriteOut(glob);
 
 	printf("Vyvarim TS Main.run\n");
 	HashTable local = createHashTable(HASH_TABLE_SIZE);
-	addToHashTable(local, "a", "VI", 0, 0); // pormenna a
-	addToHashTable(local, "b", "VD", 0, 1);
+	addToHashTable(local, "a", "VS", 0, 0); // pormenna a
+	addToHashTable(local, "b", "VS", 0, 1);
 	addToHashTable(local, "c", "VS", 0, 2);
 	hashWriteOut(local);
 
@@ -140,9 +156,9 @@ void testInterpret() {
 
 	printf("now adding instr to list\n");
 	
-	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_double, .value.v_double = 1.8 }, NULL });
+	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_double, .value.v_double = 1.8 }, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand){name, .value.name = "a"}, NULL });
-	//instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "c"}, &(Operand) { c_string, .value.v_string = "slovo" }, NULL });
+	instrListAddInstr(&list, (tInstr) { I_MOV, &(Operand){name, .value.name = "b"}, &(Operand) { c_string, .value.v_string = "slovo" }, NULL });
 
 	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "a"}, &(Operand) { name, .value.name = "b" }, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){c_string, .value.v_string = "Hello World!\n"}, NULL, NULL });
@@ -177,13 +193,13 @@ void testInterpret() {
 	TsTree root;
 	tsTreeInit(&root);
 
-	tsAdd(&root, "Main", 0, NULL, glob);
+	tsAdd(&root, "Main", 2, NULL, glob);
 	tsAdd(&root, "Main.run", 3, NULL, local);
 	tsWriteOutTree(root);
 
-
+	tsWriteOutTreeTS(root);
 	//printf("Running interpret\n");
-	interpret(list,&root);
+	//interpret(list,&root);
 
 
 
@@ -208,19 +224,21 @@ void testWriteOutFrame(StackFrame *sf) {
 	debug(" [FRAMEWORK] +                          ID +       TYPE +                                VALUE +\n");
 
 	for (int i = 0; i < sf->size; i++) {
-		if (sf->data[i].defined != true) {
-			debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string", "UNDEFINED");
-			continue;
-		}
 		switch (sf->data[i].type) {
 		case t_int:
-			debug(" [FRAMEWORK] +%28s +%11s +%37d +\n", sf->data[i].name, "int", sf->data[i].value.v_int);
+			if (sf->data[i].defined == true)
+				debug(" [FRAMEWORK] +%28s +%11s +%37d +\n", sf->data[i].name, "int", sf->data[i].value.v_int);
+			else debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "int", "UNDEF");
 			break;
 		case t_double:
-			debug(" [FRAMEWORK] +%28s +%11s +%37g +\n", sf->data[i].name, "double",sf->data[i].value.v_double);
+			if (sf->data[i].defined == true)
+				debug(" [FRAMEWORK] +%28s +%11s +%37g +\n", sf->data[i].name, "double",sf->data[i].value.v_double);
+			else debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "double", "UNDEF");
 			break;
 		case t_string:
-			debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string",sf->data[i].value.v_string);
+			if (sf->data[i].defined == true)
+				debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string",sf->data[i].value.v_string);
+			else debug(" [FRAMEWORK] +%28s +%11s +%37s +\n", sf->data[i].name, "string", "UNDEF");
 			break;
 		default: debug(" [FRAMEWORK] + ERROR TYPE\n");
 			break;
