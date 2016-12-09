@@ -111,6 +111,7 @@ static char *PType_string[] = {
 typedef struct {
     TType type; // Type of this terminal
     Ttoken *token; // Associated token (can be NULL if it was made artificially)
+    char data; // I/D/S/B/-
 }Terminal;
 
 /* Precedence symbol structure */

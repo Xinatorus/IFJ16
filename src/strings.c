@@ -71,7 +71,7 @@ int compare(char *s1, char *s2)
 char *explodeFullIdentifier(char *id, bool left) {
     char *pos;
     if ((pos = strchr(id, '.')) == NULL) // No dot, no fun :(
-        return (char *) malloc(strlen(id) * sizeof(char));
+        return makeString(id);
     else {
         char *exploded; int length;
         if (left) {

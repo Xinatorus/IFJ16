@@ -13,8 +13,9 @@ TsTree root; // Main symbol table leaf
 int last_rule; // Last applied rule
 char *dec_types; // Actual types (var type of return type of func + params)
 char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
-int var_static_index; // order of saved static var in class symbol table
-int var_normal_index; // order of saved normal var in function symbol table
+int var_static_index; // Order of saved static var in class symbol table
+int var_normal_index; // Order of saved normal var in function symbol table
+int block_depth; // Actual code depth (used to determine static context)
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -132,17 +133,17 @@ void applyRule(int rule, cStack *stack) {
         case 3:
             // NT_TRIDA -> T_CLASS T_IDENT T_LCB NT_SEZNAM_DEFINIC_STATIC T_RCB
             cStack_pop(stack);
-            push_cstack_terminal(T_RCB, stack);
+            push_cstack_terminal(T_RCB, stack, '-');
             push_cstack_nonterminal(NT_SEZNAM_DEFINIC_STATIC, stack);
-            push_cstack_terminal(T_LCB, stack);
-            push_cstack_terminal(T_IDENT, stack);
-            push_cstack_terminal(T_CLASS, stack);
+            push_cstack_terminal(T_LCB, stack, '-');
+            push_cstack_terminal(T_IDENT, stack, '-');
+            push_cstack_terminal(T_CLASS, stack, '-');
             break;
         case 4:
             // NT_SEZNAM_DEFINIC_STATIC -> T_STATIC NT_DATOVY_TYP NT_DEFINICE_STATIC NT_SEZNAM_DEFINIC_STATIC
             push_cstack_nonterminal(NT_DEFINICE_STATIC, stack);
             push_cstack_nonterminal(NT_DATOVY_TYP, stack);
-            push_cstack_terminal(T_STATIC, stack);
+            push_cstack_terminal(T_STATIC, stack, '-');
             break;
         case 5:
             // NT_SEZNAM_DEFINIC_STATIC -> eps
@@ -156,14 +157,14 @@ void applyRule(int rule, cStack *stack) {
         case 7:
             // NT_DEFINICE_STATIC -> NT_DEFINICE_PROMENNA T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack);
             break;
         case 8:
             // NT_DEFINICE_PROMENNA -> T_IDENT NT_DEF_PROM_KONEC
             cStack_pop(stack);
             push_cstack_nonterminal(NT_DEF_PROM_KONEC, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 9:
             // NT_DEF_PROM_KONEC -> NT_PRIRAZENI
@@ -178,10 +179,10 @@ void applyRule(int rule, cStack *stack) {
             // NT_DEFINICE_FUNKCE -> T_FIDENT T_LRB NT_SEZNAM_PARAMETRU T_RRB NT_SLOZENY_PRIKAZ
             cStack_pop(stack);
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
             push_cstack_nonterminal(NT_SEZNAM_PARAMETRU, stack);
-            push_cstack_terminal(T_LRB, stack);
-            push_cstack_terminal(T_FIDENT, stack);
+            push_cstack_terminal(T_LRB, stack, '-');
+            push_cstack_terminal(T_FIDENT, stack, '-');
             break;
         case 12:
             // NT_SEZNAM_PARAMETRU -> NT_PARAMETR_PRVNI NT_PARAMETR_DALSI
@@ -196,14 +197,14 @@ void applyRule(int rule, cStack *stack) {
         case 14:
             // NT_PARAMETR_PRVNI -> T_TYPE T_IDENT
             cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack);
-            push_cstack_terminal(T_TYPE, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
+            push_cstack_terminal(T_TYPE, stack, '-');
             break;
         case 15:
             // NT_PARAMETR_DALSI -> T_COMMA T_TYPE T_IDENT NT_PARAMETR_DALSI
-            push_cstack_terminal(T_IDENT, stack);
-            push_cstack_terminal(T_TYPE, stack);
-            push_cstack_terminal(T_COMMA, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
+            push_cstack_terminal(T_TYPE, stack, '-');
+            push_cstack_terminal(T_COMMA, stack, '-');
             break;
         case 16:
             // NT_PARAMETR_DALSI -> eps
@@ -213,13 +214,13 @@ void applyRule(int rule, cStack *stack) {
             // NT_SEZNAM_VSTUPU -> T_EXPRESSION NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 18:
             // NT_SEZNAM_VSTUPU -> T_IDENT NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 19:
             // NT_SEZNAM_VSTUPU -> eps
@@ -229,7 +230,7 @@ void applyRule(int rule, cStack *stack) {
             // NT_VSTUP_DALSI -> T_COMMA NT_VSTUP_KONEC
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_KONEC, stack);
-            push_cstack_terminal(T_COMMA, stack);
+            push_cstack_terminal(T_COMMA, stack, '-');
             break;
         case 21:
             // NT_VSTUP_DALSI -> eps
@@ -239,20 +240,20 @@ void applyRule(int rule, cStack *stack) {
             // NT_VSTUP_KONEC -> T_EXPRESSION NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 23:
             // NT_VSTUP_KONEC -> T_IDENT NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 24:
             // NT_SLOZENY_PRIKAZ -> T_LCB NT_BLOK_PRIKAZU T_RCB
             cStack_pop(stack);
-            push_cstack_terminal(T_RCB, stack);
+            push_cstack_terminal(T_RCB, stack, '-');
             push_cstack_nonterminal(NT_BLOK_PRIKAZU, stack);
-            push_cstack_terminal(T_LCB, stack);
+            push_cstack_terminal(T_LCB, stack, '-');
             break;
         case 25:
             // NT_BLOK_PRIKAZU -> NT_PRIKAZ NT_BLOK_PRIKAZU
@@ -265,56 +266,56 @@ void applyRule(int rule, cStack *stack) {
         case 27:
             // NT_PRIKAZ -> T_TYPE NT_DEFINICE_PROMENNA T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack);
-            push_cstack_terminal(T_TYPE, stack);
+            push_cstack_terminal(T_TYPE, stack, '-');
             break;
         case 28:
             // NT_PRIKAZ -> T_EXPRESSION T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_SC, stack, '-');
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 29:
             // NT_PRIKAZ -> T_IDENT NT_POUZITI T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_POUZITI, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 30:
             // NT_PRIKAZ -> T_FIDENT NT_VOLANI_FUNKCE T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack);
-            push_cstack_terminal(T_FIDENT, stack);
+            push_cstack_terminal(T_FIDENT, stack, '-');
             break;
         case 31:
             // NT_PRIKAZ -> T_RETURN NT_NAVRAT_KONEC T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_NAVRAT_KONEC, stack);
-            push_cstack_terminal(T_RETURN, stack);
+            push_cstack_terminal(T_RETURN, stack, '-');
             break;
         case 32:
             // NT_PRIKAZ -> T_IF T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ T_ELSE NT_SLOZENY_PRIKAZ
             cStack_pop(stack);
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_ELSE, stack);
+            push_cstack_terminal(T_ELSE, stack, '-');
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
-            push_cstack_terminal(T_LRB, stack);
-            push_cstack_terminal(T_IF, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
+            push_cstack_terminal(T_LRB, stack, '-');
+            push_cstack_terminal(T_IF, stack, '-');
             break;
         case 33:
             // NT_PRIKAZ -> T_WHILE T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ
             cStack_pop(stack);
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
-            push_cstack_terminal(T_LRB, stack);
-            push_cstack_terminal(T_WHILE, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
+            push_cstack_terminal(T_LRB, stack, '-');
+            push_cstack_terminal(T_WHILE, stack, '-');
             break;
         case 34:
             // NT_POUZITI -> NT_PRIRAZENI
@@ -328,19 +329,19 @@ void applyRule(int rule, cStack *stack) {
         case 36:
             // NT_VOLANI_FUNKCE -> T_LRB NT_SEZNAM_VYRAZU T_RRB
             cStack_pop(stack);
-            push_cstack_terminal(T_RRB, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
             push_cstack_nonterminal(NT_SEZNAM_VSTUPU, stack);
-            push_cstack_terminal(T_LRB, stack);
+            push_cstack_terminal(T_LRB, stack, '-');
             break;
         case 37:
             // NT_NAVRAT_KONEC -> T_EXPRESSION
             cStack_pop(stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 38:
             // NT_NAVRAT_KONEC -> T_IDENT
             cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 39:
             // NT_NAVRAT_KONEC -> eps
@@ -350,33 +351,33 @@ void applyRule(int rule, cStack *stack) {
             // NT_PRIRAZENI -> T_ASSIGN NT_PRAVA_STRANA
             cStack_pop(stack);
             push_cstack_nonterminal(NT_PRAVA_STRANA, stack);
-            push_cstack_terminal(T_ASSIGN, stack);
+            push_cstack_terminal(T_ASSIGN, stack, '-');
             break;
         case 41:
             // NT_PRAVA_STRANA -> T_EXPRESSION
             cStack_pop(stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 42:
             // NT_PRAVA_STRANA -> T_IDENT
             cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 43:
             // NT_PRAVA_STRANA -> T_FIDENT NT_VOLANI_FUNKCE
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack);
-            push_cstack_terminal(T_FIDENT, stack);
+            push_cstack_terminal(T_FIDENT, stack, '-');
             break;
         case 44:
             // NT_DATOVY_TYP -> T_VOID
             cStack_pop(stack);
-            push_cstack_terminal(T_VOID, stack);
+            push_cstack_terminal(T_VOID, stack, '-');
             break;
         case 45:
             // NT_DATOVY_TYP -> T_TYPE
             cStack_pop(stack);
-            push_cstack_terminal(T_TYPE, stack);
+            push_cstack_terminal(T_TYPE, stack, '-');
             break;
         default:
             break;
@@ -411,6 +412,7 @@ Terminal getNextTerminal() {
 
     terminal.token = token;
     terminal.type = T_UNKNOWN;
+    terminal.data = '-';
 
     if (token->type == KLICOVE_SLOVO) {
         if (strcmp(token->attr->str, "class") == 0) {
@@ -518,11 +520,12 @@ Terminal getNextTerminal() {
     return terminal;
 }
 
-void push_cstack_terminal(TType type, cStack *stack) {
+void push_cstack_terminal(TType type, cStack *stack, char data) {
     cItem item;
     Terminal terminal;
     terminal.token = NULL;
     terminal.type = type;
+    terminal.data = data;
     item.type = IT_TERMINAL;
     item.content.terminal = terminal;
     if (!cStack_push(stack, item)) {
@@ -564,23 +567,32 @@ void execute() {
     dec_id = makeString("");
     cStack_init(&stack, 50);
     cQueue_init(&token_archive);
+    block_depth = 0;
 
     if (first_analysis) {
         /* @SEM - Create symbol table for default if16 class */
         #if SEM_DEBUG == 1
-        fprintf(stdout, "\t@ Declaring default ifj16 class\n");
+            fprintf(stdout, "\t@ Declaring default ifj16 class\n");
         #endif
         tsTreeInit(&root);
         HashTable ht_ifj16 = createHashTable(HASH_TABLE_SIZE);
         tsAdd(&root, "ifj16", 0, NULL, ht_ifj16);
         addToHashTable(ht_ifj16, "ifj16.readInt", "FI", true, 0);
+        tsAdd(&root, "ifj16.readInt", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.readString", "FS", true, 0);
+        tsAdd(&root, "ifj16.readString", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.print", "FVS", true, 0);
+        tsAdd(&root, "ifj16.print", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.length", "FIS", true, 0);
+        tsAdd(&root, "ifj16.length", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.substr", "FSSIN", true, 0);
+        tsAdd(&root, "ifj16.substr", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.compare", "FISS", true, 0);
+        tsAdd(&root, "ifj16.compare", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.find", "FISS", true, 0);
+        tsAdd(&root, "ifj16.find", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.sort", "FSS", true, 0);
+        tsAdd(&root, "ifj16.sort", 0, NULL, createHashTable(HASH_TABLE_SIZE));
     }
 
     /* First step - push NT_DOLLAR (NT version of EOF) and NT_PROGRAM to stack */
@@ -812,20 +824,24 @@ void execute() {
                     }
                 }
                 else if (input.type == T_RCB) {
+                    block_depth--;
                     /* @SEM12 - Leaving class */
-                    if (last_rule == 5) {
+                    if (block_depth == 0) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving class %s\n", current_class);
                         #endif
                         current_class = makeString("");
                     }
                     /* @SEM12 - Leaving function */
-                    if (last_rule == 26) {
+                    if (block_depth == 1) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving static function %s\n", current_func);
                         #endif
                         current_func = makeString("");
                     }
+                }
+                else if (input.type == T_LCB) {
+                    block_depth++;
                 }
                 else if (input.type == T_TYPE) {
                     bool save_type = false;
@@ -893,7 +909,10 @@ void execute() {
                     #if SYNT_DEBUG == 1
                         fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Calling precedence analysis... < ~~~~\n", first_analysis ? 1 : 2);
                     #endif
-                    prec_analysis(input.token);
+                    input.data = prec_analysis(input.token);
+                    #if SYNT_DEBUG == 1
+                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
+                    #endif
                 }
                 else {
                     cStack_pop(&stack);
@@ -1027,6 +1046,7 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
 
 char get_result_type(char first, char second, PType op) {
     char oper = '?';
+    char result = 'E';
     if (op == PS_PLUS ||
         op == PS_MINUS ||
         op == PS_STAR ||
@@ -1041,20 +1061,21 @@ char get_result_type(char first, char second, PType op) {
         oper = 'R';
 
     if (oper == '?')
-        return 'E';
+        result = 'E';
 
-    if (first == 'I' && second == 'I' && oper == 'A')
-        return 'I';
+    else if (first == 'I' && second == 'I' && oper == 'A')
+        result = 'I';
 
-    if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'A')
-        return 'D';
+    else if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'A')
+        result = 'D';
 
-    if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'R')
-        return 'B';
+    else if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'R')
+        result = 'B';
 
-    if (((first == 'S' && (second == 'I' || second == 'D' || second == 'S')) ||
+    else if (((first == 'S' && (second == 'I' || second == 'D' || second == 'S')) ||
         (second == 'S' && (first == 'I' || first == 'D' || first == 'S'))) && op == PS_PLUS)
-        return 'S';
+        result = 'S';
 
-    return 'E';
+    fprintf(stdout, "### get_result_type(%c, %c, %s) = %c\n", first, second, PType_string[op], result);
+    return result;
 }

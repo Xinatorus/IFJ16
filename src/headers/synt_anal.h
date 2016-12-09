@@ -1,8 +1,8 @@
 #ifndef SYNT_ANAL_H
 #define SYNT_ANAL_H
 
-#define TOKEN_DEBUG 1   // Debug messages for loaded tokens
-#define SYNT_DEBUG 1    // Debug messages for first pass of syntax analysis (useful to check where syntax error occured)
+#define TOKEN_DEBUG 0   // Debug messages for loaded tokens
+#define SYNT_DEBUG 1    // Debug messages for syntax analysis
 #define PREC_DEBUG 1    // Debug messages for precedence analysis
 #define SEM_DEBUG 1     // Debug messsges for semantic analysis
 
@@ -38,7 +38,7 @@ char getPrecedenceOperation(PType top, PType input);
 Psymbol getNextPrecSymbol();
 
 /* Auxiliary function to push terminal on stack (token will be NULL) */
-void push_cstack_terminal(TType type, cStack *stack);
+void push_cstack_terminal(TType type, cStack *stack, char data);
 
 /* Auxiliary function to push non-terminal on stack */
 void push_cstack_nonterminal(NTType type, cStack *stack);
@@ -49,8 +49,8 @@ void push_cstack_psymbol(PType type, cStack *stack, char data);
 /* Auxiliary function to insert token into queue */
 void insert_cqueue_token(Ttoken *token, cQueue *queue);
 
-/* Run precedence analysis */
-void prec_analysis(Ttoken *token);
+/* Run precedence analysis (returns type of last E symbol) */
+char prec_analysis(Ttoken *token);
 
 /* Load next token (source is determined by first_analysis variable) */
 Ttoken *load_next_token();

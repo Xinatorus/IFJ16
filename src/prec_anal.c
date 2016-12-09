@@ -174,7 +174,7 @@ void insert_cqueue_token(Ttoken *token, cQueue *queue) {
     cQueue_insert(queue, to_insert);
 }
 
-void prec_analysis(Ttoken *token) {
+char prec_analysis(Ttoken *token) {
     #if PREC_DEBUG == 1
         fprintf(stdout, "  [PREC_DEBUG]   === PRECEDENCE ANALYSIS STARTED ===\n");
     #endif
@@ -340,6 +340,7 @@ void prec_analysis(Ttoken *token) {
     if (top.type != IT_PSYMBOL || top.content.psymbol.type != PS_ESYS) {
         error(ERR_SYNT);
     }
+    char result = top.content.psymbol.data;
     cStack_pop(&stack);
     top = cStack_top(&stack);
     // Now, there should be $ on the top
@@ -354,5 +355,5 @@ void prec_analysis(Ttoken *token) {
         fprintf(stdout, "  [PREC_DEBUG]   === PRECEDENCE ANALYSIS FINISHED ===\n");
     #endif
 
-    return;
+    return result;
 }

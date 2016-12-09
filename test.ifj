@@ -1,27 +1,32 @@
 
 class main
 {
-    static int x;
-    static int v1 = x+1;
-    static int y;
-    static int n1;
-    static int v2;
-    
-
-    static void run()
+    static void run() /* Hlavni funkce */
     {
-        int a = 3<5;
-
-
-        main.v1; // prikaz - jen tak identifikator
-        v2(); // prikaz - volani funkce
-        v3(main.x); // volani funkce - prvni parametr
-        v4(main.x, main.y); // volani funkce - kazdy dalsi parametr
-
-        int t1 = main.n1; // prirazeni z promenne
-        int t3 = f1(); // prirazeni z funkce
-
-        return main.ddd; // neco vraci
+        int a; int vysl; int neg;
+        ifj16.print("Zadejte cislo pro vypocet faktorialu: ");
+        a = ifj16.readInt();
+        if (a < 0) {
+            ifj16.print("Faktorial nelze spocitat!\n");
+        }
+        else {
+            vysl = factorial(a);
+            neg = 0 - vysl;
+            ifj16.print("Vysledek: " + vysl);
+            ifj16.print(" (zaporny: " + neg+ ")\n");
+        }
     }
 
+    static int factorial(int n) // Definice funkce pro vypocet faktorialu
+    {
+        int temp_result;
+        int decremented_n = n - 1;
+        if (n < 2) {
+            return 1;
+        }
+        else {            temp_result = factorial(decremented_n);
+            temp_result = n * temp_result;
+            return temp_result;
+        }
+    }
 }
