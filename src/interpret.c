@@ -10,9 +10,13 @@ void interpret(tInstrList iList,TsTree *root) {
 	tInstr ins; // aktualni instrukce
 
 	// tabulka ramcu
-	StackFrame *sf = newFrame(NULL,*root,"Main.run",NULL,NULL);
+	StackFrame *sf = newTopFrame(*root);
+	debug("[INTERPRET] Content of TOP FRAME\n");
+	testWriteOutFrame(sf);
+	sf = newFrame(NULL,*root,"Main.run",NULL,NULL);
 	extractParams(sf, *root, interStack);
-	
+
+
 	//printf("### END TEST SF wOut\n");
 
 	//StackFrame *sf = ts; // POUZE PRO TEST
@@ -239,14 +243,17 @@ void interpret(tInstrList iList,TsTree *root) {
 //Matematicke operace
 		case I_ADD:
 			// ? src2 ? // src2 je vzdy
-			if (src2 && src2T == name && findInFrame(src2->value.name,sf)->defined == false) {
+			if (src2 && src2->type == name && findInFrame(src2->value.name,sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			} // src1 src2 dest
-			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
 					//ERR
+				error(ERR_RUN_INIT);
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
 
@@ -307,13 +314,16 @@ void interpret(tInstrList iList,TsTree *root) {
 
 			break;
 		case I_SUB:
-			if (src2 && src2T == name && findInFrame(src2->value.name, sf)->defined == false) {
+			if (src2 && src2->type == name && findInFrame(src2->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			} // src1 src2 dest
-			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
+				error(ERR_RUN_INIT);
 				//ERR
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
@@ -334,14 +344,17 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 			break;
 		case I_MUL:
-			if (src2 && src2T == name && findInFrame(src2->value.name, sf)->defined == false) {
+			if (src2 && src2->type == name && findInFrame(src2->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			} // src1 src2 dest
-			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
 			switch (destT) {
@@ -361,14 +374,17 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 			break;
 		case I_DIV:
-			if (src2 && src2T == name && findInFrame(src2->value.name, sf)->defined == false) {
+			if (src2 && src2->type == name && findInFrame(src2->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			} // src1 src2 dest
-			if (src1 != dest && src1T == name && findInFrame(src1->value.name, sf)->defined == false) {
+			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
 				//ERR
+				error(ERR_RUN_INIT);
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
 			switch (destT) {
@@ -536,7 +552,7 @@ void interpret(tInstrList iList,TsTree *root) {
 
 // extrahuje parametry funkce
 void extractParams(StackFrame *sf, TsTree root, Stack stack) {
-	debug("[INTERPRET] Looking for params");
+	debug("[INTERPRET] Looking for params\n");
 
 	int cpar = 0;
 	for (TsTree x = root; x != NULL; x = x->next) 
