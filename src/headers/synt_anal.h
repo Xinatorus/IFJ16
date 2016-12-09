@@ -18,6 +18,8 @@ extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 extern Ttoken *token_list; // Token list, used for second pass
 extern bool first_analysis; // Whether this is first pass (used for static declarations)
+extern char *current_class; // Actual class
+extern char *current_func; // Actual function
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
 int getRuleNumber(NTType nt, TType t);

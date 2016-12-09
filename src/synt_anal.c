@@ -5,12 +5,12 @@ cQueue token_archive; // Queue to store pre-used tokens
 cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 Ttoken *token_list = NULL; // Token list, used for second pass
 bool first_analysis = true; // Whether this is first pass (static declarations)
+char *current_class; // Actual class
+char *current_func; // Actual function
 
 /* Semantic variables */
 TsTree root; // Main symbol table leaf
 int last_rule; // Last applied rule
-char *current_class; // Actual class
-char *current_func; // Actual function
 char *dec_types; // Actual types (var type of return type of func + params)
 char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
 int var_static_index; // order of saved static var in class symbol table
@@ -249,6 +249,7 @@ void applyRule(int rule, cStack *stack) {
             cStack_pop(stack);
             push_cstack_terminal(T_SC, stack);
             push_cstack_terminal(T_EXPRESSION, stack);
+            break;
         case 29:
             // NT_PRIKAZ -> T_IDENT NT_POUZITI T_SC
             cStack_pop(stack);

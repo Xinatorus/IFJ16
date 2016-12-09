@@ -1,14 +1,15 @@
 
 class main
 {
-    static int v1;
-    static int x;
+static int x;
+    static int v1 = x+1;
     static int y;
     static int n1;
-    static int a;
+    static int v2;
 
     static void run()
     {
+        3+3+y5+1;
         main.v1; // prikaz - jen tak identifikator
         v2(); // prikaz - volani funkce
         v3(main.x); // volani funkce - prvni parametr

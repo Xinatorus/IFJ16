@@ -57,8 +57,31 @@ Psymbol getNextPrecSymbol() {
     symbol.type = PS_DOLLAR;
 
     if (token->type == IDENTIFIKATOR ||
-        token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR ||
-        token->type == RETEZEC ||
+        token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
+
+        /* @SEM2 - Check for variables declaration (in expr) inside functions */
+        if (!first_analysis && strlen(current_func) > 0) {
+            if (get_declared_variable(token->attr->str, current_class, current_func) == NULL) {
+                #if SEM_DEBUG == 1
+                    fprintf(stdout, "\t@ User tried to use undeclared variable (in expr) %s in function %s!\n", token->attr->str, current_func);
+                #endif
+                error(ERR_SEM_DEF);
+            }
+        }
+        /* @SEM1 - Check for variables declaration (in expr) in static context */
+        if (first_analysis && strlen(current_func) == 0) {
+            if (get_declared_variable(token->attr->str, current_class, NULL) == NULL) {
+                #if SEM_DEBUG == 1
+                    fprintf(stdout, "\t@ User tried to use undeclared variable (in expr) %s in static context of class %s!\n", token->attr->str, current_class);
+                #endif
+                error(ERR_SEM_DEF);
+            }
+        }
+
+        symbol.type = PS_VALUE;
+    }
+
+    if (token->type == RETEZEC ||
         token->type == CELOCISELNY_LITERAL ||
         token->type == CELOCISELNY_LITERAL_EXPONENT ||
         token->type == DESETINNY_LITERAL ||
