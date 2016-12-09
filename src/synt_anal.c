@@ -203,7 +203,7 @@ void applyRule(int rule, cStack *stack) {
         case 20:
             // NT_VSTUP_DALSI -> T_COMMA NT_VSTUP_KONEC
             cStack_pop(stack);
-            push_cstack_terminal(NT_VSTUP_KONEC, stack);
+            push_cstack_nonterminal(NT_VSTUP_KONEC, stack);
             push_cstack_terminal(T_COMMA, stack);
             break;
         case 21:
@@ -211,13 +211,15 @@ void applyRule(int rule, cStack *stack) {
             cStack_pop(stack);
             break;
         case 22:
-            // NT_VSTUP_KONEC -> T_EXPRESSION
+            // NT_VSTUP_KONEC -> T_EXPRESSION NT_VSTUP_DALSI
             cStack_pop(stack);
+            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
             push_cstack_terminal(T_EXPRESSION, stack);
             break;
         case 23:
-            // NT_VSTUP_KONEC -> T_IDENT
+            // NT_VSTUP_KONEC -> T_IDENT NT_VSTUP_DALSI
             cStack_pop(stack);
+            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
             push_cstack_terminal(T_IDENT, stack);
             break;
         case 24:
@@ -875,7 +877,7 @@ void execute() {
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Checking whether class main exists\n");
         #endif
-        if (tsFind(root, "main") == NULL) {
+        if (get_declared_class("main") == NULL) {
             #if SEM_DEBUG == 1
                 fprintf(stdout, "\t@ Class main not declared!\n");
             #endif
@@ -884,7 +886,7 @@ void execute() {
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Checking whether function main.run exists\n");
         #endif
-        TsTree main_run = tsFind(root, "main.run");
+        TsTree main_run = get_declared_function("main.run", NULL);
         if (main_run == NULL) {
             #if SEM_DEBUG == 1
                 fprintf(stdout, "\t@ Function main.run not declared!\n");
