@@ -92,9 +92,9 @@ TsTree tsFind(TsTree root, char *name) {
 	for (TsTree x = root; x != NULL; x = x->next) {
 		if (!strcmp(x->name, name)) return x;
 		if (isHisParent(name, x->name)) {
-			for (TsTree x = root->child; x != NULL; x = x->next) {
-				if (!strcmp(x->name, name)) {
-					return x;
+			for (TsTree y = x->child; y != NULL; y = y->next) {
+				if (!strcmp(y->name, name)) {
+					return y;
 				}
 			}
 		}

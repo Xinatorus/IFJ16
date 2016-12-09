@@ -478,7 +478,7 @@ void interpret(tInstrList iList,TsTree *root) {
 				error(ERR_RUN_INIT);
 			}
 
-
+			break;
 // Vestavene funkce dest je cil kam se uklada vysledek
 		case I_LEN: // int lenght(String)
 			findInFrame(dest->value.name,sf)->defined = true;
