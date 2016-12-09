@@ -13,6 +13,8 @@ char *current_class; // Actual class
 char *current_func; // Actual function
 char *dec_types; // Actual types (var type of return type of func + params)
 char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
+int var_static_index; // order of saved static var in class symbol table
+int var_normal_index; // order of saved normal var in function symbol table
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -606,10 +608,9 @@ void execute() {
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_IDENT) {
-                        
                     if (last_rule == 3) {
+                        /* @SEM - Declaring class */
                         if (first_analysis) {
-                            /* @SEM - Declaring class */
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
                             #endif
@@ -631,36 +632,102 @@ void execute() {
                             fprintf(stdout, "\t@ Entering class %s\n", input.token->attr->str);
                         #endif
                         current_class = makeString(input.token->attr->str);
+                        var_static_index = 0;
                     }
-                }
-                else if (input.type == T_FIDENT) {
-                    if (first_analysis) {
-                        /* @SEM - Save function identificator for later use */
-                        if (last_rule == 11) {
-                            #if SEM_DEBUG == 1
-                            fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
-                            #endif
-                            dec_id = makeString(input.token->attr->str);
+                    else if (last_rule == 8) {
+                        /* @SEM - Declaring static variable */
+                        if (strlen(current_func) == 0) {
+                            if (first_analysis) {
+                                char *full_name = cat(cat(current_class, "."), input.token->attr->str);
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
+                                #endif
+                                TsTree class_tree = tsFind(root, current_class);
+                                if (searchInHashTable(class_tree->ts, full_name) != NULL) {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Static variable %s is already declared!\n", full_name);
+                                    #endif
+                                    error(ERR_SEM_DEF);
+                                }
+                                else {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Declaring static variable %s of type %s\n", full_name, dec_types);
+                                    #endif
+                                    addToHashTable(class_tree->ts, full_name, cat("V", dec_types), 0, var_static_index++);
+                                }
+                            }
+                        }
+                        /* @SEM - Declaring normal variable */
+                        else {
+                            if (!first_analysis) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
+                                #endif
+                                TsTree func_tree = tsFind(root, current_func);
+                                if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Normal variable %s in function %s is already declared!\n", input.token->attr->str, current_func);
+                                    #endif
+                                    error(ERR_SEM_DEF);
+                                }
+                                else {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Declaring normal variable %s of type %s in function %s\n", input.token->attr->str, dec_types, current_func);
+                                    #endif
+                                    addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                                }
+                            }
                         }
                     }
-                }
-                else if (input.type == T_RRB) {
-                    if (last_rule == 16) {
-                        char *full_name = cat(cat(current_class, "."), dec_id);
-                        if (first_analysis) {
-                            /* @SEM - Declaring function */
+                    /* @SEM - Declaring normal variables (parameters) */
+                    else if (last_rule == 14 || last_rule == 15) {
+                        if (!first_analysis) {
+                            char *full_name = cat(cat(current_class, "."), dec_id);
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ User is declaring function %s\n", full_name);
+                                fprintf(stdout, "\t@ User is declaring normal variable (parameter) %s of function %s\n", input.token->attr->str, full_name);
                             #endif
-                            if (tsFind(root, full_name) != NULL) { // TODO FIX
+                            TsTree func_tree = tsFind(root, full_name);
+                            if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Function %s is already declared!\n", full_name);
+                                    fprintf(stdout, "\t@ Normal variable (parameter) %s of function %s is already declared!\n", input.token->attr->str, full_name);
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
                             else {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Declaring function %s with types %s\n", full_name, dec_types);
+                                    fprintf(stdout, "\t@ Declaring normal variable (parameter) %s of type %s in function %s\n", input.token->attr->str, dec_types, full_name);
+                                #endif
+                                addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                            }
+                        }
+                    }
+                }
+                else if (input.type == T_FIDENT) {
+                    /* @SEM - Save function identificator for later use */
+                    if (last_rule == 11) {
+                        #if SEM_DEBUG == 1
+                        fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
+                        #endif
+                        dec_id = makeString(input.token->attr->str);
+                    }
+                }
+                else if (input.type == T_RRB) {
+                    if (last_rule == 16 || last_rule == 13) {
+                        char *full_name = cat(cat(current_class, "."), dec_id);
+                        if (first_analysis) {
+                            /* @SEM - Declaring function */
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring static function %s\n", full_name);
+                            #endif
+                            if (tsFind(root, full_name) != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Static function %s is already declared!\n", full_name);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring static function %s with types %s\n", full_name, dec_types);
                                 #endif
                                 HashTable ht = createHashTable(HASH_TABLE_SIZE);
                                 tsAdd(&root, full_name, 0, NULL, ht);
@@ -669,9 +736,10 @@ void execute() {
                         }
                         /* @SEM - Entering function */
                         #if SEM_DEBUG == 1
-                            fprintf(stdout, "\t@ Entering function %s\n", full_name);
+                            fprintf(stdout, "\t@ Entering static function %s\n", full_name);
                         #endif
-                        current_func = makeString(dec_id);
+                        current_func = makeString(full_name);
+                        var_normal_index = 0;
                     }
                 }
                 else if (input.type == T_RCB) {
@@ -685,34 +753,44 @@ void execute() {
                     /* @SEM - Leaving function */
                     if (last_rule == 26) {
                         #if SEM_DEBUG == 1
-                            fprintf(stdout, "\t@ Leaving function %s\n", cat(cat(current_class, "."), current_func));
+                            fprintf(stdout, "\t@ Leaving static function %s\n", current_func);
                         #endif
                         current_func = makeString("");
                     }
                 }
                 else if (input.type == T_TYPE) {
                     bool save_type = false;
+                    /* @SEM - Save first primitive type of static func/var for later use */
+                    if (last_rule == 45 || last_rule == 27) {
+                        #if SEM_DEBUG == 1
+                            fprintf(stdout, "\t@ Saving first type %s for later use\n", input.token->attr->str);
+                        #endif
+                        dec_types = makeString("");
+                        save_type = true;
+                    }
                     if (first_analysis) {
-                        /* @SEM - Save first primitive type of static func/var for later use */
-                        if (last_rule == 45) {
-                            #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving first static type %s for later use\n", input.token->attr->str);
-                            #endif
-                            dec_types = makeString("");
-                            save_type = true;
-                        }
                         /* @SEM - Save first parameter type of static func for later use */
-                        else if (last_rule == 14) {
+                        if (last_rule == 14) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving first function parameter type %s for later use\n", input.token->attr->str);
+                                fprintf(stdout, "\t@ Saving first static function parameter type %s for later use\n", input.token->attr->str);
                             #endif
                             save_type = true;
                         }
                         /* @SEM - Save another parameter type of static func for later use */
                         else if (last_rule == 15) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Saving another function parameter type %s for later use\n", input.token->attr->str);
+                                fprintf(stdout, "\t@ Saving another static function parameter type %s for later use\n", input.token->attr->str);
                             #endif
+                            save_type = true;
+                        }
+                    }
+                    else {
+                        /* @SEM - Save parameter type for later use */
+                        if (last_rule == 14 || last_rule == 15) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Saving normal variable (parameter) type %s for later use\n", input.token->attr->str);
+                            #endif
+                            dec_types = makeString("");
                             save_type = true;
                         }
                     }

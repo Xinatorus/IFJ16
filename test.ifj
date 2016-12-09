@@ -1,17 +1,8 @@
+
 class test
 {
-    static int function(int param1, String param2)
+    static void run(int a)
     {
+        int a;
     }
-}
-
-class test2
-{
-    static int function(int string)
-    {
-    }
-    static int function(int string)
-    {
-    }
-
 }
