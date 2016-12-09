@@ -44,10 +44,19 @@ int synt_rules[23][20] = {
 };
 
 Ttoken *load_next_token() {
-    Ttoken *token = NULL;
+    Ttoken *got_token = NULL;
+    Ttoken *token = (Ttoken *) malloc(sizeof(Ttoken));
+    string *str = (string *) malloc(sizeof(string));
     /* Get tokens from lexical analysis */
     if (first_analysis) {
-        token = getNextToken();
+        /* Create deep copy of token, because of innapropriate work with strings in lex_anal */
+        got_token = getNextToken();
+        token->type = got_token->type;
+        token->next = got_token->next;
+        token->cisloRiadku = got_token->cisloRiadku;
+        token->attr = str;
+        str->length = got_token->attr->length;
+        str->str = makeString(got_token->attr->str); // most important part
         /* First token in token_list */
         if (token_list == NULL) {
             token_list = token;
@@ -70,6 +79,22 @@ Ttoken *load_next_token() {
             token_list = token->next;
         }
     }
+
+
+    #if TOKEN_DEBUG == 1
+        fprintf(stdout, "    <<< TOKEN: %s DATA: %s >>>\n", getTokenName(token->type), token->attr->str);
+
+        // Print entire token_list
+        /*
+        Ttoken *iterated = token_list;
+        fprintf(stdout, "TOKEN_LIST_START\n");
+        while (iterated != NULL) {
+            fprintf(stdout, "T: '%s' D: '%s'\n", getTokenName(iterated->type), iterated->attr->str);
+            iterated = iterated->next;
+        }
+        fprintf(stdout, "TOKEN_LIST_END\n");
+        */
+    #endif
 
     return token;
 }
