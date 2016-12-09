@@ -34,9 +34,10 @@ char getPrecedenceOperation(PType top, PType input) {
 }
 
 Psymbol getNextPrecSymbol() {
+    static int par_level = 0; // Level of parenthesis
+
     Ttoken *token = NULL; // Token to work with
     Psymbol symbol; // Symbol to return
-    static int par_level = 0; // Level of parenthesis
 
     // We got token prec_analysis() call
     if (token_param != NULL) {
@@ -55,6 +56,7 @@ Psymbol getNextPrecSymbol() {
 
     symbol.token = token;
     symbol.type = PS_DOLLAR;
+    symbol.data = '-';
 
     if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
@@ -78,10 +80,25 @@ Psymbol getNextPrecSymbol() {
             }
         }
 
-        symbol.type = PS_VALUE;
+        /* @SEM2 - Get data type from identificator */
+        if (!first_analysis) {
+            symbol.data = get_declared_variable(token->attr->str, current_class, current_func)->type[1];
+        }
     }
 
-    if (token->type == RETEZEC ||
+    /* @SEM2 - Get data type from value */
+    if (!first_analysis) {
+        if (token->type == RETEZEC)
+            symbol.data = 'S';
+        else if (token->type == CELOCISELNY_LITERAL || token->type == CELOCISELNY_LITERAL_EXPONENT)
+            symbol.data = 'I';
+        else if (token->type == DESETINNY_LITERAL || token->type == DESETINNY_LITERAL_EXPONENT)
+            symbol.data = 'D';
+    }
+
+    if (token->type == IDENTIFIKATOR ||
+        token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR ||
+        token->type == RETEZEC ||
         token->type == CELOCISELNY_LITERAL ||
         token->type == CELOCISELNY_LITERAL_EXPONENT ||
         token->type == DESETINNY_LITERAL ||
@@ -137,11 +154,12 @@ Psymbol getNextPrecSymbol() {
     return symbol;
 }
 
-void push_cstack_psymbol(PType type, cStack *stack) {
+void push_cstack_psymbol(PType type, cStack *stack, char data) {
     cItem item;
     Psymbol symbol;
     symbol.token = NULL;
     symbol.type = type;
+    symbol.data = data;
     item.type = IT_PSYMBOL;
     item.content.psymbol = symbol;
     if (!cStack_push(stack, item)) {
@@ -166,7 +184,7 @@ void prec_analysis(Ttoken *token) {
     // First step - there is T_EXPRESSION on top, pop it
     cStack_pop(&stack);
     // Second step - push $ on top
-    push_cstack_psymbol(PS_DOLLAR, &stack);
+    push_cstack_psymbol(PS_DOLLAR, &stack, '-');
 
     char operation;
     Psymbol input = getNextPrecSymbol();
@@ -190,7 +208,7 @@ void prec_analysis(Ttoken *token) {
 
         // There could be PS_ESYS, PS_LSYS or PS_RSYS on top, in that case we are popping until we find regular prec. symbol to get prec. operation
         while (top.content.psymbol.type == PS_ESYS || top.content.psymbol.type == PS_LSYS || top.content.psymbol.type == PS_RSYS) {
-            push_cstack_psymbol(top.content.psymbol.type, &temporary);
+            push_cstack_psymbol(top.content.psymbol.type, &temporary, top.content.psymbol.data);
             cStack_pop(&stack);
             top = cStack_top(&stack);
         }
@@ -199,7 +217,7 @@ void prec_analysis(Ttoken *token) {
         if (operation != '<') {
             // We have to push everything "borrowed" back (the check for < is there because operation < does it by itself)
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
@@ -211,14 +229,14 @@ void prec_analysis(Ttoken *token) {
 
         /* Apply operation */
         if (operation == '<') {
-            push_cstack_psymbol(PS_LSYS, &stack); // This is pushed just after non-SYS prec. symbol
+            push_cstack_psymbol(PS_LSYS, &stack, '-'); // This is pushed just after non-SYS prec. symbol
             // We have to push everything "borrowed" back
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
-            push_cstack_psymbol(input.type, &stack);
+            push_cstack_psymbol(input.type, &stack, input.data);
             input = getNextPrecSymbol();
         }
         else if (operation == '>') {
@@ -236,7 +254,7 @@ void prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <(E)>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack); // <(E)> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, '-'); // <(E)> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -251,7 +269,7 @@ void prec_analysis(Ttoken *token) {
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
-                    push_cstack_psymbol(PS_ESYS, &stack); // <i> -> E
+                    push_cstack_psymbol(PS_ESYS, &stack, '-'); // <i> -> E
                 }
                 else error(ERR_SYNT);
             }
@@ -277,7 +295,7 @@ void prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <E op E>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack); // <E op E> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, '-'); // <E op E> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -289,7 +307,7 @@ void prec_analysis(Ttoken *token) {
 
         }
         else if (operation == '=') {
-            push_cstack_psymbol(input.type, &stack);
+            push_cstack_psymbol(input.type, &stack, input.data);
             input = getNextPrecSymbol();
         }
         else if (operation != 'E') {

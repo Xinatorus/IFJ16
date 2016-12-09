@@ -999,3 +999,9 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
         return returned;
     }
 }
+
+/*char get_result_type(char first, char second, char *op) {
+    if (strcmp())
+    if (first == 'I' && second == 'I')
+
+}*/

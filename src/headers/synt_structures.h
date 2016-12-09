@@ -5,6 +5,7 @@
 // This file exists to break Circular dependency within collections.h and synt_anal.h
 // Refer to https://en.wikipedia.org/wiki/Circular_dependency for more details
 
+#include <stdbool.h>
 #include "lex_anal.h"
 
 #define FOREACH_NTTYPE(NTTYPE)          \
@@ -115,6 +116,7 @@ typedef struct {
 /* Precedence symbol structure */
 typedef struct {
     PType type;
+    char data; // I/D/S/B/-
     Ttoken *token; // Associated token (can be NULL if it was made artificially)
 }Psymbol;
 

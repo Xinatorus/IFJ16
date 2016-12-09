@@ -67,4 +67,12 @@ TsTree get_declared_function(char *name, char *p_class);
    In case of short name, function (short or long, if provided) is checked before class */
 HashTable get_declared_variable(char *name, char *p_class, char *p_function);
 
+/* Checks, whether given types are compatible with used operator
+   Accepted params:
+       Operands -> I/D/S/B
+       Operator -> + - * / < > <= >= == !=
+   Returns:
+       I/D/S/B/E (error) */
+char get_result_type(char first, char second, char *op);
+
 #endif  // include guard
