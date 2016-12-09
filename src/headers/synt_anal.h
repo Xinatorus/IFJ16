@@ -1,7 +1,7 @@
 #ifndef SYNT_ANAL_H
 #define SYNT_ANAL_H
 
-#define TOKEN_DEBUG 0   // Debug messages for loaded tokens
+#define TOKEN_DEBUG 1   // Debug messages for loaded tokens
 #define SYNT_DEBUG 1    // Debug messages for syntax analysis
 #define PREC_DEBUG 1    // Debug messages for precedence analysis
 #define SEM_DEBUG 1     // Debug messsges for semantic analysis

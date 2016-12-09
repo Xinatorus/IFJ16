@@ -913,6 +913,27 @@ void execute() {
                     #if SYNT_DEBUG == 1
                         fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
                     #endif
+
+                    if (!first_analysis) {
+                        /* @SEM2 - Check expected boolean type for if statement */
+                        if (last_rule == 32) {
+                            if (input.data != 'B') {
+                                #if PREC_DEBUG == 1
+                                    fprintf(stdout, "\t@ Wrong type (%c) passed into if()\n", input.data);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Check expected boolean type for while statement */
+                        if (last_rule == 33) {
+                            if (input.data != 'B') {
+                                #if PREC_DEBUG == 1
+                                    fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                    }
                 }
                 else {
                     cStack_pop(&stack);
