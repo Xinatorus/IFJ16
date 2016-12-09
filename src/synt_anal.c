@@ -609,7 +609,7 @@ void execute() {
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_IDENT) {
                     if (last_rule == 3) {
-                        /* @SEM - Declaring class */
+                        /* @SEM1 - Declaring class */
                         if (first_analysis) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
@@ -627,7 +627,7 @@ void execute() {
                                 tsAdd(&root, input.token->attr->str, 0, NULL, createHashTable(HASH_TABLE_SIZE));
                             }
                         }
-                        /* @SEM - Entering class */
+                        /* @SEM12 - Entering class */
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Entering class %s\n", input.token->attr->str);
                         #endif
@@ -635,7 +635,7 @@ void execute() {
                         var_static_index = 0;
                     }
                     else if (last_rule == 8) {
-                        /* @SEM - Declaring static variable */
+                        /* @SEM1 - Declaring static variable */
                         if (strlen(current_func) == 0) {
                             if (first_analysis) {
                                 char *full_name = cat(cat(current_class, "."), input.token->attr->str);
@@ -657,7 +657,7 @@ void execute() {
                                 }
                             }
                         }
-                        /* @SEM - Declaring normal variable */
+                        /* @SEM2 - Declaring normal variable */
                         else {
                             if (!first_analysis) {
                                 #if SEM_DEBUG == 1
@@ -679,7 +679,7 @@ void execute() {
                             }
                         }
                     }
-                    /* @SEM - Declaring normal variables (parameters) */
+                    /* @SEM2 - Declaring normal variables (parameters) */
                     else if (last_rule == 14 || last_rule == 15) {
                         if (!first_analysis) {
                             char *full_name = cat(cat(current_class, "."), dec_id);
@@ -703,7 +703,7 @@ void execute() {
                     }
                 }
                 else if (input.type == T_FIDENT) {
-                    /* @SEM - Save function identificator for later use */
+                    /* @SEM12 - Save function identificator for later use */
                     if (last_rule == 11) {
                         #if SEM_DEBUG == 1
                         fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
@@ -714,8 +714,8 @@ void execute() {
                 else if (input.type == T_RRB) {
                     if (last_rule == 16 || last_rule == 13) {
                         char *full_name = cat(cat(current_class, "."), dec_id);
+                        /* @SEM1 - Declaring function */
                         if (first_analysis) {
-                            /* @SEM - Declaring function */
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring static function %s\n", full_name);
                             #endif
@@ -734,7 +734,7 @@ void execute() {
                                 addToHashTable(ht, full_name, cat("F", dec_types), 0, 0);
                             }
                         }
-                        /* @SEM - Entering function */
+                        /* @SEM12 - Entering function */
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Entering static function %s\n", full_name);
                         #endif
@@ -743,14 +743,14 @@ void execute() {
                     }
                 }
                 else if (input.type == T_RCB) {
-                    /* @SEM - Leaving class */
+                    /* @SEM12 - Leaving class */
                     if (last_rule == 5) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving class %s\n", current_class);
                         #endif
                         current_class = makeString("");
                     }
-                    /* @SEM - Leaving function */
+                    /* @SEM12 - Leaving function */
                     if (last_rule == 26) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving static function %s\n", current_func);
@@ -760,7 +760,7 @@ void execute() {
                 }
                 else if (input.type == T_TYPE) {
                     bool save_type = false;
-                    /* @SEM - Save first primitive type of static func/var for later use */
+                    /* @SEM12 - Save first primitive type of static func/var for later use */
                     if (last_rule == 45 || last_rule == 27) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Saving first type %s for later use\n", input.token->attr->str);
@@ -769,14 +769,14 @@ void execute() {
                         save_type = true;
                     }
                     if (first_analysis) {
-                        /* @SEM - Save first parameter type of static func for later use */
+                        /* @SEM1 - Save first parameter type of static func for later use */
                         if (last_rule == 14) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ Saving first static function parameter type %s for later use\n", input.token->attr->str);
                             #endif
                             save_type = true;
                         }
-                        /* @SEM - Save another parameter type of static func for later use */
+                        /* @SEM1 - Save another parameter type of static func for later use */
                         else if (last_rule == 15) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ Saving another static function parameter type %s for later use\n", input.token->attr->str);
@@ -785,7 +785,7 @@ void execute() {
                         }
                     }
                     else {
-                        /* @SEM - Save parameter type for later use */
+                        /* @SEM2 - Save parameter type for later use */
                         if (last_rule == 14 || last_rule == 15) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ Saving normal variable (parameter) type %s for later use\n", input.token->attr->str);
@@ -807,7 +807,7 @@ void execute() {
                     }
                 }
                 else if (input.type == T_VOID) {
-                    /* @SEM - Save first void type of static func/var for later use */
+                    /* @SEM1 - Save first void type of static func/var for later use */
                     if (first_analysis) {
                         if (last_rule == 44) {
                             #if SEM_DEBUG == 1
@@ -871,7 +871,76 @@ void execute() {
     cQueue_free(&token_archive);
 
     if (first_analysis) {
+        /* @SEM1 - Check for class main & function run presence & check correct types */
+        #if SEM_DEBUG == 1
+            fprintf(stdout, "\t@ Checking whether class main exists\n");
+        #endif
+        if (tsFind(root, "main") == NULL) {
+            #if SEM_DEBUG == 1
+                fprintf(stdout, "\t@ Class main not declared!\n");
+            #endif
+            error(3);
+        }
+        #if SEM_DEBUG == 1
+            fprintf(stdout, "\t@ Checking whether function main.run exists\n");
+        #endif
+        TsTree main_run = tsFind(root, "main.run");
+        if (main_run == NULL) {
+            #if SEM_DEBUG == 1
+                fprintf(stdout, "\t@ Function main.run not declared!\n");
+            #endif
+            error(3);
+        }
+        #if SEM_DEBUG == 1
+            fprintf(stdout, "\t@ Checking whether function main.run is void without params\n");
+        #endif
+        if (strcmp(searchInHashTable(main_run->ts, "main.run")->type, "FV") != 0) {
+            #if SEM_DEBUG == 1
+                fprintf(stdout, "\t@ Function main.run has incorrect types!\n");
+            #endif
+            error(3);
+        }
+
         first_analysis = false;
         execute();
+    }
+}
+
+TsTree get_declared_class(char *name) {
+    return tsFind(root, name);
+}
+
+TsTree get_declared_function(char *name, char *p_class) {
+    /* Full identifier - definitely static */
+    if (strchr(name, '.') != NULL) {
+        return tsFind(root, name);
+    }
+    /* Short identifier - look into class */
+    else {
+        return tsFind(root, cat(cat(p_class, "."), name));
+    }
+}
+
+HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
+    /* Full identifier - definitely static */
+    if (strchr(name, '.') != NULL) {
+        return searchInHashTable(tsFind(root, explodeFullIdentifier(name, true))->ts, explodeFullIdentifier(name, false));
+    }
+    /* Short identifier - look into function and then into class */
+    else {
+        HashTable returned = NULL;
+        /* Search in function */
+        if (strchr(p_function, '.') != NULL) { // Long function identifier
+            returned = searchInHashTable(tsFind(root, p_function)->ts, name);
+        }
+        else { // Short function identifier
+            returned = searchInHashTable(tsFind(root, cat(cat(p_class, "."), p_function))->ts, name);
+        }
+        /* Search in class */
+        if (returned == NULL) {
+            returned = searchInHashTable(tsFind(root, p_class)->ts, name);
+        }
+
+        return returned;
     }
 }

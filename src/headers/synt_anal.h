@@ -17,7 +17,7 @@
 extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 extern Ttoken *token_list; // Token list, used for second pass
-extern bool first_analysis; // Whether this is first pass (static declarations)
+extern bool first_analysis; // Whether this is first pass (used for static declarations)
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
 int getRuleNumber(NTType nt, TType t);
@@ -54,5 +54,15 @@ Ttoken *load_next_token();
 
 /* Run syntax analysis */
 void execute();
+
+/* Gets declared class */
+TsTree get_declared_class(char *name);
+/* Gets declared function
+   Name can be full (p_class ignored) or short (p_class needed) */
+TsTree get_declared_function(char *name, char *p_class);
+/* Gets declared variable
+   Name can be full (args ignored) or short (args needed)
+   In case of short name, function (short or long) is checked before class */
+HashTable get_declared_variable(char *name, char *p_class, char *p_function);
 
 #endif  // include guard
