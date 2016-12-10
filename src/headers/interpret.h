@@ -20,7 +20,7 @@
 #define valueByType(var,typ) ((var->type == name) ? findInFrame(var->value.name, sf)->value.typ : var->value.typ)
 #define byType(var) (var##T == t_int) ? valueByType(var, v_int) : valueByType(var, v_double)
 #define getType(var) (var->type == name) ? findInFrame(var->value.name, sf)->type : var->type
-
+#define getIntVar(var) (var->type == name) ? findInFrame(var->value.name, sf)->value.v_int : var->value.v_int
 
 void interpret(tInstrList instr,TsTree *root);
 void extractParams(StackFrame *sf, TsTree root, Stack stack);

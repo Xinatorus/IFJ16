@@ -1,4 +1,3 @@
-
 #include "headers\framework.h"
 #include "headers\testWriteOut.h"
 

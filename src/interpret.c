@@ -88,7 +88,7 @@ void interpret(tInstrList iList,TsTree *root) {
 			if(src2->type != name || findInFrame(src2->value.name, sf)->defined == true) //byl src definovany? 
 				switch (destT) {
 					case t_int:
-						findInFrame(dest->value.name, sf)->value.v_int = (int) byType(src2);
+						findInFrame(dest->value.name, sf)->value.v_int = getIntVar(src2);
 						break;
 					case t_double:
 						findInFrame(dest->value.name, sf)->value.v_double = byType(src2);
@@ -127,7 +127,7 @@ void interpret(tInstrList iList,TsTree *root) {
 				sf->ret->defined = true;
 				switch (destT) {
 				case t_int:
-					sf->ret->value.v_int = byType(src1);
+					sf->ret->value.v_int = getIntVar(src1);
 					break;
 				case t_double:
 					sf->ret->value.v_double = byType(src1);
@@ -265,11 +265,11 @@ void interpret(tInstrList iList,TsTree *root) {
 				case t_int: // int + int/double only
 					//printf("intOP\n");
 					if(dest != src1){ // nepotrebuju delat kopii toho sameho
-						findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+						findInFrame(dest->value.name, sf)->value.v_int = getIntVar(src1);
 					}
 					//printf("%d+%d\n", findInFrame(dest->value.name, sf)->value.v_int, byType(src2));
 
-					findInFrame(dest->value.name, sf)->value.v_int += byType(src2);
+					findInFrame(dest->value.name, sf)->value.v_int += getIntVar(src2);
 
 					//printf("%d+%d\n", findInFrame(dest->value.name, sf)->value.v_int, byType(src2));
 					break;
@@ -331,9 +331,9 @@ void interpret(tInstrList iList,TsTree *root) {
 			switch (destT) {
 				case t_int:
 					if (dest != src1) {
-						findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+						findInFrame(dest->value.name, sf)->value.v_int = getIntVar(src1);
 					}
-					findInFrame(dest->value.name, sf)->value.v_int -= byType(src2);
+					findInFrame(dest->value.name, sf)->value.v_int -= getIntVar(src2);
 					break;
 				case t_double:
 					if (dest != src1) {
@@ -361,9 +361,9 @@ void interpret(tInstrList iList,TsTree *root) {
 			switch (destT) {
 				case t_int:
 					if (dest != src1) {
-						findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+						findInFrame(dest->value.name, sf)->value.v_int = getIntVar(src1);
 					}
-					findInFrame(dest->value.name, sf)->value.v_int *= byType(src2);
+					findInFrame(dest->value.name, sf)->value.v_int *= getIntVar(src2);
 					break;
 				case t_double:
 					if (dest != src1) {
@@ -391,13 +391,13 @@ void interpret(tInstrList iList,TsTree *root) {
 			switch (destT) {
 				case t_int:
 					if (dest != src1) {
-						findInFrame(dest->value.name, sf)->value.v_int = byType(src1);
+						findInFrame(dest->value.name, sf)->value.v_int = getIntVar(src1);
 					}
 					if (byType(src2) == 0) {
 						//TODO free
 						error(ERR_RUN_DEV);
 					}
-					findInFrame(dest->value.name, sf)->value.v_int /= byType(src2);
+					findInFrame(dest->value.name, sf)->value.v_int /= getIntVar(src2);
 					break;
 				case t_double:
 					if (dest != src1) {
