@@ -205,20 +205,20 @@ void listMergeSort(char *arr) {
 			pom[i] = i+1;
 		}
 		else {
-			pom[i] = 0;
+			pom[i] = -1;
 		}
 		printf("%3d| ", pom[i]);
 	}
 
-	pom[size-1] = 0;
+	pom[size-1] = -1;
 	printf("%3d| ", pom[size-1]);
 	printf("\n");
 
 	listZacatku L;
 
-	int tmpSize=1;
+
 	for (int i = 0; i < size; i++) {
-		
+		pom[i];
 	}
 
 

@@ -44,12 +44,12 @@ typedef struct {
 }listZacatku; //list zacaktku
 
 void init(listZacatku L);
-void add(listZacatku L,int index);
-void copyFirst(listZacatku L,int *index);
+void add(listZacatku L, neklPos zac);
+void copyFirst(listZacatku L,neklPos zac);
 void deleteFirst(listZacatku L);
 void first(listZacatku L);
 int active(listZacatku L);
-void insertLast(listZacatku L,int index);
+void insertLast(listZacatku L, neklPos zac);
 
 
 

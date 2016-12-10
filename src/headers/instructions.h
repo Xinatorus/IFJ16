@@ -53,18 +53,18 @@ typedef enum {
 	c_double, // konstanta double 
 	c_string, // konstatna string
 	name // identifikator 
-}Type;
+}O_Type;
 
 typedef union {
 	int v_int;
 	double v_double;
 	char *v_string;
 	char *name;
-}Value;
+}O_Value;
 
 typedef struct {
-	Type type; // typ operandu
-	Value value; // hodnota pro jednotlivy typ
+	O_Type type; // typ operandu
+	O_Value value; // hodnota pro jednotlivy typ
 }Operand;
 
 
