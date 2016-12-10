@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS  //pro zruseni warningu visual studia
 #include "headers\valgrind.h"
 #include "headers\testWriteOut.h"
 #include "headers\synt_anal.h"
