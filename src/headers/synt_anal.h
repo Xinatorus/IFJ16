@@ -63,6 +63,9 @@ TsTree get_declared_class(char *name);
 /* Gets declared function
    Name can be full (p_class ignored) or short (p_class needed) */
 TsTree get_declared_function(char *name, char *p_class);
+/* Gets declared function (HashTable version)
+   Name can be full (p_class ignored) or short (p_class needed) */
+HashTable get_declared_function_ht(char *name, char *p_class);
 /* Gets declared variable
    Name can be full (args ignored) or short (class or both needed)
    In case of short name, function (short or long, if provided) is checked before class */

@@ -17,7 +17,7 @@ class main
         int eee = f();
     }
 
-    static double f()
+    static int f()
     {
     }
 }

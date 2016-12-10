@@ -770,8 +770,8 @@ void execute() {
                         }
                         /* @SEM2 - Assigning variable with incompatible type */
                         if (!first_analysis && last_rule == 42) {
-                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
-                            char right = get_declared_variable(input.token->attr->str, current_class, current_func)->type[1];
+                            char left = (get_declared_variable(last_ident, current_class, current_func)->type)[1];
+                            char right = (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1];
                             if (!are_type_compatible(left, right)) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_ident, left);
@@ -811,8 +811,8 @@ void execute() {
                     }
                     /* @SEM2 - Assigning function with incompatible type (or void type) */
                     if (!first_analysis && last_rule == 43) {
-                        char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
-                        char right = get_declared_function(input.token->attr->str, current_class);
+                        char left = (get_declared_variable(last_ident, current_class, current_func)->type)[1];
+                        char right = (get_declared_function_ht(input.token->attr->str, current_class)->type)[1];
                         if (!are_type_compatible(left, right)) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_ident, left);
@@ -841,7 +841,7 @@ void execute() {
                                 #endif
                                 HashTable ht = createHashTable(HASH_TABLE_SIZE);
                                 tsAdd(&root, full_name, 0, NULL, ht);
-                                addToHashTable(ht, full_name, cat("F", dec_types), 0, 0);
+                                addToHashTable(tsFind(root, current_class)->ts, full_name, cat("F", dec_types), 0, 0);
                             }
                         }
                         /* @SEM12 - Entering function */
@@ -964,7 +964,7 @@ void execute() {
                         }
                         /* @SEM2 - Assigning expression with incompatible type */
                         if (last_rule == 41) {
-                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                            char left = (get_declared_variable(last_ident, current_class, current_func)->type)[1];
                             char right = input.data;
                             if (!are_type_compatible(left, right)) {
                                 #if SEM_DEBUG == 1
@@ -1024,7 +1024,8 @@ void execute() {
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Checking whether class main exists\n");
         #endif
-        if (get_declared_class("main") == NULL) {
+        TsTree t_main = get_declared_class("main");
+        if (t_main == NULL) {
             #if SEM_DEBUG == 1
                 fprintf(stdout, "\t@ Class main not declared!\n");
             #endif
@@ -1033,8 +1034,7 @@ void execute() {
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Checking whether function main.run exists\n");
         #endif
-        TsTree main_run = get_declared_function("main.run", NULL);
-        if (main_run == NULL) {
+        if (get_declared_function("main.run", NULL) == NULL) {
             #if SEM_DEBUG == 1
                 fprintf(stdout, "\t@ Function main.run not declared!\n");
             #endif
@@ -1043,7 +1043,7 @@ void execute() {
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Checking whether function main.run is void without params\n");
         #endif
-        if (strcmp(searchInHashTable(main_run->ts, "main.run")->type, "FV") != 0) {
+        if (strcmp(searchInHashTable(t_main->ts, "main.run")->type, "FV") != 0) {
             #if SEM_DEBUG == 1
                 fprintf(stdout, "\t@ Function main.run has incorrect types!\n");
             #endif
@@ -1067,6 +1067,18 @@ TsTree get_declared_function(char *name, char *p_class) {
     /* Short identifier - look into class */
     else {
         return tsFind(root, cat(cat(p_class, "."), name));
+    }
+}
+
+HashTable get_declared_function_ht(char *name, char *p_class) {
+    /* Full identifier - definitely static */
+    if (strchr(name, '.') != NULL) {
+        return searchInHashTable(tsFind(root, explodeFullIdentifier(name, true))->ts, name);
+    }
+    /* Short identifier - look into class */
+    else {
+        tsWriteOutTreeTS(root);
+        return searchInHashTable(tsFind(root, p_class)->ts, cat(cat(p_class, "."), name));
     }
 }
 
