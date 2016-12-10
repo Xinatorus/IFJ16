@@ -1,23 +1,23 @@
 
 class main
 {
-    static int v1;
-    static int x;
-    static int y;
-    static int n1;
-    static int a;
-
-    static void run()
+    static String test = "lol";
+    static void run() /* Hlavni funkce */
     {
-        main.v1; // prikaz - jen tak identifikator
-        v2(); // prikaz - volani funkce
-        v3(main.x); // volani funkce - prvni parametr
-        v4(main.x, main.y); // volani funkce - kazdy dalsi parametr
+        /* int a; String b;
+        a = 3;
+        a = "text";
+        a = b;
+        a = f(); */
 
-        int t1 = main.n1; // prirazeni z promenne
-        int t3 = f1(); // prirazeni z funkce
-
-        return main.a; // neco vraci
+        int a; String b;
+        int bbb = 3;
+        String ccc = "text";
+        String ddd = b;
+        int eee = f();
     }
 
+    static double f()
+    {
+    }
 }

@@ -1,20 +1,22 @@
-#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
+
 #include "headers\synt_anal.h"
 
 cQueue token_archive; // Queue to store pre-used tokens
 cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 Ttoken *token_list = NULL; // Token list, used for second pass
 bool first_analysis = true; // Whether this is first pass (static declarations)
+char *current_class; // Actual class
+char *current_func; // Actual function
 
 /* Semantic variables */
 TsTree root; // Main symbol table leaf
 int last_rule; // Last applied rule
-char *current_class; // Actual class
-char *current_func; // Actual function
 char *dec_types; // Actual types (var type of return type of func + params)
 char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
-int var_static_index; // order of saved static var in class symbol table
-int var_normal_index; // order of saved normal var in function symbol table
+int var_static_index; // Order of saved static var in class symbol table
+int var_normal_index; // Order of saved normal var in function symbol table
+int block_depth; // Actual code depth (used to determine static context)
+char *last_ident; // Used to hold variable name which is being assigned to
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -44,10 +46,19 @@ int synt_rules[23][20] = {
 };
 
 Ttoken *load_next_token() {
-    Ttoken *token = NULL;
+    Ttoken *got_token = NULL;
+    Ttoken *token = (Ttoken *) malloc(sizeof(Ttoken));
+    string *str = (string *) malloc(sizeof(string));
     /* Get tokens from lexical analysis */
     if (first_analysis) {
-        token = getNextToken();
+        /* Create deep copy of token, because of innapropriate work with strings in lex_anal */
+        got_token = getNextToken();
+        token->type = got_token->type;
+        token->next = got_token->next;
+        token->cisloRiadku = got_token->cisloRiadku;
+        token->attr = str;
+        str->length = got_token->attr->length;
+        str->str = makeString(got_token->attr->str); // most important part
         /* First token in token_list */
         if (token_list == NULL) {
             token_list = token;
@@ -70,6 +81,22 @@ Ttoken *load_next_token() {
             token_list = token->next;
         }
     }
+
+
+    #if TOKEN_DEBUG == 1
+        fprintf(stdout, "    <<< TOKEN: %s DATA: %s >>>\n", getTokenName(token->type), token->attr->str);
+
+        // Print entire token_list
+        /*
+        Ttoken *iterated = token_list;
+        fprintf(stdout, "TOKEN_LIST_START\n");
+        while (iterated != NULL) {
+            fprintf(stdout, "T: '%s' D: '%s'\n", getTokenName(iterated->type), iterated->attr->str);
+            iterated = iterated->next;
+        }
+        fprintf(stdout, "TOKEN_LIST_END\n");
+        */
+    #endif
 
     return token;
 }
@@ -107,17 +134,17 @@ void applyRule(int rule, cStack *stack) {
         case 3:
             // NT_TRIDA -> T_CLASS T_IDENT T_LCB NT_SEZNAM_DEFINIC_STATIC T_RCB
             cStack_pop(stack);
-            push_cstack_terminal(T_RCB, stack);
+            push_cstack_terminal(T_RCB, stack, '-');
             push_cstack_nonterminal(NT_SEZNAM_DEFINIC_STATIC, stack);
-            push_cstack_terminal(T_LCB, stack);
-            push_cstack_terminal(T_IDENT, stack);
-            push_cstack_terminal(T_CLASS, stack);
+            push_cstack_terminal(T_LCB, stack, '-');
+            push_cstack_terminal(T_IDENT, stack, '-');
+            push_cstack_terminal(T_CLASS, stack, '-');
             break;
         case 4:
             // NT_SEZNAM_DEFINIC_STATIC -> T_STATIC NT_DATOVY_TYP NT_DEFINICE_STATIC NT_SEZNAM_DEFINIC_STATIC
             push_cstack_nonterminal(NT_DEFINICE_STATIC, stack);
             push_cstack_nonterminal(NT_DATOVY_TYP, stack);
-            push_cstack_terminal(T_STATIC, stack);
+            push_cstack_terminal(T_STATIC, stack, '-');
             break;
         case 5:
             // NT_SEZNAM_DEFINIC_STATIC -> eps
@@ -131,14 +158,14 @@ void applyRule(int rule, cStack *stack) {
         case 7:
             // NT_DEFINICE_STATIC -> NT_DEFINICE_PROMENNA T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack);
             break;
         case 8:
             // NT_DEFINICE_PROMENNA -> T_IDENT NT_DEF_PROM_KONEC
             cStack_pop(stack);
             push_cstack_nonterminal(NT_DEF_PROM_KONEC, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 9:
             // NT_DEF_PROM_KONEC -> NT_PRIRAZENI
@@ -153,10 +180,10 @@ void applyRule(int rule, cStack *stack) {
             // NT_DEFINICE_FUNKCE -> T_FIDENT T_LRB NT_SEZNAM_PARAMETRU T_RRB NT_SLOZENY_PRIKAZ
             cStack_pop(stack);
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
             push_cstack_nonterminal(NT_SEZNAM_PARAMETRU, stack);
-            push_cstack_terminal(T_LRB, stack);
-            push_cstack_terminal(T_FIDENT, stack);
+            push_cstack_terminal(T_LRB, stack, '-');
+            push_cstack_terminal(T_FIDENT, stack, '-');
             break;
         case 12:
             // NT_SEZNAM_PARAMETRU -> NT_PARAMETR_PRVNI NT_PARAMETR_DALSI
@@ -171,14 +198,14 @@ void applyRule(int rule, cStack *stack) {
         case 14:
             // NT_PARAMETR_PRVNI -> T_TYPE T_IDENT
             cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack);
-            push_cstack_terminal(T_TYPE, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
+            push_cstack_terminal(T_TYPE, stack, '-');
             break;
         case 15:
             // NT_PARAMETR_DALSI -> T_COMMA T_TYPE T_IDENT NT_PARAMETR_DALSI
-            push_cstack_terminal(T_IDENT, stack);
-            push_cstack_terminal(T_TYPE, stack);
-            push_cstack_terminal(T_COMMA, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
+            push_cstack_terminal(T_TYPE, stack, '-');
+            push_cstack_terminal(T_COMMA, stack, '-');
             break;
         case 16:
             // NT_PARAMETR_DALSI -> eps
@@ -188,13 +215,13 @@ void applyRule(int rule, cStack *stack) {
             // NT_SEZNAM_VSTUPU -> T_EXPRESSION NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 18:
             // NT_SEZNAM_VSTUPU -> T_IDENT NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 19:
             // NT_SEZNAM_VSTUPU -> eps
@@ -204,7 +231,7 @@ void applyRule(int rule, cStack *stack) {
             // NT_VSTUP_DALSI -> T_COMMA NT_VSTUP_KONEC
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_KONEC, stack);
-            push_cstack_terminal(T_COMMA, stack);
+            push_cstack_terminal(T_COMMA, stack, '-');
             break;
         case 21:
             // NT_VSTUP_DALSI -> eps
@@ -214,20 +241,20 @@ void applyRule(int rule, cStack *stack) {
             // NT_VSTUP_KONEC -> T_EXPRESSION NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 23:
             // NT_VSTUP_KONEC -> T_IDENT NT_VSTUP_DALSI
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 24:
             // NT_SLOZENY_PRIKAZ -> T_LCB NT_BLOK_PRIKAZU T_RCB
             cStack_pop(stack);
-            push_cstack_terminal(T_RCB, stack);
+            push_cstack_terminal(T_RCB, stack, '-');
             push_cstack_nonterminal(NT_BLOK_PRIKAZU, stack);
-            push_cstack_terminal(T_LCB, stack);
+            push_cstack_terminal(T_LCB, stack, '-');
             break;
         case 25:
             // NT_BLOK_PRIKAZU -> NT_PRIKAZ NT_BLOK_PRIKAZU
@@ -240,55 +267,56 @@ void applyRule(int rule, cStack *stack) {
         case 27:
             // NT_PRIKAZ -> T_TYPE NT_DEFINICE_PROMENNA T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack);
-            push_cstack_terminal(T_TYPE, stack);
+            push_cstack_terminal(T_TYPE, stack, '-');
             break;
         case 28:
             // NT_PRIKAZ -> T_EXPRESSION T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_SC, stack, '-');
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
+            break;
         case 29:
             // NT_PRIKAZ -> T_IDENT NT_POUZITI T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_POUZITI, stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 30:
             // NT_PRIKAZ -> T_FIDENT NT_VOLANI_FUNKCE T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack);
-            push_cstack_terminal(T_FIDENT, stack);
+            push_cstack_terminal(T_FIDENT, stack, '-');
             break;
         case 31:
             // NT_PRIKAZ -> T_RETURN NT_NAVRAT_KONEC T_SC
             cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack);
+            push_cstack_terminal(T_SC, stack, '-');
             push_cstack_nonterminal(NT_NAVRAT_KONEC, stack);
-            push_cstack_terminal(T_RETURN, stack);
+            push_cstack_terminal(T_RETURN, stack, '-');
             break;
         case 32:
             // NT_PRIKAZ -> T_IF T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ T_ELSE NT_SLOZENY_PRIKAZ
             cStack_pop(stack);
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_ELSE, stack);
+            push_cstack_terminal(T_ELSE, stack, '-');
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
-            push_cstack_terminal(T_LRB, stack);
-            push_cstack_terminal(T_IF, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
+            push_cstack_terminal(T_LRB, stack, '-');
+            push_cstack_terminal(T_IF, stack, '-');
             break;
         case 33:
             // NT_PRIKAZ -> T_WHILE T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ
             cStack_pop(stack);
             push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
-            push_cstack_terminal(T_LRB, stack);
-            push_cstack_terminal(T_WHILE, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
+            push_cstack_terminal(T_LRB, stack, '-');
+            push_cstack_terminal(T_WHILE, stack, '-');
             break;
         case 34:
             // NT_POUZITI -> NT_PRIRAZENI
@@ -302,19 +330,19 @@ void applyRule(int rule, cStack *stack) {
         case 36:
             // NT_VOLANI_FUNKCE -> T_LRB NT_SEZNAM_VYRAZU T_RRB
             cStack_pop(stack);
-            push_cstack_terminal(T_RRB, stack);
+            push_cstack_terminal(T_RRB, stack, '-');
             push_cstack_nonterminal(NT_SEZNAM_VSTUPU, stack);
-            push_cstack_terminal(T_LRB, stack);
+            push_cstack_terminal(T_LRB, stack, '-');
             break;
         case 37:
             // NT_NAVRAT_KONEC -> T_EXPRESSION
             cStack_pop(stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 38:
             // NT_NAVRAT_KONEC -> T_IDENT
             cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 39:
             // NT_NAVRAT_KONEC -> eps
@@ -324,33 +352,33 @@ void applyRule(int rule, cStack *stack) {
             // NT_PRIRAZENI -> T_ASSIGN NT_PRAVA_STRANA
             cStack_pop(stack);
             push_cstack_nonterminal(NT_PRAVA_STRANA, stack);
-            push_cstack_terminal(T_ASSIGN, stack);
+            push_cstack_terminal(T_ASSIGN, stack, '-');
             break;
         case 41:
             // NT_PRAVA_STRANA -> T_EXPRESSION
             cStack_pop(stack);
-            push_cstack_terminal(T_EXPRESSION, stack);
+            push_cstack_terminal(T_EXPRESSION, stack, '-');
             break;
         case 42:
             // NT_PRAVA_STRANA -> T_IDENT
             cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack);
+            push_cstack_terminal(T_IDENT, stack, '-');
             break;
         case 43:
             // NT_PRAVA_STRANA -> T_FIDENT NT_VOLANI_FUNKCE
             cStack_pop(stack);
             push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack);
-            push_cstack_terminal(T_FIDENT, stack);
+            push_cstack_terminal(T_FIDENT, stack, '-');
             break;
         case 44:
             // NT_DATOVY_TYP -> T_VOID
             cStack_pop(stack);
-            push_cstack_terminal(T_VOID, stack);
+            push_cstack_terminal(T_VOID, stack, '-');
             break;
         case 45:
             // NT_DATOVY_TYP -> T_TYPE
             cStack_pop(stack);
-            push_cstack_terminal(T_TYPE, stack);
+            push_cstack_terminal(T_TYPE, stack, '-');
             break;
         default:
             break;
@@ -385,6 +413,7 @@ Terminal getNextTerminal() {
 
     terminal.token = token;
     terminal.type = T_UNKNOWN;
+    terminal.data = '-';
 
     if (token->type == KLICOVE_SLOVO) {
         if (strcmp(token->attr->str, "class") == 0) {
@@ -492,11 +521,12 @@ Terminal getNextTerminal() {
     return terminal;
 }
 
-void push_cstack_terminal(TType type, cStack *stack) {
+void push_cstack_terminal(TType type, cStack *stack, char data) {
     cItem item;
     Terminal terminal;
     terminal.token = NULL;
     terminal.type = type;
+    terminal.data = data;
     item.type = IT_TERMINAL;
     item.content.terminal = terminal;
     if (!cStack_push(stack, item)) {
@@ -538,23 +568,33 @@ void execute() {
     dec_id = makeString("");
     cStack_init(&stack, 50);
     cQueue_init(&token_archive);
+    block_depth = 0;
+    last_ident = NULL;
 
     if (first_analysis) {
         /* @SEM - Create symbol table for default if16 class */
         #if SEM_DEBUG == 1
-        fprintf(stdout, "\t@ Declaring default ifj16 class\n");
+            fprintf(stdout, "\t@ Declaring default ifj16 class\n");
         #endif
         tsTreeInit(&root);
         HashTable ht_ifj16 = createHashTable(HASH_TABLE_SIZE);
         tsAdd(&root, "ifj16", 0, NULL, ht_ifj16);
         addToHashTable(ht_ifj16, "ifj16.readInt", "FI", true, 0);
+        tsAdd(&root, "ifj16.readInt", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.readString", "FS", true, 0);
+        tsAdd(&root, "ifj16.readString", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.print", "FVS", true, 0);
+        tsAdd(&root, "ifj16.print", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.length", "FIS", true, 0);
+        tsAdd(&root, "ifj16.length", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.substr", "FSSIN", true, 0);
+        tsAdd(&root, "ifj16.substr", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.compare", "FISS", true, 0);
+        tsAdd(&root, "ifj16.compare", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.find", "FISS", true, 0);
+        tsAdd(&root, "ifj16.find", 0, NULL, createHashTable(HASH_TABLE_SIZE));
         addToHashTable(ht_ifj16, "ifj16.sort", "FSS", true, 0);
+        tsAdd(&root, "ifj16.sort", 0, NULL, createHashTable(HASH_TABLE_SIZE));
     }
 
     /* First step - push NT_DOLLAR (NT version of EOF) and NT_PROGRAM to stack */
@@ -611,6 +651,11 @@ void execute() {
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_IDENT) {
+                    /* @SEM2 - Save identificator (to know where to assign later) */
+                    if (!first_analysis) {
+                        if (last_rule != 42) // we dont want to overwrite by assigned identificator
+                            last_ident = makeString(input.token->attr->str);
+                    }
                     if (last_rule == 3) {
                         /* @SEM1 - Declaring class */
                         if (first_analysis) {
@@ -723,6 +768,17 @@ void execute() {
                                 error(ERR_SEM_DEF);
                             }
                         }
+                        /* @SEM2 - Assigning variable with incompatible type */
+                        if (!first_analysis && last_rule == 42) {
+                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                            char right = get_declared_variable(input.token->attr->str, current_class, current_func)->type[1];
+                            if (!are_type_compatible(left, right)) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
                     }
                 }
                 else if (input.type == T_FIDENT) {
@@ -751,6 +807,17 @@ void execute() {
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
+                        }
+                    }
+                    /* @SEM2 - Assigning function with incompatible type (or void type) */
+                    if (!first_analysis && last_rule == 43) {
+                        char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                        char right = get_declared_function(input.token->attr->str, current_class);
+                        if (!are_type_compatible(left, right)) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_ident, left);
+                            #endif
+                            error(ERR_SEM_DEF);
                         }
                     }
                 }
@@ -786,20 +853,24 @@ void execute() {
                     }
                 }
                 else if (input.type == T_RCB) {
+                    block_depth--;
                     /* @SEM12 - Leaving class */
-                    if (last_rule == 5) {
+                    if (block_depth == 0) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving class %s\n", current_class);
                         #endif
                         current_class = makeString("");
                     }
                     /* @SEM12 - Leaving function */
-                    if (last_rule == 26) {
+                    if (block_depth == 1) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving static function %s\n", current_func);
                         #endif
                         current_func = makeString("");
                     }
+                }
+                else if (input.type == T_LCB) {
+                    block_depth++;
                 }
                 else if (input.type == T_TYPE) {
                     bool save_type = false;
@@ -867,7 +938,42 @@ void execute() {
                     #if SYNT_DEBUG == 1
                         fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Calling precedence analysis... < ~~~~\n", first_analysis ? 1 : 2);
                     #endif
-                    prec_analysis(input.token);
+                    input.data = prec_analysis(input.token);
+                    #if SYNT_DEBUG == 1
+                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
+                    #endif
+
+                    if (!first_analysis) {
+                        /* @SEM2 - Check expected boolean type for if statement */
+                        if (last_rule == 32) {
+                            if (input.data != 'B') {
+                                #if PREC_DEBUG == 1
+                                    fprintf(stdout, "\t@ Wrong type (%c) passed into if()\n", input.data);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Check expected boolean type for while statement */
+                        if (last_rule == 33) {
+                            if (input.data != 'B') {
+                                #if PREC_DEBUG == 1
+                                    fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Assigning expression with incompatible type */
+                        if (last_rule == 41) {
+                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                            char right = input.data;
+                            if (!are_type_compatible(left, right)) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Assigning invalid right value (expr) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
+                    }
                 }
                 else {
                     cStack_pop(&stack);
@@ -997,4 +1103,61 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
 
         return returned;
     }
+}
+
+char get_result_type(char first, char second, PType op) {
+    char oper = '?';
+    char result = 'E';
+    if (op == PS_PLUS ||
+        op == PS_MINUS ||
+        op == PS_STAR ||
+        op == PS_SLASH)
+        oper = 'A';
+    if (op == PS_LTHAN ||
+        op == PS_RTHAN ||
+        op == PS_LTHANEQ ||
+        op == PS_RTHANEQ ||
+        op == PS_EQ ||
+        op == PS_NEQ)
+        oper = 'R';
+
+    if (oper == '?')
+        result = 'E';
+
+    else if (first == 'I' && second == 'I' && oper == 'A')
+        result = 'I';
+
+    else if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'A')
+        result = 'D';
+
+    else if ((first == 'I' || first == 'D') && (second == 'I' || second == 'D') && oper == 'R')
+        result = 'B';
+
+    else if (((first == 'S' && (second == 'I' || second == 'D' || second == 'S')) ||
+        (second == 'S' && (first == 'I' || first == 'D' || first == 'S'))) && op == PS_PLUS)
+        result = 'S';
+
+    #if SEM_DEBUG == 1
+        fprintf(stdout, "### get_result_type(%c, %c, %s) = %c\n", first, second, PType_string[op], result);
+    #endif
+    return result;
+}
+
+bool are_type_compatible(char left, char right) {
+    bool result = false;
+
+    if (left == 'I' && right == 'I')
+        result = true;
+    if (left == 'D' && right == 'I')
+        result = true;
+    if (left == 'D' && right == 'D')
+        result = true;
+    if (left == 'S' && right == 'S')
+        result = true;
+
+    #if SEM_DEBUG == 1
+        fprintf(stdout, "### are_type_compatible(%c, %c) = %s\n", left, right, result ? "true" : "false");
+    #endif
+
+    return result;
 }

@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS  //pro zruseni warningu visual studia
 #include "headers\valgrind.h"
 #include "headers\testWriteOut.h"
 #include "headers\synt_anal.h"
@@ -6,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define PATRIK_TO_NECHCE 1
+#define PATRIK_TO_NECHCE 0
 #define LEX_TEST 0        //Lexical analysis test
 #define VALGRIND_TEST 0   //Valgrind test
 #define OUTPUT_TIME 1     //Output execution time 

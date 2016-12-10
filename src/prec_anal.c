@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
+
 #include "headers\synt_anal.h"
 
 Ttoken *token_param = NULL; // Token got from prec_analysis() call
@@ -34,9 +34,10 @@ char getPrecedenceOperation(PType top, PType input) {
 }
 
 Psymbol getNextPrecSymbol() {
+    static int par_level = 0; // Level of parenthesis
+
     Ttoken *token = NULL; // Token to work with
     Psymbol symbol; // Symbol to return
-    static int par_level = 0; // Level of parenthesis
 
     // We got token prec_analysis() call
     if (token_param != NULL) {
@@ -55,6 +56,45 @@ Psymbol getNextPrecSymbol() {
 
     symbol.token = token;
     symbol.type = PS_DOLLAR;
+    symbol.data = '-';
+
+    if (token->type == IDENTIFIKATOR ||
+        token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
+
+        /* @SEM2 - Check for variables declaration (in expr) inside functions */
+        if (!first_analysis && strlen(current_func) > 0) {
+            if (get_declared_variable(token->attr->str, current_class, current_func) == NULL) {
+                #if SEM_DEBUG == 1
+                    fprintf(stdout, "\t@ User tried to use undeclared variable (in expr) %s in function %s!\n", token->attr->str, current_func);
+                #endif
+                error(ERR_SEM_DEF);
+            }
+        }
+        /* @SEM1 - Check for variables declaration (in expr) in static context */
+        if (first_analysis && strlen(current_func) == 0) {
+            if (get_declared_variable(token->attr->str, current_class, NULL) == NULL) {
+                #if SEM_DEBUG == 1
+                    fprintf(stdout, "\t@ User tried to use undeclared variable (in expr) %s in static context of class %s!\n", token->attr->str, current_class);
+                #endif
+                error(ERR_SEM_DEF);
+            }
+        }
+
+        /* @SEM2 - Get data type from identificator */
+        if (!first_analysis) {
+            symbol.data = get_declared_variable(token->attr->str, current_class, current_func)->type[1];
+        }
+    }
+
+    /* @SEM2 - Get data type from value */
+    if (!first_analysis) {
+        if (token->type == RETEZEC)
+            symbol.data = 'S';
+        else if (token->type == CELOCISELNY_LITERAL || token->type == CELOCISELNY_LITERAL_EXPONENT)
+            symbol.data = 'I';
+        else if (token->type == DESETINNY_LITERAL || token->type == DESETINNY_LITERAL_EXPONENT)
+            symbol.data = 'D';
+    }
 
     if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR ||
@@ -114,11 +154,12 @@ Psymbol getNextPrecSymbol() {
     return symbol;
 }
 
-void push_cstack_psymbol(PType type, cStack *stack) {
+void push_cstack_psymbol(PType type, cStack *stack, char data) {
     cItem item;
     Psymbol symbol;
     symbol.token = NULL;
     symbol.type = type;
+    symbol.data = data;
     item.type = IT_PSYMBOL;
     item.content.psymbol = symbol;
     if (!cStack_push(stack, item)) {
@@ -133,7 +174,7 @@ void insert_cqueue_token(Ttoken *token, cQueue *queue) {
     cQueue_insert(queue, to_insert);
 }
 
-void prec_analysis(Ttoken *token) {
+char prec_analysis(Ttoken *token) {
     #if PREC_DEBUG == 1
         fprintf(stdout, "  [PREC_DEBUG]   === PRECEDENCE ANALYSIS STARTED ===\n");
     #endif
@@ -143,7 +184,7 @@ void prec_analysis(Ttoken *token) {
     // First step - there is T_EXPRESSION on top, pop it
     cStack_pop(&stack);
     // Second step - push $ on top
-    push_cstack_psymbol(PS_DOLLAR, &stack);
+    push_cstack_psymbol(PS_DOLLAR, &stack, '-');
 
     char operation;
     Psymbol input = getNextPrecSymbol();
@@ -167,7 +208,7 @@ void prec_analysis(Ttoken *token) {
 
         // There could be PS_ESYS, PS_LSYS or PS_RSYS on top, in that case we are popping until we find regular prec. symbol to get prec. operation
         while (top.content.psymbol.type == PS_ESYS || top.content.psymbol.type == PS_LSYS || top.content.psymbol.type == PS_RSYS) {
-            push_cstack_psymbol(top.content.psymbol.type, &temporary);
+            push_cstack_psymbol(top.content.psymbol.type, &temporary, top.content.psymbol.data);
             cStack_pop(&stack);
             top = cStack_top(&stack);
         }
@@ -176,7 +217,7 @@ void prec_analysis(Ttoken *token) {
         if (operation != '<') {
             // We have to push everything "borrowed" back (the check for < is there because operation < does it by itself)
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
@@ -188,23 +229,25 @@ void prec_analysis(Ttoken *token) {
 
         /* Apply operation */
         if (operation == '<') {
-            push_cstack_psymbol(PS_LSYS, &stack); // This is pushed just after non-SYS prec. symbol
+            push_cstack_psymbol(PS_LSYS, &stack, '-'); // This is pushed just after non-SYS prec. symbol
             // We have to push everything "borrowed" back
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
-            push_cstack_psymbol(input.type, &stack);
+            push_cstack_psymbol(input.type, &stack, input.data);
             input = getNextPrecSymbol();
         }
         else if (operation == '>') {
+            /* ??? Nebylo by lepsi davat na Stack rovnou ty psymboly se vsemi daty naraz ? */
 
             // (E) -> E
             if (top.content.psymbol.type == PS_RRB) { // )>
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_ESYS) { // E)>
+                    char result_type = top.content.psymbol.data; // Save type of E
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
                     if (top.content.psymbol.type == PS_LRB) { // (E)>
@@ -213,7 +256,7 @@ void prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <(E)>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack); // <(E)> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, result_type); // <(E)> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -223,17 +266,19 @@ void prec_analysis(Ttoken *token) {
             }
             // i -> E
             else if (top.content.psymbol.type == PS_VALUE) { // i>
+                char result_type = top.content.psymbol.data; // Save type of i
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
-                    push_cstack_psymbol(PS_ESYS, &stack); // <i> -> E
+                    push_cstack_psymbol(PS_ESYS, &stack, result_type); // <i> -> E
                 }
                 else error(ERR_SYNT);
             }
             // E op E -> E
             else if (top.content.psymbol.type == PS_ESYS) { // E>
+                char first = top.content.psymbol.data; // Save type of first E
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_PLUS || 
@@ -246,15 +291,30 @@ void prec_analysis(Ttoken *token) {
                     top.content.psymbol.type == PS_RTHANEQ || 
                     top.content.psymbol.type == PS_EQ || 
                     top.content.psymbol.type == PS_NEQ) { // op E>
+                    PType op = top.content.psymbol.type; // Save operator
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
                     if (top.content.psymbol.type == PS_ESYS) { // E op E>
+                        char second = top.content.psymbol.data; // Save type of second E
                         cStack_pop(&stack);
                         top = cStack_top(&stack);
                         if (top.content.psymbol.type == PS_LSYS) { // <E op E>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack); // <E op E> -> E
+
+                            char result_type = get_result_type(first, second, op);
+
+                            /* @SEM2 - Check for operands compatibility */
+                            if (!first_analysis) {
+                                if (result_type == 'E') {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first, second, PType_string[op]);
+                                    #endif
+                                    error(ERR_SEM_TYPE);
+                                }
+                            }
+
+                            push_cstack_psymbol(PS_ESYS, &stack, result_type); // <E op E> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -266,7 +326,7 @@ void prec_analysis(Ttoken *token) {
 
         }
         else if (operation == '=') {
-            push_cstack_psymbol(input.type, &stack);
+            push_cstack_psymbol(input.type, &stack, input.data);
             input = getNextPrecSymbol();
         }
         else if (operation != 'E') {
@@ -280,6 +340,7 @@ void prec_analysis(Ttoken *token) {
     if (top.type != IT_PSYMBOL || top.content.psymbol.type != PS_ESYS) {
         error(ERR_SYNT);
     }
+    char result = top.content.psymbol.data;
     cStack_pop(&stack);
     top = cStack_top(&stack);
     // Now, there should be $ on the top
@@ -288,12 +349,11 @@ void prec_analysis(Ttoken *token) {
     }
     cStack_pop(&stack);
 
-
     cStack_free(&temporary);
 
     #if PREC_DEBUG == 1
         fprintf(stdout, "  [PREC_DEBUG]   === PRECEDENCE ANALYSIS FINISHED ===\n");
     #endif
 
-    return;
+    return result;
 }
