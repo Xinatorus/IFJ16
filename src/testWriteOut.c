@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
+
 #include "headers\testWriteOut.h"
 #include "headers\interpret.h"
 #include "headers\instructions.h"

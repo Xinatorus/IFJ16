@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
+
 #include "headers\synt_anal.h"
 
 cQueue token_archive; // Queue to store pre-used tokens
@@ -16,6 +16,7 @@ char *dec_id; // Actual identificator (because insert itself happens AFTER ident
 int var_static_index; // Order of saved static var in class symbol table
 int var_normal_index; // Order of saved normal var in function symbol table
 int block_depth; // Actual code depth (used to determine static context)
+char *last_ident; // Used to hold variable name which is being assigned to
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -568,6 +569,7 @@ void execute() {
     cStack_init(&stack, 50);
     cQueue_init(&token_archive);
     block_depth = 0;
+    last_ident = NULL;
 
     if (first_analysis) {
         /* @SEM - Create symbol table for default if16 class */
@@ -649,6 +651,11 @@ void execute() {
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_IDENT) {
+                    /* @SEM2 - Save identificator (to know where to assign later) */
+                    if (!first_analysis) {
+                        if (last_rule != 42) // we dont want to overwrite by assigned identificator
+                            last_ident = makeString(input.token->attr->str);
+                    }
                     if (last_rule == 3) {
                         /* @SEM1 - Declaring class */
                         if (first_analysis) {
@@ -761,6 +768,17 @@ void execute() {
                                 error(ERR_SEM_DEF);
                             }
                         }
+                        /* @SEM2 - Assigning variable with incompatible type */
+                        if (!first_analysis && last_rule == 42) {
+                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                            char right = get_declared_variable(input.token->attr->str, current_class, current_func)->type[1];
+                            if (!are_type_compatible(left, right)) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                        }
                     }
                 }
                 else if (input.type == T_FIDENT) {
@@ -789,6 +807,17 @@ void execute() {
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
+                        }
+                    }
+                    /* @SEM2 - Assigning function with incompatible type (or void type) */
+                    if (!first_analysis && last_rule == 43) {
+                        char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                        char right = get_declared_function(input.token->attr->str, current_class);
+                        if (!are_type_compatible(left, right)) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_ident, left);
+                            #endif
+                            error(ERR_SEM_DEF);
                         }
                     }
                 }
@@ -931,6 +960,17 @@ void execute() {
                                     fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
                                 #endif
                                 error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Assigning expression with incompatible type */
+                        if (last_rule == 41) {
+                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                            char right = input.data;
+                            if (!are_type_compatible(left, right)) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Assigning invalid right value (expr) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                #endif
+                                error(ERR_SEM_DEF);
                             }
                         }
                     }
@@ -1097,6 +1137,27 @@ char get_result_type(char first, char second, PType op) {
         (second == 'S' && (first == 'I' || first == 'D' || first == 'S'))) && op == PS_PLUS)
         result = 'S';
 
-    fprintf(stdout, "### get_result_type(%c, %c, %s) = %c\n", first, second, PType_string[op], result);
+    #if SEM_DEBUG == 1
+        fprintf(stdout, "### get_result_type(%c, %c, %s) = %c\n", first, second, PType_string[op], result);
+    #endif
+    return result;
+}
+
+bool are_type_compatible(char left, char right) {
+    bool result = false;
+
+    if (left == 'I' && right == 'I')
+        result = true;
+    if (left == 'D' && right == 'I')
+        result = true;
+    if (left == 'D' && right == 'D')
+        result = true;
+    if (left == 'S' && right == 'S')
+        result = true;
+
+    #if SEM_DEBUG == 1
+        fprintf(stdout, "### are_type_compatible(%c, %c) = %s\n", left, right, result ? "true" : "false");
+    #endif
+
     return result;
 }

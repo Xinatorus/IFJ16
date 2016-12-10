@@ -73,4 +73,7 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function);
    Returns types I/D/S/B/E (error) */
 char get_result_type(char first, char second, PType op);
 
+/* Checks, whether types of left & right sides are compatible */
+bool are_type_compatible(char left, char right);
+
 #endif  // include guard
