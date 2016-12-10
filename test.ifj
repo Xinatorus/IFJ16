@@ -3,11 +3,15 @@ class main
 {
     static void run()
     {
-    int a;
-        f(a, "lol");
+        double a = print_parameter(a);
     }
 
-    static int f(double a, String b)
+    static int print_parameter(double a)
     {
+        ifj16.print("parametr: " + a + " predan");
+        return a;
     }
+
+    static double a = 3;
 }
+

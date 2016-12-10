@@ -808,7 +808,7 @@ void execute() {
                 }
                 else if (input.type == T_FIDENT) {
                     /* @SEM12 - Save function identificator for later use */
-                    if (last_rule == 11 || last_rule == 30) {
+                    if (last_rule == 11 || last_rule == 30 || last_rule == 43) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
                         #endif
