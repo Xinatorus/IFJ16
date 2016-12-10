@@ -28,8 +28,30 @@ int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data
 HashTable searchInHashTable(HashTable hashTable, char *key);
 unsigned int hash(char *key);
 
-
 void mergeSort(char *arr, int len);
 void merge(char *arr, char *l, char*r, int sizeL, int sizeR);
+void listMergeSort(char *arr);
+
+typedef struct listM{
+	int index;
+	struct listM *next;
+}*neklPos; // list neklesajici posloupnosti
+
+typedef struct {
+	neklPos first;
+	neklPos active;
+	neklPos last; //dalsi zacatek
+}listZacatku; //list zacaktku
+
+void init(listZacatku L);
+void add(listZacatku L,int index);
+void copyFirst(listZacatku L,int *index);
+void deleteFirst(listZacatku L);
+void first(listZacatku L);
+int active(listZacatku L);
+void insertLast(listZacatku L,int index);
+
+
+
 
 #endif // include guard

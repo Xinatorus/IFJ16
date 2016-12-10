@@ -111,7 +111,8 @@ void interpret(tInstrList iList,TsTree *root) {
 			//nactu paramety
 			//continue a pokracuju v instrukcich 
 
-			sf = newFrame(sf, *root, ins.addr1->value.name,findInFrame(ins.addr3->value.name,sf), iList.active);
+			//TODO non-void bez returnu!
+			sf = newFrame(sf, *root,  ins.addr1->value.name,ins.addr3? findInFrame(ins.addr3->value.name,sf) : NULL, iList.active);
 			debug("[INTERPRET] Switched to frame: %s",sf->identifier);
 			instrListSetActive(&iList, tsFind(*root, ins.addr1->value.name)->addr);
 			extractParams(sf, *root, interStack);
@@ -534,7 +535,7 @@ void interpret(tInstrList iList,TsTree *root) {
 			//TODO prepisy
 			findInFrame(dest->value.name, sf)->value.v_string = makeString(tmpData.value.v_string);
 			tmpStr1 = findInFrame(dest->value.name, sf)->value.v_string;
-			mergeSort(tmpStr1,strlen(tmpStr1));
+			listMergeSort(tmpStr1);
 			break;
 
 
