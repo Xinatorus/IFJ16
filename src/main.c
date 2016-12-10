@@ -57,11 +57,11 @@ int main(int argc, char* argv[]) {
 #else
 	// patrikuv pisecek
 	char *c = "ABCBDFADE";
-	//listMergeSort(c);
+	listMergeSort(c);
 	
 	//printf("%s", "ah\52oj");
 
-	testInterpret();
+	//testInterpret();
 	//valgrind();
 	//getchar();
 
