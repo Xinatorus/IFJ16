@@ -137,7 +137,7 @@ void testInterpret() {
 //TS
 	printf("Vyvarim TS Main\n");
 	HashTable glob = createHashTable(HASH_TABLE_SIZE);
-	addToHashTable(glob,"Main.run","FVI",0,0);
+	addToHashTable(glob,"Main.run","FV",0,0);
 	addToHashTable(glob, "b", "VD", 0, 1);
 	addToHashTable(glob, "c", "VS", 0, 2);
 	hashWriteOut(glob);
@@ -197,9 +197,9 @@ void testInterpret() {
 	tsAdd(&root, "Main.run", 3, NULL, local);
 	tsWriteOutTree(root);
 
-	tsWriteOutTreeTS(root);
-	//printf("Running interpret\n");
-	//interpret(list,&root);
+	//tsWriteOutTreeTS(root);
+
+	interpret(list,&root);
 
 
 
@@ -220,10 +220,10 @@ void testWriteOutFrame(StackFrame *sf) {
 		debug(" [FRAMEWORK] Undefined frame\n");
 		return;
 	}
-	debug(" [FRAMEWORK] + FRAME: %s (%s %d) [%d]\n", sf->identifier, (sf->parent ? sf->parent->identifier : "NULL"), sf->child,sf->size);
+	debug(" [FRAMEWORK] + FRAME: %s (%s %d) [%d]\n", sf->identifier, (sf->parent ? sf->parent->identifier : "NULL"), (int)sf->child,sf->size);
 	debug(" [FRAMEWORK] +                          ID +       TYPE +                                VALUE +\n");
 
-	for (int i = 0; i < sf->size; i++) {
+	for (unsigned int i = 0; i < sf->size; i++) {
 		switch (sf->data[i].type) {
 		case t_int:
 			if (sf->data[i].defined == true)

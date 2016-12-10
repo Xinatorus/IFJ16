@@ -11,12 +11,12 @@ void interpret(tInstrList iList,TsTree *root) {
 
 	// tabulka ramcu
 	StackFrame *sf = newTopFrame(*root);
+	
+	sf = newFrame(sf,*root,"Main.run",NULL,NULL);
+	//extractParams(sf, *root, interStack);
+
 	debug("[INTERPRET] Content of TOP FRAME\n");
-	testWriteOutFrame(sf);
-	sf = newFrame(NULL,*root,"Main.run",NULL,NULL);
-	extractParams(sf, *root, interStack);
-
-
+	testWriteOutFrame(sf->top);
 	//printf("### END TEST SF wOut\n");
 
 	//StackFrame *sf = ts; // POUZE PRO TEST
@@ -39,7 +39,8 @@ void interpret(tInstrList iList,TsTree *root) {
 		debug("[INTERPRET] Instruction execute: \n ");
 		testWriteOutI(ins);
 
-		dest = src1 = src2 = tmpStr1 = tmpStr2= NULL; // reset adres
+		dest = src1 = src2 = NULL;
+		tmpStr1 = tmpStr2 = NULL; // reset adres
 
 
 		int destT, src1T, src2T;
@@ -87,7 +88,7 @@ void interpret(tInstrList iList,TsTree *root) {
 			if(src2->type != name || findInFrame(src2->value.name, sf)->defined == true) //byl src definovany? 
 				switch (destT) {
 					case t_int:
-						findInFrame(dest->value.name, sf)->value.v_int = byType(src2);
+						findInFrame(dest->value.name, sf)->value.v_int = (int) byType(src2);
 						break;
 					case t_double:
 						findInFrame(dest->value.name, sf)->value.v_double = byType(src2);
@@ -110,10 +111,10 @@ void interpret(tInstrList iList,TsTree *root) {
 			//nactu paramety
 			//continue a pokracuju v instrukcich 
 
-			sf = newFrame(sf, *root, ins.addr1->value.name, ins.addr3, iList.active);
+			sf = newFrame(sf, *root, ins.addr1->value.name,findInFrame(ins.addr3->value.name,sf), iList.active);
 			debug("[INTERPRET] Switched to frame: %s",sf->identifier);
-			instrListSetActive(&iList, tsFind(root, ins.addr1->value.name)->addr);
-			extractParams(sf, root, interStack);
+			instrListSetActive(&iList, tsFind(*root, ins.addr1->value.name)->addr);
+			extractParams(sf, *root, interStack);
 			continue;
 
 			break;
@@ -139,14 +140,14 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 			
 			instrListSetActive(&iList,sf->lastActive); // pokud je konec Main.run tak je to null a smycka konci
-			if (sf->parent) {
+			if (sf->parent != sf->top) {
 				debug("[INTERPRET] Switched to frame: %s", sf->parent->identifier);
 			}
 			else {
 				debug("[INTERPRET] Switched out of Main.run -> End \n");
 			}
-			sf = deleteFrame(sf); // navraceni otcovskeho ramce		
-			
+			sf = deleteFrame(sf); // navraceni do otcovskeho ramce		
+			continue;
 			break;
 		case I_PUSH:
 			if (dest->type != name || findInFrame(dest->value.name, sf)->defined == true)
@@ -506,9 +507,9 @@ void interpret(tInstrList iList,TsTree *root) {
 			stackPop(interStack, &tmpData);
 			tmpStr1 = tmpData.value.v_string;
 			stackPop(interStack, &tmpData);
-			int tmpInt1 = tmpData.value.v_string;
+			int tmpInt1 = tmpData.value.v_int;
 			stackPop(interStack, &tmpData);
-			int tmpInt2 = tmpData.value.v_string;
+			int tmpInt2 = tmpData.value.v_int;
 			findInFrame(dest->value.name, sf)->value.v_string = getSubString(tmpStr1,tmpInt1,tmpInt2);
 			break;
 		case I_CMP: // int compare(String s1, String s2)
@@ -547,7 +548,9 @@ void interpret(tInstrList iList,TsTree *root) {
 
 		instrListSetActiveNext(&iList); // posunu aktivitu na další 
 	}//while ins
-	debug("[INTERPRET] Ending inrepret...\n");
+	debug("[INTERPRET] Ending interpret...\n");
+	clearAll(sf,root,interStack,&iList);
+	debug("[INTERPRET] End.\n");
 }
 
 // extrahuje parametry funkce
@@ -564,7 +567,7 @@ void extractParams(StackFrame *sf, TsTree root, Stack stack) {
 
 	Data tmp;
 
-	for (int i = cpar; i >= 0; i--) {
+	for (int i = cpar; i > 0; i--) {
 		stackPop(stack, &tmp);
 		sf->data[i].value = tmp.value; //TODO test
 	}

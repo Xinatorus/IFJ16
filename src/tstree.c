@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS // pro zruseni warningu visual studia
 #include "headers\tstree.h"
+#include "headers\testWriteOut.h"
 
 void tsTreeInit(TsTree *root) {
 	*root = NULL;
@@ -72,17 +73,21 @@ void tsDel(TsTree *root) {
 	TsTree tmp;
 	for (TsTree x = *root; x != NULL;) {
 		for (TsTree t = x->child; t != NULL;) {
+			debug(" [TSTREE] Deleting: %s\n",t->name);
 			free(t->name);
 			deleteHashTable(t->ts);
 			tmp = t->next;
 			free(t);
 			t = tmp;
+			debug(" [TSTREE] Deleted.\n");
 		}
+		debug(" [TSTREE] Deleting: %s\n", x->name);
 		free(x->name);
 		deleteHashTable(x->ts);
 		tmp = x->next;
 		free(x);
 		x = tmp;
+		debug(" [TSTREE] Deleted.\n");
 	}
 
 	*root = NULL;

@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
 	// patrikuv pisecek
 
 	testInterpret();
+	valgrind();
 	//getchar();
 
 #endif
