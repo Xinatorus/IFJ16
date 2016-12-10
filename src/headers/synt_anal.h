@@ -5,6 +5,7 @@
 #define SYNT_DEBUG 1    // Debug messages for syntax analysis
 #define PREC_DEBUG 1    // Debug messages for precedence analysis
 #define SEM_DEBUG 1     // Debug messsges for semantic analysis
+#define GEN_DEBUG 1     // Debug messages for generator
 
 #include <stdbool.h>
 #include <string.h>
@@ -14,7 +15,9 @@
 #include "ial.h"
 #include "strings.h"
 #include "testWriteOut.h"
+#include "instructions.h"
 
+extern tInstrList instr_list; // Main instruction List
 extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 extern Ttoken *token_list; // Token list, used for second pass

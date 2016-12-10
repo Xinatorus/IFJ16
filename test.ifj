@@ -1,11 +1,7 @@
 
-class main
+class Main
 {
-
-    static void run()
-    {
-        int i;
+    static void run() {
+        ifj16.print("ukazka kvality \"lex analyzatoru\" lol \n");
     }
-
 }
-

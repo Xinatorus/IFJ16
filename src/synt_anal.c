@@ -1,6 +1,7 @@
 
 #include "headers\synt_anal.h"
 
+tInstrList instr_list; // Main instruction list
 cQueue token_archive; // Queue to store pre-used tokens
 cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 Ttoken *token_list = NULL; // Token list, used for second pass
@@ -554,7 +555,6 @@ void execute() {
     #if SYNT_DEBUG == 1
     fprintf(stdout, "---------------------------------\n");
     if (first_analysis) {
-        token_list = NULL;
         fprintf(stdout, "[SYNT_DEBUG #%d] FIRST Syntax analysis started\n", first_analysis ? 1 : 2);
     }
     else
@@ -574,6 +574,10 @@ void execute() {
     current_param = 0;
 
     if (first_analysis) {
+        /* Inits only to be done once */
+        token_list = NULL;
+        instrListInit(&instr_list);
+
         /* @SEM - Create symbol table for default if16 class */
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Declaring default ifj16 class\n");
@@ -664,6 +668,12 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
                             #endif
+                            if (strchr(input.token->attr->str, '.') != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to declare class %s WITH DOT!\n", input.token->attr->str);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
                             if (get_declared_class(input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Class %s is already declared!\n", input.token->attr->str);
@@ -688,6 +698,12 @@ void execute() {
                         /* @SEM1 - Declaring static variable */
                         if (strlen(current_func) == 0) {
                             if (first_analysis) {
+                                if (strchr(input.token->attr->str, '.') != NULL) {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ User tried to declare static variable %s in class %s WITH DOT!\n", input.token->attr->str, current_class);
+                                    #endif
+                                    error(ERR_SEM_OTHER);
+                                }
                                 char *full_name = cat(cat(current_class, "."), input.token->attr->str);
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
@@ -703,7 +719,7 @@ void execute() {
                                     #if SEM_DEBUG == 1
                                         fprintf(stdout, "\t@ Declaring static variable %s of type %s\n", full_name, dec_types);
                                     #endif
-                                    addToHashTable(class_tree->ts, full_name, cat("V", dec_types), 0, var_static_index++);
+                                    addToHashTable(class_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_static_index++);
                                     class_tree->varCount++;
                                 }
                             }
@@ -714,6 +730,12 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
                                 #endif
+                                if (strchr(input.token->attr->str, '.') != NULL) {
+                                    #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to declare normal variable %s in function %s WITH DOT!\n", input.token->attr->str, current_func);
+                                    #endif
+                                    error(ERR_SEM_OTHER);
+                                }
                                 TsTree func_tree = get_declared_function(current_func, NULL);
                                 if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
                                     #if SEM_DEBUG == 1
@@ -735,6 +757,12 @@ void execute() {
                     else if (last_rule == 14 || last_rule == 15) {
                         if (!first_analysis) {
                             char *full_name = cat(cat(current_class, "."), last_func_ident);
+                            if (strchr(input.token->attr->str, '.') != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to declare normal variable (parameter) %s of function %s WITH DOT!\n", input.token->attr->str, full_name);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring normal variable (parameter) %s of function %s\n", input.token->attr->str, full_name);
                             #endif
@@ -759,7 +787,7 @@ void execute() {
                         if (!first_analysis && strlen(current_func) > 0) {
                             if (get_declared_variable(input.token->attr->str, current_class, current_func) == NULL) {
                                 #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ User tried to use undeclared variable %s in function %s!\n", input.token->attr->str, current_func);
+                                    fprintf(stdout, "\t@ User tried to use undeclared variable %s in function %s!\n", input.token->attr->str, current_func);
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
@@ -768,13 +796,13 @@ void execute() {
                         if (first_analysis && strlen(current_func) == 0 && last_rule == 42) {
                             if (get_declared_variable(input.token->attr->str, current_class, NULL) == NULL) {
                                 #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ User tried to use undeclared static variable %s in static context of class %s!\n", input.token->attr->str, current_class);
+                                    fprintf(stdout, "\t@ User tried to use undeclared static variable %s in static context of class %s!\n", input.token->attr->str, current_class);
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
                         }
                         /* @SEM2 - Checking function parameters when calling function */
-                        if (!first_analysis && last_rule == 18 || last_rule == 23) {
+                        if (!first_analysis && (last_rule == 18 || last_rule == 23)) {
                             current_param++;
                             HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
                             int needed_params = strlen(cur_func->type) - 2;
@@ -854,6 +882,12 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring static function %s\n", full_name);
                             #endif
+                            if (strchr(last_func_ident, '.') != NULL) {
+                                #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to declare static function %s in class %s WITH DOT!\n", last_func_ident, current_class);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
                             if (get_declared_function(full_name, NULL) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Static function %s is already declared!\n", full_name);
@@ -1082,30 +1116,30 @@ void execute() {
     if (first_analysis) {
         /* @SEM1 - Check for class main & function run presence & check correct types */
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether class main exists\n");
+            fprintf(stdout, "\t@ Checking whether class Main exists\n");
         #endif
-        TsTree t_main = get_declared_class("main");
+        TsTree t_main = get_declared_class("Main");
         if (t_main == NULL) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Class main not declared!\n");
+                fprintf(stdout, "\t@ Class Main not declared!\n");
             #endif
             error(3);
         }
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether function main.run exists\n");
+            fprintf(stdout, "\t@ Checking whether function Main.run exists\n");
         #endif
-        if (get_declared_function("main.run", NULL) == NULL) {
+        if (get_declared_function("Main.run", NULL) == NULL) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Function main.run not declared!\n");
+                fprintf(stdout, "\t@ Function Main.run not declared!\n");
             #endif
             error(3);
         }
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether function main.run is void without params\n");
+            fprintf(stdout, "\t@ Checking whether function Main.run is void without params\n");
         #endif
-        if (strcmp(searchInHashTable(t_main->ts, "main.run")->type, "FV") != 0) {
+        if (strcmp(searchInHashTable(t_main->ts, "Main.run")->type, "FV") != 0) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Function main.run has incorrect types!\n");
+                fprintf(stdout, "\t@ Function Main.run has incorrect types!\n");
             #endif
             error(3);
         }
