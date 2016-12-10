@@ -85,7 +85,7 @@ Ttoken *load_next_token() {
 
 
     #if TOKEN_DEBUG == 1
-        fprintf(stdout, "    <<< TOKEN: %s DATA: %s >>>\n", getTokenName(token->type), token->attr->str);
+        fprintf(stdout, "    <<< TOKEN: '%s' DATA: '%s' >>>\n", getTokenName(token->type), token->attr->str);
 
         // Print entire token_list
         /*
@@ -1147,7 +1147,7 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
     if (strchr(name, '.') != NULL) {
         tree = tsFind(root, explodeFullIdentifier(name, true));
         if (tree != NULL)
-            return searchInHashTable(tree->ts, name);
+            return searchInHashTable(tree->ts, explodeFullIdentifier(name, false));
         else
             return NULL;
     }
@@ -1169,7 +1169,7 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
         }
         /* Search in class */
         if (returned == NULL) {
-            returned = searchInHashTable(tsFind(root, p_class)->ts, cat(cat(p_class, "."), name));
+            returned = searchInHashTable(tsFind(root, p_class)->ts, name);
         }
 
         return returned;

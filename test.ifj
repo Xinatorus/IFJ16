@@ -1,17 +1,11 @@
 
 class main
 {
+
     static void run()
     {
-        double a = print_parameter(a);
+        int i;
     }
 
-    static int print_parameter(double a)
-    {
-        ifj16.print("parametr: " + a + " predan");
-        return a;
-    }
-
-    static double a = 3;
 }
 
