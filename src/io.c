@@ -321,6 +321,7 @@ double readDouble(double *out)
         fprintf(stderr, "stderr int - fgets\n");
         return false;
     }
+	return false;
 }
 
 

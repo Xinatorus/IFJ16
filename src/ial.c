@@ -1,5 +1,6 @@
 
 #include "headers\ial.h"
+#include "headers\testWriteOut.h"
 
 int	findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 
@@ -49,16 +50,28 @@ void deleteHashTable(HashTable hashTable) {
 
 	if (hashTable == NULL) return;
 
+	debug(" [HASHTABLE] Deleting table:");
+	hashWriteOut(hashTable);
+
 	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
 		if (hashTable[i].next != NULL) {
 			for (HashTable item = hashTable[i].next; item != NULL; ) {
 				HashTable tmp = item;
 				item = item->next;
+				free(tmp->key);
+				free(tmp->type);
 				free(tmp);
 			}
+			hashTable[i].next = NULL;
 		}
 	}
-
+	for (unsigned int i = 0; i < HASH_TABLE_SIZE; i++) {
+		if (hashTable[i].key) {
+			free(hashTable[i].key);
+			free(hashTable[i].type);
+		}
+	}
+	
 	free(hashTable);
 }
 

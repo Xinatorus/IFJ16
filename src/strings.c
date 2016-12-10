@@ -20,7 +20,7 @@ char *cat(char *s1, char *s2) {
 
 //TODO Vrati string reprezentaci non-string promenne
 char *varToString(Data *var) {
-	char *s;
+	//char *s;
 	switch (var->type) {
 		case t_int: 
 		//	s = intToString(var->value.v_int);
@@ -52,7 +52,7 @@ char *doubleToString(double x) {
 
 //vytvori pod retezec od indexu startindex o velikosti size
 char *getSubString(char *str, int startindex, int size) {
-
+	return NULL;
 }
 
 /* ----------------------------------------------------------------------------------- */

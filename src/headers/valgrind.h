@@ -5,7 +5,9 @@
 #define _CRTDBG_MAP_ALLOC 1
 #include <stdlib.h>
 #include <Crtdbg.h>
+#undef malloc
 #define malloc(size) _malloc_dbg(size,_CLIENT_BLOCK,__FILE__,__LINE__)
+#undef free
 #define free(addr) _free_dbg(addr,_CLIENT_BLOCK)
 #endif
 

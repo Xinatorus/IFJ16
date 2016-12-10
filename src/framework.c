@@ -1,10 +1,9 @@
-
 #include "headers\framework.h"
 #include "headers\testWriteOut.h"
 
 //vraci odkaz na promenou
 Data *findInFrame(char *name, StackFrame *sf) {
-	for (int i = 0; i < sf->size; i++) {
+	for (unsigned int i = 0; i < sf->size; i++) {
 		//printf("compare: %s - %s, %d\n", name, sf->data[i].name, strcmp(name, sf->data[i].name));
 		if (!strcmp(name, sf->data[i].name)) { 
 			//printf("have match \n");
@@ -33,16 +32,12 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 	}
 
 	sf->identifier = makeString(name);
-	if (parent) { //pokud neni prvni
-		sf->child = parent->child; // melo by byt VZDY null! 
-		parent->child = sf;
-		sf->top = parent->top;
-	}
-	else sf->child = NULL;
 	sf->parent = parent;
+	sf->top = parent->top;
 	sf->lastActive = lastActive;
 	sf->ret = ret;
 	sf->size = size;
+	sf->child = NULL;
 	
 	debug(" [FRAMEWORK] Add vars by hash table\n");
 	hashWriteOut(tsTree->ts);
@@ -97,22 +92,41 @@ StackFrame *newFrame(StackFrame *parent, TsTree root, char *name, Data *ret, tIn
 	sf->data[si++].type = t_double;
 
 	sf->data[si].name = makeString("#tmpS1");
+	sf->data[si].value.v_string = NULL;
 	sf->data[si].defined = false;
 	sf->data[si++].type = t_string;
+
 	sf->data[si].name = makeString("#tmpS2");
+	sf->data[si].value.v_string = NULL;
 	sf->data[si].defined = false;
 	sf->data[si++].type = t_string;
+
+	debug("[FRAMEWORK] Created frame:\n");
+	testWriteOutFrame(sf);
 
 	return sf;
 }
 
 //odstanuje posledni ramec ze zasobniku
 StackFrame *deleteFrame(StackFrame *sf) {
+	debug("[FRAMEWORK] Deleting frame: %s\n",sf->identifier);
 	StackFrame *tmp = sf->parent;
 	if(tmp!=NULL)
 		sf->parent->child = sf->child;
-	free(sf->data); //TODO identifikatory a stringy
+
+	testWriteOutFrame(sf);
+
+	for (unsigned int i = 0; i < sf->size; i++) {
+		//debug("[FRAMEWORK] Deleting %s", sf->data[i].name);
+		free(sf->data[i].name);
+		if (sf->data[i].type == t_string && sf->data[i].value.v_string)
+			free(sf->data[i].value.v_string);
+	}
+
+	free(sf->identifier);
+	free(sf->data);
 	free(sf);
+	debug("[FRAMEWORK] Frame Deleted\n");
 	return tmp; 
 }
 
@@ -134,6 +148,7 @@ StackFrame *newTopFrame(TsTree root) {
 	}
 
 	sf->identifier = makeString("#StaticVariables");
+	sf->lastActive = NULL;
 	sf->top = sf;
 	sf->parent = NULL;
 	sf->child = NULL;
@@ -152,7 +167,7 @@ StackFrame *newTopFrame(TsTree root) {
 				for (struct hItem *item = &(x->ts[i]); item != NULL; item = item->next) {
 					if (item->type[0] == 'V') { // pokud je pormenna
 						char *tmp = cat(x->name,".");
-						char *fullname = makeString(cat(tmp,item->key));
+						char *fullname = cat(tmp,item->key);
 						free(tmp);
 						debug(" [FRAMEWORK] Add to frame..  id: %s, type: %s\n", fullname, item->type);
 						sf->data[index].name = fullname;// jmeno promenne
