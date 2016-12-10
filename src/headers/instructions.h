@@ -9,6 +9,7 @@
 	INS(I_MOV) \
 	INS(I_CALL) \
 	INS(I_RET) \
+	INS(I_END) \
 	INS(I_PUSH) \
 	INS(I_POP) \
 	INS(I_JMP) \
@@ -31,6 +32,7 @@
 	INS(I_CMP)\
 	INS(I_FIND)\
 	INS(I_SORT)\
+	INS(I_LABEL)
 
 
 #define GENERATE_ENUM_INSTR(ENUM) ENUM,
@@ -46,19 +48,23 @@ typedef enum {
 	FOREACH_INSTR(GENERATE_ENUM_INSTR)
 }Instructions;
 
+typedef enum {
+	c_int, // konstanta int
+	c_double, // konstanta double 
+	c_string, // konstatna string
+	name // identifikator 
+}Type;
+
+typedef union {
+	int v_int;
+	double v_double;
+	char *v_string;
+	char *name;
+}Value;
+
 typedef struct {
-	enum {
-		c_int,
-		c_double,
-		c_string,
-		name
-	}type;
-	union {
-		int v_int;
-		double v_double;
-		char *v_string;
-		char *name;
-	}value;
+	Type type; // typ operandu
+	Value value; // hodnota pro jednotlivy typ
 }Operand;
 
 

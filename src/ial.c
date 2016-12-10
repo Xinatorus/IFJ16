@@ -171,3 +171,101 @@ void merge(char *arr, char *l, char *r, int sizeL, int sizeR) {
 	while (j < sizeR)
 		arr[k++] = r[j++];
 }
+
+/*
+repeat(*Pøedpokládá se pole o nenulové délce - alespoò jeden seznam *)
+	CopyFirst(L, Zac1); (*Ètení zaèátku prvního seznamu *)
+	DeleteFirst(L); First(L);
+	if Active(L)
+		then begin(*ve frontì jsou alespoò dva seznamy, lze èíst druhý *)
+		CopyFirst(L, Zac2); (*Ètení zaèátku druhého seznamu *)
+		DeleteFirst(L); First(L);
+		if A[Zac1] < A[Zac2]
+			then InsertLast(L, Zac1)(*Uložení výsledného zaèátku do fronty*)
+		else InsertLast(L, Zac2) (*Uložení výsledného zaèátku do fronty*)
+	end(*if *)
+until not Active(L)*/
+void listMergeSort(char *arr) {
+	printf("%s\n",arr);
+	int size = strlen(arr);
+	int *pom = malloc(sizeof(int)*size);
+
+	
+	for (int i = 0; i < size; i++)
+		printf("%3d| ", i);
+	printf("\n");
+
+	for (int i = 0; i < size; i++)
+		printf("%3c| ", arr[i]);
+	printf("\n");
+
+	//zretezeni posloupnosti
+	for (int i = 0; i < size-1; i++) {
+		if (arr[i] < arr[i + 1]) {
+			pom[i] = i+1;
+		}
+		else {
+			pom[i] = 0;
+		}
+		printf("%3d| ", pom[i]);
+	}
+
+	pom[size-1] = 0;
+	printf("%3d| ", pom[size-1]);
+	printf("\n");
+
+	listZacatku L;
+
+	int tmpSize=1;
+	for (int i = 0; i < size; i++) {
+		
+	}
+
+
+
+}
+
+
+void init(listZacatku L) {
+	L.active = NULL;
+	L.first = NULL;
+	L.last = NULL;
+}
+void add(listZacatku L, neklPos zac) {
+	if (L.first == NULL) {
+		L.first = zac;
+		L.last = zac;
+	}
+	else {
+		L.last->next = zac;
+		L.last = zac;
+	}
+}
+void copyFirst(listZacatku L, neklPos zac) {
+	zac = L.first;
+}
+void deleteFirst(listZacatku L) {
+	neklPos tmp;
+	tmp = L.first;
+	if (tmp == L.active) {
+		L.active = NULL;
+	}
+	L.first = tmp->next;
+	free(tmp);
+}
+void first(listZacatku L) {
+	L.active = L.first;
+}
+int active(listZacatku L) {
+	return L.active;
+}
+void insertLast(listZacatku L, neklPos zac) {
+	if (L.last) {
+		L.last->next = zac;
+		L.last = zac;
+	}
+	else {
+		L.first = zac;
+		L.last = zac;
+	}
+}
