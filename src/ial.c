@@ -269,7 +269,7 @@ void first(listZacatku *L) {
 	L->active = L->first;
 }
 int active(listZacatku *L) {
-	return L->active;
+	return (int) L->active;
 }
 
 void insertLast(listZacatku *L, int index) {
