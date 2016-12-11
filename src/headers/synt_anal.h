@@ -1,3 +1,9 @@
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 #ifndef SYNT_ANAL_H
 #define SYNT_ANAL_H
 
@@ -14,7 +20,7 @@
 #include "tstree.h"
 #include "ial.h"
 #include "strings.h"
-#include "testWriteOut.h"
+#include "testing.h"
 #include "instructions.h"
 
 extern tInstrList instr_list; // Main instruction List

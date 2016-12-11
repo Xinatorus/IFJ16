@@ -1,6 +1,11 @@
-
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 #include "headers\strings.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {
