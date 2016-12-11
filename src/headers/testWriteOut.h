@@ -20,7 +20,10 @@
 #define debugFile stdout
 
 //#define debug(...) do{ fprintf( debugFile, __VA_ARGS__ ); } while( false )
-//#define debug(...) do{ } while ( false )
+
+#define debug(...) do{ } while ( false )
+
+
 
 #define printf(...) do{ \
 fprintf( debugFile, __VA_ARGS__ ); \
