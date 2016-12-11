@@ -61,11 +61,11 @@ Ttoken* getNextToken()
 		{
             		c = fgetc(subor);
             		if(c == EOF)
-			{
-                		token->type = LEX_EOF;
+                    {
+                		token->type = KONEC_SOUBORU;
                 		return token;
             		}
-        	}
+        }
 		// stavy, ktere nasleduji ihned po pocatecnim stave
 		switch (token->type)
 		{
@@ -507,7 +507,7 @@ Ttoken* getNextToken()
 						}
 						else
 						{
-							
+
 							if (c == 't')
 							{
 								addChar(token->attr, c);
@@ -531,10 +531,10 @@ Ttoken* getNextToken()
 									}
 								}
 							}
-						}	
+						}
 					}
 				}
-				
+
 				else if ((c > 31) && (c != 34))
 				{
 					addChar(token->attr, c);
@@ -797,7 +797,7 @@ TokenType najdiKlucoveSlovo2(string* s)
 	// pomocne promenne
 	int j;
 	char *str, *str2;
-	
+
 	char vysledek[100000];
 	strcpy(vysledek, s->str);
 
