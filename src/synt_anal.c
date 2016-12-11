@@ -4,7 +4,7 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\synt_anal.h"
+#include "synt_anal.h"
 
 tInstrList instr_list; // Main instruction list
 cQueue token_archive; // Queue to store pre-used tokens

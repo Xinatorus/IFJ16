@@ -6,7 +6,7 @@
 */
 
 
-#include "headers/error.h"
+#include "error.h"
 
 
 void error(int chyba)

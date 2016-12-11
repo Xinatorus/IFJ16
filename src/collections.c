@@ -6,7 +6,7 @@
 */
 
 
-#include "headers/collections.h"
+#include "collections.h"
 
 /////////////////////////////
 /////////// STACK ///////////

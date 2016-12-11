@@ -4,8 +4,8 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\strings.h"
-#include "headers\testing.h"
+#include "strings.h"
+#include "testing.h"
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {

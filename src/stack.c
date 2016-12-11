@@ -4,7 +4,7 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\stack.h"
+#include "stack.h"
 
 Stack stackInit(unsigned int size) {
 	Stack stack;
