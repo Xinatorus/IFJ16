@@ -515,7 +515,7 @@ Ttoken* getNextToken()
 
 				break;
 
-case RETEZEC_2
+            case RETEZEC_2:
 
                 /* znaky " n t \ */
                 if ((c == 34) || (c == 110) || (c == 116) || (c == 92))
@@ -541,7 +541,7 @@ case RETEZEC_2
                                 addChar(token->attr, c);
 
                                 //escape sekvence (370-377)
-                                if ((c >= '0') && (c <= '7'));
+                                if ((c >= '0') && (c <= '7'))
                                 {
                                     addChar(token->attr, c);
 

@@ -1,27 +1,25 @@
  Volume in drive C is Windows8_OS
  Volume Serial Number is A495-9C8B
 
- Directory of C:\Users\patri\OneDrive\dev\GIT\IFJ16\src
+ Directory of C:\Users\patri\OneDrive\dev\GIT\IFJ16\src\headers
 
 11.12.2016  16:35    <DIR>          .
 11.12.2016  16:35    <DIR>          ..
-10.12.2016  02:34             2ÿ923 collections.c
+05.12.2016  17:31             2ÿ103 collections.h
 11.12.2016  16:35                 0 dir.txt
-10.12.2016  02:34             2ÿ111 error.c
-11.12.2016  04:54             5ÿ319 framework.c
-11.12.2016  15:33    <DIR>          headers
-11.12.2016  12:15             6ÿ433 ial.c
-11.12.2016  12:52             1ÿ321 instructions.c
-11.12.2016  15:37            20ÿ070 interpret.c
-11.12.2016  04:54             8ÿ503 io.c
-11.12.2016  12:15            20ÿ655 lex_anal.c
-11.12.2016  15:38             1ÿ728 main.c
-11.12.2016  12:15            15ÿ470 prec_anal.c
-10.12.2016  02:34               783 stack.c
-11.12.2016  04:54             2ÿ354 strings.c
-11.12.2016  12:15            67ÿ137 synt_anal.c
-11.12.2016  12:45             9ÿ747 testWriteOut.c
-11.12.2016  04:54             2ÿ474 tstree.c
-10.12.2016  02:34               398 valgrind.c
-              17 File(s)        167ÿ426 bytes
-               3 Dir(s)  257ÿ887ÿ129ÿ600 bytes free
+07.12.2016  17:36             2ÿ005 error.h
+10.12.2016  02:33               854 framework.h
+11.12.2016  04:54             1ÿ314 ial.h
+11.12.2016  12:52             1ÿ997 instructions.h
+11.12.2016  15:33             1ÿ467 interpret.h
+07.12.2016  20:17               531 io.h
+11.12.2016  12:15             2ÿ875 lex_anal.h
+07.12.2016  22:33               645 stack.h
+09.12.2016  16:26               704 strings.h
+11.12.2016  12:15             3ÿ692 synt_anal.h
+10.12.2016  02:34             5ÿ895 synt_structures.h
+11.12.2016  12:44             1ÿ020 testWriteOut.h
+11.12.2016  13:05               727 tstree.h
+11.12.2016  04:54               333 valgrind.h
+              16 File(s)         26ÿ162 bytes
+               2 Dir(s)  257ÿ886ÿ969ÿ856 bytes free

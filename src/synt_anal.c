@@ -1397,23 +1397,30 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
     #endif
 
     tInstr result = (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] };
-    return instrListAddInstr(&instr_list, result);
+    tInstrListItem *returned = instrListAddInstr(&instr_list, result);
+    if (instr == I_LABEL && strchr(ops_p[0]->value.name, '#') != NULL)
+        addLabelAdress(labelAdressInit(), ops_p[0]->value.name, returned);
+
+    return returned;
 }
 
 char *manage_temp_var(char get, char *free) {
-    /* INIT FOR FIRST TIME */
+    #define INIT_TEMP_CAP 10
+    static bool inited = false;
     static bool *tempI[1]; static bool *tempD[1]; static bool *tempS[1];
-    #ifndef INIT_TEMP_CAP
-        #define INIT_TEMP_CAP 10
+    static int capI = INIT_TEMP_CAP; static int capD = INIT_TEMP_CAP; static int capS = INIT_TEMP_CAP;
+    static int usedI = 0; static int usedD = 0; static int usedS = 0;
+    /* INIT FOR FIRST TIME */
+    if (!inited) {
         // one item array is workaround because we cannot malloc static var directly
         tempI[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
         tempD[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
         tempS[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
-    #endif
-    /* CAPACITY */
-    static int capI = INIT_TEMP_CAP; static int capD = INIT_TEMP_CAP; static int capS = INIT_TEMP_CAP;
-    /* USED */
-    static int usedI = 0; static int usedD = 0; static int usedS = 0;
+    
+        for (int i = 0; i < INIT_TEMP_CAP; i++) { // Clear
+            tempI[0][i] = false; tempD[0][i] = false; tempS[0][i] = false;
+        }
+    }
 
     /* GET FREE VAR */
     if (free == NULL) {
@@ -1421,13 +1428,16 @@ char *manage_temp_var(char get, char *free) {
             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
             if (usedI == capI) { // Capacity is full, double it
                 tempI[0] = (bool *)realloc(tempI[0], sizeof(bool) * capI * 2);
+                for (int i = capI; i < capI *2; i++) { // Clear
+                    tempI[0][i] = false;
+                }
                 capI *= 2;
             }
             for (int i = 0; i < capI; i++) { /* Find free var */
                 if (!tempI[0][i]) { // Found
                     tempI[0][i] = true; // Mark as used
                     usedI++;
-                    sprintf(val, "%d", i); // Convert from i (int) to val (text)
+                    sprintf(val, "%d", i+1); // Convert from i (int) to val (text)
                     return cat("#tmpI", val); // Finally return
                 }
             }
@@ -1436,13 +1446,16 @@ char *manage_temp_var(char get, char *free) {
             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3);
             if (usedD == capD) {
                 tempD[0] = (bool *)realloc(tempD[0], sizeof(bool) * capD * 2);
+                for (int i = capD; i < capD * 2; i++) { // Clear
+                    tempD[0][i] = false;
+                }
                 capD *= 2;
             }
             for (int i = 0; i < capD; i++) {
                 if (!tempD[0][i]) {
                     tempD[0][i] = true;
                     usedD++;
-                    sprintf(val, "%d", i);
+                    sprintf(val, "%d", i+1);
                     return cat("#tmpD", val);
                 }
             }
@@ -1451,13 +1464,16 @@ char *manage_temp_var(char get, char *free) {
             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3);
             if (usedS == capS) {
                 tempS[0] = (bool *)realloc(tempS[0], sizeof(bool) * capS * 2);
+                for (int i = capS; i < capS * 2; i++) { // Clear
+                    tempS[0][i] = false;
+                }
                 capS *= 2;
             }
             for (int i = 0; i < capS; i++) {
                 if (!tempS[0][i]) {
                     tempS[0][i] = true;
                     usedS++;
-                    sprintf(val, "%d", i);
+                    sprintf(val, "%d", i+1);
                     return cat("#tmpS", val);
                 }
             }
@@ -1471,22 +1487,22 @@ char *manage_temp_var(char get, char *free) {
         val[strlen(free)-5] = '\0'; // Append null terminator
         int index = (int)strtol(val, (char **)NULL, 10); // Convert val (text) to index (int)
         if (free[4] == 'I') {
-            if (tempI[0][index]) { // It is used
-                tempI[0][index] = false; // Mark as freed
+            if (tempI[0][index-1]) { // It is used
+                tempI[0][index-1] = false; // Mark as freed
                 usedI--;
                 return NULL;
             }
         }
         else if (free[4] == 'D') {
-            if (tempD[0][index]) { // It is used
-                tempD[0][index] = false; // Mark as freed
+            if (tempD[0][index-1]) { // It is used
+                tempD[0][index-1] = false; // Mark as freed
                 usedD--;
                 return NULL;
             }
         }
         else if (free[4] == 'S') {
-            if (tempS[0][index]) { // It is used
-                tempS[0][index] = false; // Mark as freed
+            if (tempS[0][index-1]) { // It is used
+                tempS[0][index-1] = false; // Mark as freed
                 usedS--;
                 return NULL;
             }

@@ -9,7 +9,7 @@
 
 #define TOKEN_DEBUG 0   // Debug messages for loaded tokens
 #define SYNT_DEBUG 0    // Debug messages for syntax analysis
-#define PREC_DEBUG 1    // Debug messages for precedence analysis
+#define PREC_DEBUG 0    // Debug messages for precedence analysis
 #define SEM_DEBUG 0     // Debug messsges for semantic analysis
 #define GEN_DEBUG 1     // Debug messages for generator
 
@@ -58,7 +58,7 @@ void push_cstack_terminal(TType type, cStack *stack, char data);
 void push_cstack_nonterminal(NTType type, cStack *stack);
 
 /* Auxiliary function to push precedence symbol on stack */
-void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var);
+void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var, Ttoken *token);
 
 /* Auxiliary function to insert token into queue */
 void insert_cqueue_token(Ttoken *token, cQueue *queue);

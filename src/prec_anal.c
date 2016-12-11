@@ -151,13 +151,14 @@ Psymbol getNextPrecSymbol() {
     return symbol;
 }
 
-void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var) {
+void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var, Ttoken *token) {
     cItem item;
     Psymbol symbol;
     symbol.token = NULL; // We dont know, from what its made.. could be E op E -> E
     symbol.type = type;
     symbol.data = data;
     symbol.temp_var = temp_var;
+    symbol.token = token;
     item.type = IT_PSYMBOL;
     item.content.psymbol = symbol;
     if (!cStack_push(stack, item)) {
@@ -182,7 +183,7 @@ char prec_analysis(Ttoken *token) {
     // First step - there is T_EXPRESSION on top, pop it
     cStack_pop(&stack);
     // Second step - push $ on top
-    push_cstack_psymbol(PS_DOLLAR, &stack, '-', NULL);
+    push_cstack_psymbol(PS_DOLLAR, &stack, '-', NULL, NULL);
 
     char operation;
     Psymbol input = getNextPrecSymbol();
@@ -206,7 +207,7 @@ char prec_analysis(Ttoken *token) {
 
         // There could be PS_ESYS, PS_LSYS or PS_RSYS on top, in that case we are popping until we find regular prec. symbol to get prec. operation
         while (top.content.psymbol.type == PS_ESYS || top.content.psymbol.type == PS_LSYS || top.content.psymbol.type == PS_RSYS) {
-            push_cstack_psymbol(top.content.psymbol.type, &temporary, top.content.psymbol.data, top.content.psymbol.temp_var);
+            push_cstack_psymbol(top.content.psymbol.type, &temporary, top.content.psymbol.data, top.content.psymbol.temp_var, top.content.psymbol.token);
             cStack_pop(&stack);
             top = cStack_top(&stack);
         }
@@ -215,7 +216,7 @@ char prec_analysis(Ttoken *token) {
         if (operation != '<') {
             // We have to push everything "borrowed" back (the check for < is there because operation < does it by itself)
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data, cStack_top(&temporary).content.psymbol.temp_var);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data, cStack_top(&temporary).content.psymbol.temp_var, cStack_top(&temporary).content.psymbol.token);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
@@ -227,14 +228,14 @@ char prec_analysis(Ttoken *token) {
 
         /* Apply operation */
         if (operation == '<') {
-            push_cstack_psymbol(PS_LSYS, &stack, '-', NULL); // This is pushed just after non-SYS prec. symbol
+            push_cstack_psymbol(PS_LSYS, &stack, '-', NULL, NULL); // This is pushed just after non-SYS prec. symbol
             // We have to push everything "borrowed" back
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data, cStack_top(&temporary).content.psymbol.temp_var);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data, cStack_top(&temporary).content.psymbol.temp_var, cStack_top(&temporary).content.psymbol.token);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
-            push_cstack_psymbol(input.type, &stack, input.data, input.temp_var);
+            push_cstack_psymbol(input.type, &stack, input.data, input.temp_var, input.token);
             input = getNextPrecSymbol();
         }
         else if (operation == '>') {
@@ -256,7 +257,7 @@ char prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <(E)>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack, top_symbol.type, top_symbol.temp_var); // <(E)> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, top_symbol.type, top_symbol.temp_var, top_symbol.token); // <(E)> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -269,7 +270,7 @@ char prec_analysis(Ttoken *token) {
                 Psymbol s_top = top.content.psymbol; // Save i
 
                 #if PREC_DEBUG == 1
-                    fprintf(stdout, "  [PREC_DEBUG] [ PSYM -> ESYS ] %c -> %c\n", s_top.data, s_top.type);
+                    fprintf(stdout, "  [PREC_DEBUG] [ PSYM -> ESYS ] %c -> %c\n", top.content.psymbol.data, s_top.data);
                 #endif
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
@@ -282,7 +283,7 @@ char prec_analysis(Ttoken *token) {
 
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
-                    push_cstack_psymbol(PS_ESYS, &stack, s_top.type, temp_var); // <i> -> E
+                    push_cstack_psymbol(PS_ESYS, &stack, s_top.data, temp_var, s_top.token); // <i> -> E
                 }
                 else error(ERR_SYNT);
             }
@@ -324,7 +325,7 @@ char prec_analysis(Ttoken *token) {
                                 error(ERR_SEM_TYPE);
                             }
 
-                            push_cstack_psymbol(PS_ESYS, &stack, result_type, first_s.temp_var); // <E op E> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, result_type, first_s.temp_var, NULL); // <E op E> -> E
                             expr_temp_last = first_s.temp_var;
                             /* GENERATOR */
                             if (op == PS_PLUS || op == PS_MINUS || op == PS_STAR || op == PS_SLASH) {
@@ -363,7 +364,7 @@ char prec_analysis(Ttoken *token) {
 
         }
         else if (operation == '=') {
-            push_cstack_psymbol(input.type, &stack, input.data, NULL);
+            push_cstack_psymbol(input.type, &stack, input.data, NULL, input.token);
             input = getNextPrecSymbol();
         }
         else if (operation != 'E') {
@@ -378,6 +379,8 @@ char prec_analysis(Ttoken *token) {
         error(ERR_SYNT);
     }
     char result = top.content.psymbol.data;
+    manage_temp_var('-', top.content.psymbol.temp_var); // Free last used temp var
+
     cStack_pop(&stack);
     top = cStack_top(&stack);
     // Now, there should be $ on the top
