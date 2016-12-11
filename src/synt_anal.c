@@ -803,7 +803,7 @@ void execute() {
                         /* Incompatible type */
                         if (!are_type_compatible((left->type)[1], (right->type)[1])) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right->type)[1], last_var_ident, left->type)[1]);
+                                fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", (right->type)[1], last_var_ident, (left->type)[1]);
                             #endif
                             error(ERR_SEM_TYPE);
                         }
