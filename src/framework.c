@@ -17,6 +17,14 @@ Data *findInFrame(char *name, StackFrame *sf) {
 		//printf("not same\n");
 	}
 		
+	for (unsigned int i = 0; i < sf->top->size; i++) {
+		//printf("compare: %s - %s, %d\n", name, sf->data[i].name, strcmp(name, sf->data[i].name));
+		if (!strcmp(name, sf->top->data[i].name)) {
+			//printf("have match \n");
+			return &(sf->top->data[i]);
+		}
+		//printf("not same\n");
+	}
 
 	return NULL;
 }
