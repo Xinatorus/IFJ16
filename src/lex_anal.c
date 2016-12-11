@@ -486,7 +486,10 @@ Ttoken* getNextToken()
 				// retazec pokracuje
 				if ((c > 31) && (c != 34))
 				{
-					if (c == '\\')
+					addChar(token->attr, c);
+					token->type = RETEZEC;
+				}
+				if (c == '\\')
 					{
 						if (c == '\\')
 						{
@@ -503,17 +506,13 @@ Ttoken* getNextToken()
 							addChar(token->attr, c);
 							token->type = RETEZEC;
 						}
-					}
-					addChar(token->attr, c);
-					token->type = RETEZEC;
 				}
-				
 				// koniec retazca
-				else if (c == 34)
+				/*else if (c == 34)
 				{
 					token->type = RETEZEC;
 					return token;
-				}
+				}*/
 
 				// jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
