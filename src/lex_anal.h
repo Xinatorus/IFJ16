@@ -63,6 +63,7 @@ typedef enum {
   
   // retezec
   RETEZEC,
+  RETEZEC_2,
   
   // cisla
   CELOCISELNY_LITERAL,
