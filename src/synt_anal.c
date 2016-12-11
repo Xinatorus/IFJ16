@@ -1417,6 +1417,7 @@ char *manage_temp_var(char get, char *free) {
     static int usedI = 0; static int usedD = 0; static int usedS = 0;
     /* INIT FOR FIRST TIME */
     if (!inited) {
+        inited = true;
         // one item array is workaround because we cannot malloc static var directly
         tempI[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
         tempD[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);

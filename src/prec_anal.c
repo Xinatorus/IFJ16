@@ -276,10 +276,12 @@ char prec_analysis(Ttoken *token) {
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
                     /* GENERATOR */
-                    char c = (s_top.token->type == IDENTIFIKATOR || s_top.token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) ? 'N' : s_top.data;
                     char *temp_var = manage_temp_var(s_top.data, NULL);
-                    add_instruction(I_MOV, 'N', temp_var, c, s_top.token->attr->str, '-', NULL);
-                    expr_temp_last = makeString(temp_var);
+                    if ((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) {
+                        char c = (s_top.token->type == IDENTIFIKATOR || s_top.token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) ? 'N' : s_top.data;
+                        add_instruction(I_MOV, 'N', temp_var, c, s_top.token->attr->str, '-', NULL);
+                        expr_temp_last = makeString(temp_var);
+                    }
 
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
@@ -328,13 +330,15 @@ char prec_analysis(Ttoken *token) {
                             push_cstack_psymbol(PS_ESYS, &stack, result_type, first_s.temp_var, NULL); // <E op E> -> E
                             expr_temp_last = first_s.temp_var;
                             /* GENERATOR */
-                            if (op == PS_PLUS || op == PS_MINUS || op == PS_STAR || op == PS_SLASH) {
-                                Instructions ins = I_ADD;
-                                if (op == PS_PLUS) ins = I_ADD;
-                                if (op == PS_MINUS) ins = I_SUB;
-                                if (op == PS_SLASH) ins = I_DIV;
-                                if (op == PS_STAR) ins = I_MUL;
-                                add_instruction(ins, 'N', first_s.temp_var, 'N', second_s.temp_var, '-', NULL);
+                            if ((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) {
+                                if (op == PS_PLUS || op == PS_MINUS || op == PS_STAR || op == PS_SLASH) {
+                                    Instructions ins = I_ADD;
+                                    if (op == PS_PLUS) ins = I_ADD;
+                                    if (op == PS_MINUS) ins = I_SUB;
+                                    if (op == PS_SLASH) ins = I_DIV;
+                                    if (op == PS_STAR) ins = I_MUL;
+                                    add_instruction(ins, 'N', first_s.temp_var, 'N', second_s.temp_var, '-', NULL);
+                                }
                             }
 
                             // Save last used logical operator + operands (for later IF and WHILE jumps)
