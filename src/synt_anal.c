@@ -657,11 +657,9 @@ void execute() {
             #endif
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_IDENT) {
-                    /* @SEM2 - Save identificator (to know where to assign later) */
-                    if (!first_analysis) {
-                        if (last_rule != 42) // we dont want to overwrite by assigned identificator
-                            last_var_ident = makeString(input.token->attr->str);
-                    }
+                    /* @SEM12 - Save identificator (to know where to assign later) */
+                    if (last_rule != 42) // we dont want to overwrite by assigned identificator
+                        last_var_ident = makeString(input.token->attr->str);
                     if (last_rule == 3) {
                         /* @SEM1 - Declaring class */
                         if (first_analysis) {
@@ -782,58 +780,54 @@ void execute() {
                             }
                         }
                     }
-                    else if (last_rule == 18 || last_rule == 23 || last_rule == 29 || last_rule == 38 || last_rule == 42) {
-                        /* @SEM2 - Using undeclared variables in functions */
-                        if (!first_analysis && strlen(current_func) > 0) {
-                            if (get_declared_variable(input.token->attr->str, current_class, current_func) == NULL) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to use undeclared variable %s in function %s!\n", input.token->attr->str, current_func);
-                                #endif
-                                error(ERR_SEM_DEF);
-                            }
+                    /* @SEM2 - Using undeclared variables (local) */
+                    if (!first_analysis && strlen(current_func) > 0 && (last_rule == 18 || last_rule == 23 || last_rule == 29 || last_rule == 38 || last_rule == 42)) {
+                        if (get_declared_variable(input.token->attr->str, current_class, current_func) == NULL) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to use undeclared variable %s in function %s!\n", input.token->attr->str, current_func);
+                            #endif
+                            error(ERR_SEM_DEF);
                         }
-                        /* @SEM1 - Using undeclared variables in class body */
-                        if (first_analysis && strlen(current_func) == 0 && last_rule == 42) {
-                            if (get_declared_variable(input.token->attr->str, current_class, NULL) == NULL) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to use undeclared static variable %s in static context of class %s!\n", input.token->attr->str, current_class);
-                                #endif
-                                error(ERR_SEM_DEF);
-                            }
+                    }
+                    /* @SEM12 - Assigning variable to variable */
+                    if (((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) && last_rule == 42) {
+                        HashTable left = get_declared_variable(last_var_ident, current_class, current_func);
+                        HashTable right = get_declared_variable(input.token->attr->str, current_class, current_func);
+                        /* Undeclared right variable (left is checked before this) */
+                        if (right == NULL) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to assign undeclared variable %s!\n", input.token->attr->str);
+                            #endif
+                            error(ERR_SEM_DEF);
                         }
-                        /* @SEM2 - Checking function parameters when calling function */
-                        if (!first_analysis && (last_rule == 18 || last_rule == 23)) {
-                            current_param++;
-                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
-                            int needed_params = strlen(cur_func->type) - 2;
-                            /* Too much parameters */
-                            if (current_param > needed_params) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to call function %s with too many parameters (needed %d)!\n", last_func_ident, needed_params);
-                                #endif
-                                error(ERR_SEM_TYPE);
-                            }
-                            /* Invalid param type */
-                            if (!are_type_compatible(cur_func->type[current_param + 1], (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1])) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
-                                #endif
-                                error(ERR_SEM_TYPE);
-                            }
+                        /* Incompatible type */
+                        if (!are_type_compatible((left->type)[1], (right->type)[1])) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right->type)[1], last_var_ident, left->type)[1]);
+                            #endif
+                            error(ERR_SEM_TYPE);
                         }
-                        /* @SEM2 - Assigning variable */
-                        if (!first_analysis && last_rule == 42) {
-                            char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
-                            char right = (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1];
-                            /* Incompatible type */
-                            if (!are_type_compatible(left, right)) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_var_ident, left);
-                                #endif
-                                error(ERR_SEM_DEF);
-                            }
-                            /* GENERATOR */
-                            add_instruction(I_MOV, 'N', last_var_ident, 'N', input.token->attr->str, '-', NULL);
+                        /* GENERATOR */
+                        add_instruction(I_MOV, 'N', last_var_ident, 'N', input.token->attr->str, '-', NULL);
+                    }
+                    /* @SEM2 - Checking function parameters when calling function */
+                    if (!first_analysis && (last_rule == 18 || last_rule == 23)) {
+                        current_param++;
+                        HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
+                        int needed_params = strlen(cur_func->type) - 2;
+                        /* Too much parameters */
+                        if (current_param > needed_params) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to call function %s with too many parameters (needed %d)!\n", last_func_ident, needed_params);
+                            #endif
+                            error(ERR_SEM_TYPE);
+                        }
+                        /* Invalid param type */
+                        if (!are_type_compatible(cur_func->type[current_param + 1], (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1])) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
+                            #endif
+                            error(ERR_SEM_TYPE);
                         }
                     }
                 }
@@ -865,15 +859,84 @@ void execute() {
                             }
                         }
                     }
-                    /* @SEM2 - Assigning function with incompatible type (or void type) */
+                    /* @SEM2 - Assigning function (currently on func ident) */
                     if (!first_analysis && last_rule == 43) {
                         char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
                         char right = (get_declared_function_ht(input.token->attr->str, current_class)->type)[1];
+                        /* Incompatible (or void) type */
                         if (!are_type_compatible(left, right)) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_var_ident, left);
                             #endif
-                            error(ERR_SEM_DEF);
+                            error(ERR_SEM_TYPE);
+                        }
+                    }
+                }
+                if (input.type == T_EXPRESSION) {
+                    /*    ***********************************************
+                          ***           PRECEDENCE ANALYSIS           ***
+                          ***********************************************    */
+                    #if SYNT_DEBUG == 1
+                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Calling precedence analysis... < ~~~~\n", first_analysis ? 1 : 2);
+                    #endif
+                    input.data = prec_analysis(input.token);
+                    #if SYNT_DEBUG == 1
+                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
+                    #endif
+
+
+                    /* @SEM12 - Assigning expression to variable */
+                    if (((first_analysis && strlen(current_func) == 0) || (first_analysis && strlen(current_func) == 0)) && last_rule == 41) {
+                        /* Incompatible types */
+                        char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
+                        char right = input.data;
+                        if (!are_type_compatible(left, right)) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Assigning invalid right value (expr) of type %c into var %s of type %c!\n", right, last_var_ident, left);
+                            #endif
+                            error(ERR_SEM_TYPE);
+                        }
+                        /* GENERATOR */
+                        add_instruction(I_MOV, 'N', last_var_ident, 'N', "temp1", '-', NULL);
+                    }
+                    if (!first_analysis) {
+                        /* @SEM2 - Check expected boolean type for if statement */
+                        if (last_rule == 32) {
+                            if (input.data != 'B') {
+                                #if PREC_DEBUG == 1
+                                    fprintf(stdout, "\t@ Wrong type (%c) passed into if()\n", input.data);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Check expected boolean type for while statement */
+                        if (last_rule == 33) {
+                            if (input.data != 'B') {
+                                #if PREC_DEBUG == 1
+                                    fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Checking function parameters when calling function */
+                        if (last_rule == 17 || last_rule == 22) {
+                            current_param++;
+                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
+                            int needed_params = strlen(cur_func->type) - 2;
+                            /* Too much parameters */
+                            if (current_param > needed_params) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with too many parameters (needed %d)!\n", last_func_ident, needed_params);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                            /* Invalid param type */
+                            if (!are_type_compatible(cur_func->type[current_param + 1], input.data)) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
                         }
                     }
                 }
@@ -914,7 +977,7 @@ void execute() {
                         var_normal_index = 0;
                     }
                     if (last_rule == 19 || last_rule == 21) {
-                        /* @SEM2 - Function call ends, check for missing parameters*/
+                        /* @SEM2 - Function call ends, check for missing parameters */
                         if (!first_analysis) {
                             HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
                             int needed_params = strlen(cur_func->type) - 2;
@@ -926,7 +989,6 @@ void execute() {
                             }
                             current_param = 0;
                         }
-                        
                     }
                 }
                 else if (input.type == T_RCB) {
@@ -1011,71 +1073,12 @@ void execute() {
                         }
                     }
                 }
-                if (input.type == T_EXPRESSION) {
-                    #if SYNT_DEBUG == 1
-                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Calling precedence analysis... < ~~~~\n", first_analysis ? 1 : 2);
-                    #endif
-                    input.data = prec_analysis(input.token);
-                    #if SYNT_DEBUG == 1
-                        fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
-                    #endif
 
-                    if (!first_analysis) {
-                        /* @SEM2 - Check expected boolean type for if statement */
-                        if (last_rule == 32) {
-                            if (input.data != 'B') {
-                                #if PREC_DEBUG == 1
-                                    fprintf(stdout, "\t@ Wrong type (%c) passed into if()\n", input.data);
-                                #endif
-                                error(ERR_SEM_TYPE);
-                            }
-                        }
-                        /* @SEM2 - Check expected boolean type for while statement */
-                        if (last_rule == 33) {
-                            if (input.data != 'B') {
-                                #if PREC_DEBUG == 1
-                                    fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
-                                #endif
-                                error(ERR_SEM_TYPE);
-                            }
-                        }
-                        /* @SEM2 - Assigning expression with incompatible type */
-                        if (last_rule == 41) {
-                            char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
-                            char right = input.data;
-                            if (!are_type_compatible(left, right)) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Assigning invalid right value (expr) of type %c into var %s of type %c!\n", right, last_var_ident, left);
-                                #endif
-                                error(ERR_SEM_DEF);
-                            }
-                        }
-                        /* @SEM2 - Checking function parameters when calling function */
-                        if (last_rule == 17 || last_rule == 22) {
-                            current_param++;
-                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
-                            int needed_params = strlen(cur_func->type) - 2;
-                            /* Too much parameters */
-                            if (current_param > needed_params) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to call function %s with too many parameters (needed %d)!\n", last_func_ident, needed_params);
-                                #endif
-                                error(ERR_SEM_TYPE);
-                            }
-                            /* Invalid param type */
-                            if (!are_type_compatible(cur_func->type[current_param + 1], input.data)) {
-                                #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
-                                #endif
-                                error(ERR_SEM_TYPE);
-                            }
-                        }
-                    }
-                }
-                else {
+                /* Process terminal */
+                if (input.type != T_EXPRESSION)
                     cStack_pop(&stack);
-                }
                 input = getNextTerminal();
+
             }
             else {
                 #if SYNT_DEBUG == 1
@@ -1287,31 +1290,55 @@ void add_instruction(Instructions instr, char type1, char *value1, char type2, c
     types[0] = type1; types[1] = type2; types[2] = type3;
     values[0] = value1; values[1] = value2; values[2] = value3;
     
+    #if GEN_DEBUG == 1
+        fprintf(stdout, "** [ GENE ] ** [ %s ] **", INSTR_STRING[instr]);
+    #endif
+
     for (int i = 0; i < 3; i++) {
         if (types[i] == 'I') {
             ops[i].type = c_int;
             ops[i].value.v_int = (int)strtol(values[i], (char **)NULL, 10);
             ops_p[i] = &ops[i];
+            #if GEN_DEBUG == 1
+                fprintf(stdout, " [ %d. (int) %d ] **", i+1, ops[i].value.v_int);
+            #endif
         }
         else if (types[i] == 'D') {
             ops[i].type = c_double;
-            ops[i].value.v_double = (int)strtod(values[i], (char **)NULL);
+            ops[i].value.v_double = strtod(values[i], (char **)NULL);
             ops_p[i] = &ops[i];
+            #if GEN_DEBUG == 1
+                fprintf(stdout, " [ %d. (double) %f ] **", i+1, ops[i].value.v_double);
+            #endif
         }
         else if (types[i] == 'S') {
             ops[i].type = c_string;
             ops[i].value.v_string = makeString(values[i]);
             ops_p[i] = &ops[i];
+            #if GEN_DEBUG == 1
+                fprintf(stdout, " [ %d. (string) '%s' ] **", i+1, ops[i].value.v_string);
+            #endif
         }
         else if (types[i] == 'N' || types[i] == 'V') { // V just to be safe
             ops[i].type = name;
-            ops[i].value.v_string = makeString(values[i]);
+            ops[i].value.name = makeString(values[i]);
             ops_p[i] = &ops[i];
+            #if GEN_DEBUG == 1
+                fprintf(stdout, " [ %d. (name) '%s' ] **", i + 1, ops[i].value.name);
+            #endif
         }
         else {
+            types[i] = '-';
             ops_p[i] = NULL;
+            #if GEN_DEBUG == 1
+                fprintf(stdout, " [ %d. ----- ] **", i + 1);
+            #endif
         }
     }
+
+    #if GEN_DEBUG == 1
+        fprintf(stdout, "\n");
+    #endif
 
     instrListAddInstr(&instr_list, (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] });
 

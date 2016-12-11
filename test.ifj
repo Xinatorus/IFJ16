@@ -1,7 +1,15 @@
 
 class Main
 {
+    static int a;
+    static int b = a;
+
     static void run() {
-        ifj16.print(" \t \\ \n \100 \" ");
+
+        int a = b;
+        int b = 42*5;
+
+        // ifj16.print(" \t \\ \n \100 \" ");
     }
+    static int c = 3*3*3+1;
 }
