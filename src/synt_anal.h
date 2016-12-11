@@ -7,10 +7,10 @@
 #ifndef SYNT_ANAL_H
 #define SYNT_ANAL_H
 
-#define TOKEN_DEBUG 0   // Debug messages for loaded tokens
-#define SYNT_DEBUG 0    // Debug messages for syntax analysis
-#define PREC_DEBUG 0    // Debug messages for precedence analysis
-#define SEM_DEBUG 0     // Debug messsges for semantic analysis
+#define TOKEN_DEBUG 1   // Debug messages for loaded tokens
+#define SYNT_DEBUG 1    // Debug messages for syntax analysis
+#define PREC_DEBUG 1    // Debug messages for precedence analysis
+#define SEM_DEBUG 1     // Debug messsges for semantic analysis
 #define GEN_DEBUG 1     // Debug messages for generator
 
 #include <stdbool.h>
@@ -23,8 +23,10 @@
 #include "strings.h"
 #include "testing.h"
 #include "instructions.h"
+#include "interpret.h"
 
 extern tInstrList instr_list; // Main instruction List
+extern labelAdress *lbladdr; // Label table
 extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 extern Ttoken *token_list; // Token list, used for second pass
