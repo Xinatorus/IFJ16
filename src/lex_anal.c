@@ -489,7 +489,16 @@ Ttoken* getNextToken()
 					addChar(token->attr, c);
 					token->type = RETEZEC;
 				}
-
+				else if (c == '\\"')
+				{
+					addChar(token->attr, c);
+					token->type = RETEZEC;
+				}
+				else if (c == '\\\\\\"')
+				{
+					addChar(token->attr, c);
+					token->type = RETEZEC;
+				}
 				// koniec retazca
 				else if (c == 34)
 				{
