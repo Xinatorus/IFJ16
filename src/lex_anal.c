@@ -57,15 +57,6 @@ Ttoken* getNextToken()
 	while (c = fgetc(subor))
 	{
 		token->cisloRiadku = riadok;
-		while(c == ' ' || c == '\n' || c == '\t')
-		{
-            		c = fgetc(subor);
-            		if(c == EOF)
-                    {
-                		token->type = KONEC_SOUBORU;
-                		return token;
-            		}
-        }
 		// stavy, ktere nasleduji ihned po pocatecnim stave
 		switch (token->type)
 		{
@@ -490,23 +481,20 @@ Ttoken* getNextToken()
 
 				// retezec
 			case RETEZEC:
-				
+
 				// retazec pokracuje
-			
 				if (c == '\\')
 				{
 					//addChar(token->attr, c);
 					if (c == '\"')
 					{
 						addChar(token->attr, c);
-						token->type = RETEZEC;
 					}
 					else
 					{
 						if (c == 'n')
 						{
 							addChar(token->attr, c);
-							token->type = RETEZEC;
 						}
 						else
 						{
@@ -514,23 +502,29 @@ Ttoken* getNextToken()
 							if (c == 't')
 							{
 								addChar(token->attr, c);
-								token->type = RETEZEC;
 							}
 							else
 							{
-								if (c == '\\')
+								if (c == 't')
 								{
-										addChar(token->attr, c);
-										token->type = RETEZEC;
+									addChar(token->attr, c);
 								}
 								else
 								{
+									if (c == '\\')
+									{
+										addChar(token->attr, c);
+									}
+									else
+									{
 										// octal
-										continue;
+										printf("octal");
+									}
 								}
 							}
 						}
 					}
+				   continue;
 				}
 
 				else if ((c > 31) && (c != 34))
@@ -542,8 +536,7 @@ Ttoken* getNextToken()
 				else if (c == 34)
 				{
 					token->type = RETEZEC;
-					//return token;
-					break;
+					return token;
 				}
 				// jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
