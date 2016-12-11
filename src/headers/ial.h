@@ -28,8 +28,6 @@ int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data
 HashTable searchInHashTable(HashTable hashTable, char *key);
 unsigned int hash(char *key);
 
-void mergeSort(char *arr, int len);
-void merge(char *arr, char *l, char*r, int sizeL, int sizeR);
 void listMergeSort(char *arr);
 
 typedef struct listM{
@@ -43,13 +41,12 @@ typedef struct {
 	neklPos last; //dalsi zacatek
 }listZacatku; //list zacaktku
 
-void init(listZacatku L);
-void add(listZacatku L, neklPos zac);
-void copyFirst(listZacatku L,neklPos zac);
-void deleteFirst(listZacatku L);
-void first(listZacatku L);
-int active(listZacatku L);
-void insertLast(listZacatku L, neklPos zac);
+listZacatku lzinit();
+void copyFirst(listZacatku *L,int *index);
+void deleteFirst(listZacatku *L);
+void first(listZacatku *L);
+int active(listZacatku *L);
+void insertLast(listZacatku *L, int index);
 
 
 
