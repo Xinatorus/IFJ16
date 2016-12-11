@@ -51,13 +51,15 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 
 		int destT = 0, src1T = 0, src2T = 0;
 		// Priradim zdroje a cile
-		if (ins.addr1 == NULL) { //only return
+		if (ins.instr == I_LABEL || ins.instr == I_CALL) {
+			//none
+		}
+		else if (ins.addr1 == NULL) { //only return
 			
 		}
 		else if (ins.addr2 == NULL && ins.addr3 == NULL) { // dest NULL NULL
 			dest = ins.addr1;
 			src1 = dest;
-
 			destT = getType(dest);
 			src1T = destT;
 		}
@@ -554,6 +556,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 
 			break;
 		default: break;
+
 		}
 
 		debug("[INTERPRET] Content of FRAME after execute\n");
