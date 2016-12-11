@@ -484,11 +484,6 @@ Ttoken* getNextToken()
 			case RETEZEC:
 
 				// retazec pokracuje
-				if ((c > 31) && (c != 34))
-				{
-					addChar(token->attr, c);
-					token->type = RETEZEC;
-				}
 				if (c == '\\')
 					{
 						if (c == '\\')
@@ -506,6 +501,11 @@ Ttoken* getNextToken()
 							addChar(token->attr, c);
 							token->type = RETEZEC;
 						}
+				}
+				else if ((c > 31) && (c != 34))
+				{
+					addChar(token->attr, c);
+					token->type = RETEZEC;
 				}
 				// koniec retazca
 				/*else if (c == 34)
