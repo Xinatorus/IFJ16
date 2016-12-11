@@ -534,7 +534,7 @@ Ttoken* getNextToken()
 				else if (c == 34)
 				{
 					token->type = RETEZEC;
-					return token;
+					//return token;
 				}
 				// jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
