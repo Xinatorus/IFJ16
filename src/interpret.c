@@ -481,8 +481,8 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			
 			break;
 		case I_WRITE:
-			stackPop(interStack, &tmpData);
-			debug("[OUTPUT] ");
+			tmpInt = stackPop(interStack, &tmpData);
+			debug("[OUTPUT %d] ",tmpInt);
 			//TODO pretyp pak write
 
 			switch (tmpData.type) {
