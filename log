@@ -1,0 +1,240 @@
+gcc -std=c99 -Wall -pedantic -O2	collections.c error.c framework.c  ial.c instructions.c interpret.c io.c lex_anal.c main.c prec_anal.c stack.c strings.c synt_anal.c testing.c tstree.c valgrind.c -lm
+In file included from collections.h:12:0,
+                 from collections.c:9:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+In file included from tstree.h:17:0,
+                 from framework.h:15,
+                 from framework.c:7:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from framework.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+ial.c: In function ‘searchInHashTable’:
+ial.c:120:15: warning: unused variable ‘index’ [-Wunused-variable]
+  unsigned int index = hash(key);
+               ^
+ial.c: In function ‘active’:
+ial.c:277:9: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+  return (int) L->active;
+         ^
+In file included from testing.h:15:0,
+                 from ial.c:8:
+ial.c: At top level:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from ial.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+In file included from instructions.c:7:0:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from instructions.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+In file included from interpret.h:13:0,
+                 from interpret.c:7:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from interpret.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+interpret.c: In function ‘interpret’:
+interpret.c:319:14: warning: ‘src2T’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+      else if (src2T == t_int) {
+              ^
+interpret.c:306:14: warning: ‘src1T’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+      else if (src1T == t_int) {
+              ^
+interpret.c:409:4: warning: ‘destT’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+    switch (destT) {
+    ^
+In file included from io.h:12:0,
+                 from io.c:7:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+lex_anal.c: In function ‘getNextToken’:
+lex_anal.c:62:2: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+  while (c = fgetc(subor))
+  ^
+lex_anal.c:66:3: warning: enumeration value ‘SCITANI’ not handled in switch [-Wswitch]
+   switch (token->type)
+   ^
+lex_anal.c:66:3: warning: enumeration value ‘ODECITANI’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘NASOBENI’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘ROVNO’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘MENSI_NEBO_ROVNO’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘VETSI_NEBO_ROVNO’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘STREDNIK’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘CARKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘LEVA_KULATA_ZAVORKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘PRAVA_KULATA_ZAVORKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘LEVA_HRANATA_ZAVORKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘PRAVA_HRANATA_ZAVORKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘LEVA_SLOZENA_ZAVORKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘PRAVA_SLOZENA_ZAVORKA’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘KLICOVE_SLOVO’ not handled in switch [-Wswitch]
+lex_anal.c:66:3: warning: enumeration value ‘REZERVOVANE_SLOVO’ not handled in switch [-Wswitch]
+In file included from testing.h:15:0,
+                 from main.c:8:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from main.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from prec_anal.c:7:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+In file included from tstree.h:17:0,
+                 from synt_anal.h:20,
+                 from prec_anal.c:7:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from testing.h:15:0,
+                 from strings.c:8:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from strings.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+synt_anal.c: In function ‘manage_temp_var’:
+synt_anal.c:1417:41: error: ‘CHAR_BIT’ undeclared (first use in this function)
+             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                                         ^
+synt_anal.c:1417:41: note: each undeclared identifier is reported only once for each function it appears in
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from synt_anal.c:7:
+synt_anal.c: At top level:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+In file included from testing.c:7:0:
+testing.c: In function ‘testWriteOutFrame’:
+testing.c:228:115: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+  debug(" [FRAMEWORK] + FRAME: %s (%s %d) [%d]\n", sf->identifier, (sf->parent ? sf->parent->identifier : "NULL"), (int)sf->child,sf->size);
+                                                                                                                   ^
+testing.h:28:44: note: in definition of macro ‘debug’
+ #define debug(...) do{ fprintf( debugFile, __VA_ARGS__ ); } while( false )
+                                            ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from testing.c:7:
+testing.c: At top level:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+In file included from tstree.h:17:0,
+                 from tstree.c:7:
+instructions.h:50:20: warning: ‘INSTR_STRING’ defined but not used [-Wunused-variable]
+ static const char *INSTR_STRING[] = {
+                    ^
+In file included from collections.h:12:0,
+                 from synt_anal.h:18,
+                 from testing.h:17,
+                 from tstree.c:8:
+synt_structures.h:92:14: warning: ‘NTType_string’ defined but not used [-Wunused-variable]
+ static char *NTType_string[] = {
+              ^
+synt_structures.h:102:14: warning: ‘TType_string’ defined but not used [-Wunused-variable]
+ static char *TType_string[] = {
+              ^
+synt_structures.h:112:14: warning: ‘PType_string’ defined but not used [-Wunused-variable]
+ static char *PType_string[] = {
+              ^
+make: *** [ifj16] Error 1
