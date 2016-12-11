@@ -489,16 +489,29 @@ Ttoken* getNextToken()
 					addChar(token->attr, c);
 					token->type = RETEZEC;
 				}
-				else if (c == '\\"')
+				else if (c == '\\')
 				{
-					addChar(token->attr, c);
-					token->type = RETEZEC;
+					if (c == '\\')
+					{
+						if (c == '\\')
+						{
+							addChar(token->attr, c);
+							token->type = RETEZEC;
+						}
+					}
+					else if (c == '"')
+					{
+						addChar(token->attr, c);
+						token->type = RETEZEC;
+					}
+					else
+					{
+						fseek(subor, -1, SEEK_CUR);
+						token->type = LEXIKALNI_CHYBA;
+					}
+					
 				}
-				else if (c == '\\\\\\"')
-				{
-					addChar(token->attr, c);
-					token->type = RETEZEC;
-				}
+				
 				// koniec retazca
 				else if (c == 34)
 				{
