@@ -692,7 +692,7 @@ void execute() {
                         current_class = makeString(input.token->attr->str);
                         var_static_index = 0;
                     }
-                    else if (last_rule == 8) {
+                    if (last_rule == 8) {
                         /* @SEM1 - Declaring static variable */
                         if (strlen(current_func) == 0) {
                             if (first_analysis) {
@@ -752,7 +752,7 @@ void execute() {
                         }
                     }
                     /* @SEM2 - Declaring normal variables (parameters) */
-                    else if (last_rule == 14 || last_rule == 15) {
+                    if (last_rule == 14 || last_rule == 15) {
                         if (!first_analysis) {
                             char *full_name = cat(cat(current_class, "."), last_func_ident);
                             if (strchr(input.token->attr->str, '.') != NULL) {
@@ -823,12 +823,15 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                         /* Invalid param type */
-                        if (!are_type_compatible(cur_func->type[current_param + 1], (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1])) {
+                        HashTable given_param = get_declared_variable(input.token->attr->str, current_class, current_func);
+                        if (!are_type_compatible(cur_func->type[current_param + 1], (given_param->type)[1])) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
                             #endif
                             error(ERR_SEM_TYPE);
                         }
+                        /* GENERATOR */
+                        add_instruction(I_PUSH, 'N', input.token->attr->str, '-', NULL, '-', NULL);
                     }
                 }
                 else if (input.type == T_FIDENT) {
@@ -871,6 +874,8 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                     }
+                    /* GENERATOR */
+                    add_instruction(I_PUSH, 'N', input.token->attr->str, '-', NULL, '-', NULL);
                 }
                 if (input.type == T_EXPRESSION) {
                     /*    ***********************************************
@@ -884,9 +889,8 @@ void execute() {
                         fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
                     #endif
 
-
                     /* @SEM12 - Assigning expression to variable */
-                    if (((first_analysis && strlen(current_func) == 0) || (first_analysis && strlen(current_func) == 0)) && last_rule == 41) {
+                    if (((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) && last_rule == 41) {
                         /* Incompatible types */
                         char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
                         char right = input.data;
@@ -897,7 +901,7 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                         /* GENERATOR */
-                        add_instruction(I_MOV, 'N', last_var_ident, 'N', "temp1", '-', NULL);
+                        add_instruction(I_MOV, 'N', last_var_ident, 'N', "#tmpI1", '-', NULL);
                     }
                     if (!first_analysis) {
                         /* @SEM2 - Check expected boolean type for if statement */
@@ -937,6 +941,8 @@ void execute() {
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
+                            /* GENERATOR */
+                            add_instruction(I_PUSH, 'N', "#tmpI1", '-', NULL, '-', NULL);
                         }
                     }
                 }
@@ -975,6 +981,9 @@ void execute() {
                         #endif
                         current_func = makeString(full_name);
                         var_normal_index = 0;
+                        /* GENERATOR */
+                        if (!first_analysis) // Important, TsTree was added in first (static) analysis, but instruction is generated in second analysis!
+                            tsFind(root, full_name)->addr = add_instruction(I_LABEL, 'N', full_name, '-', NULL, '-', NULL);
                     }
                     if (last_rule == 19 || last_rule == 21) {
                         /* @SEM2 - Function call ends, check for missing parameters */
@@ -1281,7 +1290,7 @@ bool are_type_compatible(char left, char right) {
 ///// GENERATOR /////
 /////////////////////
 
-void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
+void *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
 
     Operand ops[3];
     Operand *ops_p[3];
@@ -1291,7 +1300,7 @@ void add_instruction(Instructions instr, char type1, char *value1, char type2, c
     values[0] = value1; values[1] = value2; values[2] = value3;
     
     #if GEN_DEBUG == 1
-        fprintf(stdout, "** [ GENE ] ** [ %s ] **", INSTR_STRING[instr]);
+        fprintf(stdout, "** [ GEN ] ** [ %s ] **", INSTR_STRING[instr]);
     #endif
 
     for (int i = 0; i < 3; i++) {
@@ -1340,6 +1349,11 @@ void add_instruction(Instructions instr, char type1, char *value1, char type2, c
         fprintf(stdout, "\n");
     #endif
 
-    instrListAddInstr(&instr_list, (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] });
-
+    tInstr *result = (tInstr *) malloc(sizeof(tInstr));
+    result->instr = instr;
+    result->addr1 = ops_p[0];
+    result->addr2 = ops_p[1];
+    result->addr3 = ops_p[2];
+    instrListAddInstr(&instr_list, *result);
+    return (void *) result;
 }

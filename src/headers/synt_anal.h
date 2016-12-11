@@ -92,6 +92,6 @@ bool are_type_compatible(char left, char right);
 /////////////////////
 
 /* Creates and adds instruction on instruction tape (list) */
-void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
+void *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
 
 #endif  // include guard

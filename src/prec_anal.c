@@ -61,18 +61,19 @@ Psymbol getNextPrecSymbol() {
     if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
 
-        /* @SEM12 - Check for variables declaration (in expr) */
         if ((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) {
+            /* @SEM12 - Check for variables declaration (in expr) */
             if (get_declared_variable(token->attr->str, current_class, current_func) == NULL) {
                 #if SEM_DEBUG == 1
                     fprintf(stdout, "\t@ User tried to use undeclared variable %s in expression!\n", token->attr->str);
                 #endif
                 error(ERR_SEM_DEF);
             }
+            /* @SEM12 - Get data type from identificator */
+            symbol.data = get_declared_variable(token->attr->str, current_class, current_func)->type[1];
         }
 
-        /* @SEM12 - Get data type from identificator */
-        symbol.data = get_declared_variable(token->attr->str, current_class, current_func)->type[1];
+
     }
 
     /* @SEM12 - Get data type from value */
@@ -304,7 +305,7 @@ char prec_analysis(Ttoken *token) {
                             #endif
 
                             /* @SEM12 - Check for operands compatibility */
-                            if (result_type == 'E') {
+                            if (result_type == 'E' && (((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)))) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first, second, PType_string[op]);
                                 #endif

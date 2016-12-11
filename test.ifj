@@ -2,9 +2,9 @@
 class Main
 {
     static void run() {
-        int b = 42*5;
-
-        // ifj16.print(" \t \\ \n \100 \" ");
+        int a = Main.lol(a, "lol");
     }
 
+    static int lol(int a, String b) {
+    }
 }
