@@ -8,11 +8,12 @@
 #include "valgrind.h"
 #include "strings.h"
 #include "ial.h"
+#include "instructions.h"
 
 typedef struct tsTree{
 	char *name; //identifikator
 	unsigned int varCount; // pocet promennych
-	void *addr; //adresa instrukce
+	tInstrListItem *addr; //adresa instrukce
 	HashTable ts; //tabulka symbolu
 	struct tsTree *child; // seznam lokalnich ts
 	struct tsTree *next; // list TS akt. urovne
