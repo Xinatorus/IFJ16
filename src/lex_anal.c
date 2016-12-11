@@ -485,22 +485,14 @@ Ttoken* getNextToken()
 
 				// retazec pokracuje
 				if (c == '\\')
-					{
-						if (c == '\\')
-						{
-							if (c == '\\')
-							{
-								addChar(token->attr, c);
-								token->type = RETEZEC;
-							}
-							addChar(token->attr, c);
-							token->type = RETEZEC;
-						}
-						else if (c == '"')
-						{
-							addChar(token->attr, c);
-							token->type = RETEZEC;
-						}
+				{
+					addChar(token->attr, c);
+					token->type = RETEZEC;
+				}
+				else if (c == 34)
+				{
+					token->type = RETEZEC;
+					return token;
 				}
 				else if ((c > 31) && (c != 34))
 				{
@@ -508,12 +500,7 @@ Ttoken* getNextToken()
 					token->type = RETEZEC;
 				}
 				// koniec retazca
-				/*else if (c == 34)
-				{
-					token->type = RETEZEC;
-					return token;
-				}*/
-
+				
 				// jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
 				{
@@ -729,8 +716,8 @@ Ttoken* getNextToken()
 			case LEXIKALNI_CHYBA:
 
 				//fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
-				//error(ERR_LEX);
-				//return NULL;
+				error(ERR_LEX);
+				return NULL;
 
 				break;
 		}
