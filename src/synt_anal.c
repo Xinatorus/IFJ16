@@ -821,16 +821,19 @@ void execute() {
                                 error(ERR_SEM_TYPE);
                             }
                         }
-                        /* @SEM2 - Assigning variable with incompatible type */
+                        /* @SEM2 - Assigning variable */
                         if (!first_analysis && last_rule == 42) {
                             char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
                             char right = (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1];
+                            /* Incompatible type */
                             if (!are_type_compatible(left, right)) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_var_ident, left);
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
+                            /* GENERATOR */
+                            add_instruction(I_MOV, 'N', last_var_ident, 'N', input.token->attr->str, '-', NULL);
                         }
                     }
                 }
@@ -1149,6 +1152,10 @@ void execute() {
     }
 }
 
+////////////////////
+///// SEMANTIC /////
+////////////////////
+
 TsTree get_declared_class(char *name) {
     return tsFind(root, name);
 }
@@ -1265,4 +1272,47 @@ bool are_type_compatible(char left, char right) {
     #endif
 
     return result;
+}
+
+/////////////////////
+///// GENERATOR /////
+/////////////////////
+
+void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
+
+    Operand ops[3];
+    Operand *ops_p[3];
+    char types[3];
+    char *values[3];
+    types[0] = type1; types[1] = type2; types[2] = type3;
+    values[0] = value1; values[1] = value2; values[2] = value3;
+    
+    for (int i = 0; i < 3; i++) {
+        if (types[i] == 'I') {
+            ops[i].type = c_int;
+            ops[i].value.v_int = (int)strtol(values[i], (char **)NULL, 10);
+            ops_p[i] = &ops[i];
+        }
+        else if (types[i] == 'D') {
+            ops[i].type = c_double;
+            ops[i].value.v_double = (int)strtod(values[i], (char **)NULL);
+            ops_p[i] = &ops[i];
+        }
+        else if (types[i] == 'S') {
+            ops[i].type = c_string;
+            ops[i].value.v_string = makeString(values[i]);
+            ops_p[i] = &ops[i];
+        }
+        else if (types[i] == 'N' || types[i] == 'V') { // V just to be safe
+            ops[i].type = name;
+            ops[i].value.v_string = makeString(values[i]);
+            ops_p[i] = &ops[i];
+        }
+        else {
+            ops_p[i] = NULL;
+        }
+    }
+
+    instrListAddInstr(&instr_list, (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] });
+
 }

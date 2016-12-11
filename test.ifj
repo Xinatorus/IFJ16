@@ -2,6 +2,6 @@
 class Main
 {
     static void run() {
-        ifj16.print("ukazka kvality \"lex analyzatoru\" lol \n");
+        ifj16.print(" \t \\ \n \100 \" ");
     }
 }

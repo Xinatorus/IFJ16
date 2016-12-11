@@ -61,6 +61,11 @@ Ttoken *load_next_token();
 /* Run syntax analysis */
 void execute();
 
+
+////////////////////
+///// SEMANTIC /////
+////////////////////
+
 /* Gets declared class */
 TsTree get_declared_class(char *name);
 /* Gets declared function
@@ -81,5 +86,12 @@ char get_result_type(char first, char second, PType op);
 
 /* Checks, whether types of left & right sides are compatible */
 bool are_type_compatible(char left, char right);
+
+/////////////////////
+///// GENERATOR /////
+/////////////////////
+
+/* Creates and adds instruction on instruction tape (list) */
+void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
 
 #endif  // include guard
