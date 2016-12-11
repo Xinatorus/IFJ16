@@ -57,7 +57,15 @@ Ttoken* getNextToken()
 	while (c = fgetc(subor))
 	{
 		token->cisloRiadku = riadok;
-
+		while(c == ' ' || c == '\n' || c == '\t')
+		{
+            		c = fgetc(subor);
+            		if(c == EOF)
+			{
+                		token->type = LEX_EOF;
+                		return token;
+            	}
+        }
 		// stavy, ktere nasleduji ihned po pocatecnim stave
 		switch (token->type)
 		{
