@@ -488,10 +488,10 @@ Ttoken* getNextToken()
 			case RETEZEC:
 
 				// retazec pokracuje
-				if (c == '\\')
+				if (c == 92)
 				{
 					//addChar(token->attr, c);
-					if (c == '\"')
+					if (c == 34)
 					{
 						addChar(token->attr, c);
 					}
@@ -510,26 +510,17 @@ Ttoken* getNextToken()
 							}
 							else
 							{
-								if (c == 't')
+								if (c == 92)
 								{
-									addChar(token->attr, c);
+										addChar(token->attr, c);
 								}
 								else
 								{
-									if (c == '\\')
-									{
-										addChar(token->attr, c);
-									}
-									else
-									{
-										// octal
-										printf("octal");
-									}
+										continue;
 								}
 							}
 						}
 					}
-				   continue;
 				}
 
 				else if ((c > 31) && (c != 34))

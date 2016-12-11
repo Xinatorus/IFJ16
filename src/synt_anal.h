@@ -9,7 +9,7 @@
 
 #define TOKEN_DEBUG 0   // Debug messages for loaded tokens
 #define SYNT_DEBUG 0    // Debug messages for syntax analysis
-#define PREC_DEBUG 0    // Debug messages for precedence analysis
+#define PREC_DEBUG 1    // Debug messages for precedence analysis
 #define SEM_DEBUG 0     // Debug messsges for semantic analysis
 #define GEN_DEBUG 1     // Debug messages for generator
 
@@ -30,6 +30,11 @@ extern Ttoken *token_list; // Token list, used for second pass
 extern bool first_analysis; // Whether this is first pass (used for static declarations)
 extern char *current_class; // Actual class
 extern char *current_func; // Actual function
+extern char *expr_temp_last; // In which temp var is expression from last prec. analysis saved
+extern char *expr_left_bool; // Last left boolean operand
+extern PType expr_last_bool; // Last boolean operation
+extern PType expr_last_bool_neg; // Last boolean operation negated
+extern char *expr_right_bool; // Last right boolean operand
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
 int getRuleNumber(NTType nt, TType t);
@@ -98,6 +103,9 @@ bool are_type_compatible(char left, char right);
 /////////////////////
 
 /* Creates and adds instruction on instruction tape (list) */
-void *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
+tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
+
+/* Get free or free used temp variable */
+char *manage_temp_var(char get, char *free);
 
 #endif  // include guard
