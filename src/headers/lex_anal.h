@@ -45,8 +45,6 @@ typedef enum {
   STREDNIK,
   CARKA,
   
-  ESC_SEKV,
-  
   // zavorky
   LEVA_KULATA_ZAVORKA,
   PRAVA_KULATA_ZAVORKA,
