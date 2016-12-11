@@ -498,11 +498,8 @@ Ttoken* getNextToken()
 								addChar(token->attr, c);
 								token->type = RETEZEC;
 							}
-							else
-							{
-								fseek(subor, -1, SEEK_CUR);
-								token->type = LEXIKALNI_CHYBA;
-							}
+							addChar(token->attr, c);
+							token->type = RETEZEC;
 						}
 						else if (c == '"')
 						{
