@@ -1074,6 +1074,9 @@ char *getTokenName(TokenType type) {
     case RETEZEC:
         return "String";
         break;
+    case RETEZEC_2:
+        return "String2";
+        break; 
     case CELOCISELNY_LITERAL:
         return "celeCislo";
         break;
