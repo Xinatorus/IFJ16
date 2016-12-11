@@ -481,8 +481,9 @@ Ttoken* getNextToken()
 
 				// retezec
 			case RETEZEC:
-
+				
 				// retazec pokracuje
+			
 				if (c == '\\')
 				{
 					//addChar(token->attr, c);
@@ -505,21 +506,14 @@ Ttoken* getNextToken()
 							}
 							else
 							{
-								if (c == 't')
+								if (c == '\\')
 								{
-									addChar(token->attr, c);
+										addChar(token->attr, c);
 								}
 								else
 								{
-									if (c == '\\')
-									{
-										addChar(token->attr, c);
-									}
-									else
-									{
 										// octal
 										continue;
-									}
 								}
 							}
 						}
