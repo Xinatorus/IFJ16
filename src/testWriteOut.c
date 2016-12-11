@@ -168,8 +168,8 @@ void testInterpret() {
 	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "c"}, &(Operand){c_string, .value.v_string = "######"}, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_ADD, &(Operand){name, .value.name = "c"}, &(Operand){name, .value.name = "b"}, NULL });
 
-	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "a"}, NULL, NULL });
-	instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_PUSH, &(Operand){name, .value.name = "b"}, NULL, NULL });
+	instrListAddInstr(&list, (tInstr) { I_WRITE,NULL, NULL, NULL });
 	//instrListAddInstr(&list, (tInstr) { I_WRITE, &(Operand){name, .value.name = "b"}, NULL, NULL });
 	/*
 	instrListAddInstr(&list, (tInstr) { I_READ, &(Operand){name, .value.name = "a"}, NULL, NULL });
@@ -199,7 +199,7 @@ void testInterpret() {
 
 	//tsWriteOutTreeTS(root);
 
-	interpret(list,&root);
+	interpret(list,&root,NULL);
 
 
 
