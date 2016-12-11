@@ -8,12 +8,12 @@
 #define IO_H
 
 /* ------------------------------HLAVICKOVE SOUBORY----------------------------------- */
-#include "headers\ial.h"
-#include "headers\instructions.h"
-#include "headers\lex_anal.h"
-#include "headers\error.h"
-#include "headers\framework.h"
-#include "headers\interpret.h"
+#include "ial.h"
+#include "instructions.h"
+#include "lex_anal.h"
+#include "error.h"
+#include "framework.h"
+#include "interpret.h"
 /* ----------------------------------------------------------------------------------- */
 
 #define STR_MAX 100000
