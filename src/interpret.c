@@ -48,7 +48,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 		tmpStr1 = tmpStr2 = NULL; // reset adres
 
 
-		int destT, src1T, src2T;
+		int destT = 0, src1T = 0, src2T = 0;
 		// Priradim zdroje a cile
 		if (ins.addr1 == NULL) { //only return
 			
