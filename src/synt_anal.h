@@ -25,6 +25,7 @@
 #include "instructions.h"
 
 extern tInstrList instr_list; // Main instruction List
+extern labelAdress *lbladdr; // Label table
 extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 extern Ttoken *token_list; // Token list, used for second pass

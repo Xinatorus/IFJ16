@@ -7,6 +7,7 @@
 #include "synt_anal.h"
 
 tInstrList instr_list; // Main instruction list
+labelAdress *lbladdr; // Label table
 cQueue token_archive; // Queue to store pre-used tokens
 cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 Ttoken *token_list = NULL; // Token list, used for second pass
@@ -601,6 +602,7 @@ void execute() {
         /* Inits only to be done once */
         token_list = NULL;
         instrListInit(&instr_list);
+        labelAdressInit(lbladdr);
         lbl_else = 0;
         lbl_endif = 0;
         lbl_while = 0;
@@ -857,6 +859,19 @@ void execute() {
                         /* GENERATOR */
                         add_instruction(I_PUSH, 'N', input.token->attr->str, '-', NULL, '-', NULL);
                     }
+                    if (!first_analysis && last_rule == 38) {
+                        /* @SEM2 - Incompatible return from function */
+                        char func_type = (get_declared_function_ht(current_func, current_class)->type)[1];
+                        char return_type = (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1];
+                        if (!are_type_compatible(func_type, return_type)) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Function %s of type %c with wrong return type %c!\n", current_func, func_type, return_type);
+                            #endif
+                            error(ERR_SEM_OTHER);
+                        }
+                        /* GENERATOR */
+                        add_instruction(I_RET, 'N', input.token->attr->str, '-', NULL, '-', NULL);
+                    }
                 }
                 else if (input.type == T_FIDENT) {
                     /* @SEM12 - Save function identificator for later use */
@@ -918,23 +933,33 @@ void execute() {
                         add_instruction(I_MOV, 'N', last_var_ident, 'N', expr_temp_last, '-', NULL);
                     }
                     if (!first_analysis) {
-                        /* @SEM2 - Check expected boolean type for if statement */
                         if (last_rule == 32) {
+                            /* @SEM2 - Check expected boolean type for if statement */
                             if (input.data != 'B') {
                                 #if PREC_DEBUG == 1
                                     fprintf(stdout, "\t@ Wrong type (%c) passed into if()\n", input.data);
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
+                            /* GENERATOR */
+                            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(val, "%d", lbl_else); // Convert from (int) to (text)
+                            add_instruction(expr_last_bool_neg, 'N', expr_left_bool, 'N', expr_right_bool, 'N', cat("#else_", val));
                         }
-                        /* @SEM2 - Check expected boolean type for while statement */
+
                         if (last_rule == 33) {
+                            /* @SEM2 - Check expected boolean type for while statement */
                             if (input.data != 'B') {
                                 #if PREC_DEBUG == 1
                                     fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
+                            /* GENERATOR */
+                            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(val, "%d", lbl_endwhile); // Convert from (int) to (text)
+                            add_instruction(expr_last_bool_neg, 'N', expr_left_bool, 'N', expr_right_bool, 'N', cat("#endwhile_", val));
+                            add_instruction(I_LABEL, 'N', cat("#while_", val), '-', NULL, '-', NULL);
                         }
                         /* @SEM2 - Checking function parameters when calling function */
                         if (last_rule == 17 || last_rule == 22) {
@@ -957,6 +982,18 @@ void execute() {
                             }
                             /* GENERATOR */
                             add_instruction(I_PUSH, 'N', expr_temp_last, '-', NULL, '-', NULL);
+                        }
+                        if (last_rule == 37) {
+                            /* @SEM2 - Incompatible return from function */
+                            char func_type = (get_declared_function_ht(current_func, current_class)->type)[1];
+                            if (!are_type_compatible(func_type, input.data)) {
+                                #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ Function %s of type %c with wrong return type %c!\n", current_func, func_type, input.data);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
+                            /* GENERATOR */
+                            add_instruction(I_RET, 'N', expr_temp_last, '-', NULL, '-', NULL);
                         }
                     }
                 }
@@ -1013,6 +1050,14 @@ void execute() {
                         current_param = 0;
                     }
                 }
+                else if (input.type == T_ELSE) {
+                    if (last_rule == 26) {
+                        /* GENERATOR */
+                        char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                        sprintf(val, "%d", lbl_else); // Convert from (int) to (text)
+                        add_instruction(I_LABEL, 'N', cat("#else_", val), '-', NULL, '-', NULL);
+                    }
+                }
                 else if (input.type == T_SC) {
                     if (!first_analysis && (last_rule == 19 || last_rule == 21)) {
                         /* @SEM2 - Assigning function to variable */
@@ -1053,6 +1098,10 @@ void execute() {
                         if (assigning_to_func == true)
                             assigning_to_func = false;
                     }
+                    if (!first_analysis && last_rule == 39) {
+                        /* GENERATOR */
+                        add_instruction(I_RET, '-', NULL, '-', NULL, '-', NULL);
+                    }
                 }
                 else if (input.type == T_RCB) {
                     block_depth--;
@@ -1068,6 +1117,10 @@ void execute() {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Leaving static function %s\n", current_func);
                         #endif
+                        /* GENERATOR */
+                        if (!first_analysis) {
+                            add_instruction(I_RET, '-', NULL, '-', NULL, '-', NULL);
+                        }
                         current_func = makeString("");
                     }
                 }
@@ -1185,30 +1238,30 @@ void execute() {
     if (first_analysis) {
         /* @SEM1 - Check for class main & function run presence & check correct types */
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether class Main exists\n");
+        fprintf(stdout, "\t@ Checking whether class Main exists\n");
         #endif
         TsTree t_main = get_declared_class("Main");
         if (t_main == NULL) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Class Main not declared!\n");
+            fprintf(stdout, "\t@ Class Main not declared!\n");
             #endif
             error(3);
         }
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether function Main.run exists\n");
+        fprintf(stdout, "\t@ Checking whether function Main.run exists\n");
         #endif
         if (get_declared_function("Main.run", NULL) == NULL) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Function Main.run not declared!\n");
+            fprintf(stdout, "\t@ Function Main.run not declared!\n");
             #endif
             error(3);
         }
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether function Main.run is void without params\n");
+        fprintf(stdout, "\t@ Checking whether function Main.run is void without params\n");
         #endif
         if (strcmp(searchInHashTable(t_main->ts, "Main.run")->type, "FV") != 0) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Function Main.run has incorrect types!\n");
+            fprintf(stdout, "\t@ Function Main.run has incorrect types!\n");
             #endif
             error(3);
         }
@@ -1219,6 +1272,10 @@ void execute() {
         add_instruction(I_CALL, 'N', "Main.run", '-', NULL, '-', NULL);
 
         execute();
+        }
+    else {
+        /* RUN INTERPRET FINALLY OMG WTF 42 */
+        interpret(instr_list, &root, lbladdr);
     }
 }
 
@@ -1415,7 +1472,7 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
 
     tInstrListItem *returned = instrListAddInstr(&instr_list, result);
     if (instr == I_LABEL && strchr(ops_p[0]->value.name, '#') != NULL)
-        addLabelAdress(labelAdressInit(), ops_p[0]->value.name, returned);
+        addLabelAdress(lbladdr, ops_p[0]->value.name, returned);
 
     return returned;
 }
