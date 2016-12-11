@@ -4,7 +4,7 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\io.h"
+#include "io.h"
 
 /* ------------------------------READ STRING------------------------------------------ */
 // ze standartiho vstupu nacte retezec ukonceny koncem radkem, nebo koncem

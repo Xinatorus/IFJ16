@@ -4,8 +4,8 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\instructions.h"
-#include "headers\testing.h"
+#include "instructions.h"
+#include "testing.h"
 
 void instrListInit(tInstrList *list) {
 	list->first = NULL;

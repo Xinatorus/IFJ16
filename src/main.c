@@ -4,9 +4,9 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\valgrind.h"
-#include "headers\testing.h"
-#include "headers\synt_anal.h"
+#include "valgrind.h"
+#include "testing.h"
+#include "synt_anal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

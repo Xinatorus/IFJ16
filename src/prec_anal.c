@@ -4,7 +4,7 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\synt_anal.h"
+#include "synt_anal.h"
 
 Ttoken *token_param = NULL; // Token got from prec_analysis() call
 
