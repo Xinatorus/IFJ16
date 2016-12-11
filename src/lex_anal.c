@@ -490,12 +490,14 @@ Ttoken* getNextToken()
 					if (c == '\"')
 					{
 						addChar(token->attr, c);
+						token->type = RETEZEC;
 					}
 					else
 					{
 						if (c == 'n')
 						{
 							addChar(token->attr, c);
+							token->type = RETEZEC;
 						}
 						else
 						{
@@ -503,12 +505,14 @@ Ttoken* getNextToken()
 							if (c == 't')
 							{
 								addChar(token->attr, c);
+								token->type = RETEZEC;
 							}
 							else
 							{
 								if (c == '\\')
 								{
 										addChar(token->attr, c);
+										token->type = RETEZEC;
 								}
 								else
 								{
