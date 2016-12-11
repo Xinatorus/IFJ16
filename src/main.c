@@ -56,10 +56,10 @@ int main(int argc, char* argv[]) {
 
 #else
 	// patrikuv pisecek
-	char *c = "ABCBDFADE";
+	char *c = "asdcv";
 	listMergeSort(c);
 	
-	//printf("%s", "ah\52oj");
+	printf("%s", c);
 
 	//testInterpret();
 	//valgrind();

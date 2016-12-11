@@ -133,71 +133,19 @@ unsigned int hash(char *key) {
 	return h % HASH_TABLE_SIZE;
 }
 
-//Merge sort
-void mergeSort(char *arr, int len) {
-	if (len <= 1) return;
-
-	int half = len / 2; // rozdelim na pul
-	char *l = malloc(half);
-	char *r = malloc(len - half);
-
-	//if (!r || !l) printf("errMalloc\n");
-
-	for (int i = 0; i < half; i++) // naplnim pod-pole
-		l[i] = arr[i];
-	for (int i = half; i < len; i++)
-		r[i - half] = arr[i];
-
-	mergeSort(l, half); // opakuji
-	mergeSort(r, len - half);
-	merge(arr, l, r, half, len - half); // spojim z5 dohromady
-
-	free(l);
-	free(r);
-}
-
-void merge(char *arr, char *l, char *r, int sizeL, int sizeR) {
-	int i = 0, j = 0, k = 0;
-
-	while (i < sizeL && j < sizeR)
-		if (l[i] < r[j])
-			arr[k++] = l[i++];
-		else
-			arr[k++] = r[j++];
-
-	while (i < sizeL)
-		arr[k++] = l[i++];
-
-	while (j < sizeR)
-		arr[k++] = r[j++];
-}
-
-/*
-repeat(*Pøedpokládá se pole o nenulové délce - alespoò jeden seznam *)
-	CopyFirst(L, Zac1); (*Ètení zaèátku prvního seznamu *)
-	DeleteFirst(L); First(L);
-	if Active(L)
-		then begin(*ve frontì jsou alespoò dva seznamy, lze èíst druhý *)
-		CopyFirst(L, Zac2); (*Ètení zaèátku druhého seznamu *)
-		DeleteFirst(L); First(L);
-		if A[Zac1] < A[Zac2]
-			then InsertLast(L, Zac1)(*Uložení výsledného zaèátku do fronty*)
-		else InsertLast(L, Zac2) (*Uložení výsledného zaèátku do fronty*)
-	end(*if *)
-until not Active(L)*/
 void listMergeSort(char *arr) {
-	printf("%s\n",arr);
+	//printf("%s\n",arr);
 	int size = strlen(arr);
 	int *pom = malloc(sizeof(int)*size);
-
 	
-	for (int i = 0; i < size; i++)
-		printf("%3d| ", i);
-	printf("\n");
+	
+	//for (int i = 0; i < size; i++)
+	//	printf("%3d| ", i);
+	//printf("\n");
 
-	for (int i = 0; i < size; i++)
-		printf("%3c| ", arr[i]);
-	printf("\n");
+	//for (int i = 0; i < size; i++)
+	//	printf("%3c| ", arr[i]);
+	//printf("\n");
 
 	//zretezeni posloupnosti
 	for (int i = 0; i < size-1; i++) {
@@ -205,67 +153,141 @@ void listMergeSort(char *arr) {
 			pom[i] = i+1;
 		}
 		else {
-			pom[i] = -1;
+			pom[i] = -1; //konec
 		}
-		printf("%3d| ", pom[i]);
+		//printf("%3d| ", pom[i]);
 	}
 
-	pom[size-1] = -1;
-	printf("%3d| ", pom[size-1]);
-	printf("\n");
-
-	listZacatku L;
+	pom[size-1] = -1; //konec
 
 
-	for (int i = 0; i < size; i++) {
-		pom[i];
+	//seznam zacatku
+	listZacatku L = lzinit();
+	insertLast(&L, 0);
+
+	for (int i = 1; i < size; i++) {
+		if (pom[i - 1] == -1) {
+			insertLast(&L, i);
+		}
 	}
 
+	//for (neklPos tmp = L.first; tmp != NULL; tmp = tmp->next)
+		//printf("zacatek %d\n", tmp->index);
 
+	//sort
+	int zac1, zac2;
+	int index=0;
+	int tmp1,tmp2;
+	do {
+		for (neklPos tmp = L.first; tmp != NULL; tmp = tmp->next)
+			//printf("zacatek %d\n", tmp->index);
 
+		copyFirst(&L, &zac1);
+		tmp1 = zac1;
+		deleteFirst(&L); first(&L);
+		if (active(&L)) {
+			copyFirst(&L,&zac2);
+			tmp2 = zac2;
+			deleteFirst(&L);
+			if (arr[zac1] < arr[zac2]) { 
+				index = zac1;
+				tmp1 = pom[zac1];
+				insertLast(&L, zac1); 
+			}
+			else {
+				index = zac2;
+				tmp2 = pom[zac2];
+				insertLast(&L, zac2);
+			}
+			
+
+			//seradim 
+			while(tmp1!=-1 && tmp2!=-1){
+				//printf("\ncompare %c %c %d %d %d", arr[tmp1], arr[tmp2],index,tmp1,tmp2);
+				if (arr[tmp1] < arr[tmp2]) {		
+					pom[index] = tmp1;
+					index = tmp1;
+					tmp1 = pom[tmp1];
+					if (tmp1 == -1) {
+						pom[index] = tmp2;
+						break;
+					}
+					
+				}
+				else {
+					pom[index] = tmp2;
+					index = tmp2;
+					tmp2 = pom[tmp2];
+					if (tmp2 == -1) {
+						pom[index] = tmp1;
+						break;
+					}
+				}		
+			}
+
+			if (tmp1 == -1) {
+				pom[index] = tmp2;
+			}
+			else if(tmp2 == -1)
+					pom[index] = tmp1;
+		}
+	} while (L.first != L.last);
+
+	char *tmp = malloc(size);
+	//printf("END:\n");
+	for (int i = L.first->index, index = 0; i != -1; i = pom[i],index++) {
+		tmp[index] = arr[i];
+	}
+	
+	for (int i = 0; i < size; i++)
+		arr[i] = tmp[i];
+
+	free(tmp);
 }
 
 
-void init(listZacatku L) {
+listZacatku lzinit() {
+	listZacatku L;
 	L.active = NULL;
 	L.first = NULL;
 	L.last = NULL;
+	return L;
 }
-void add(listZacatku L, neklPos zac) {
-	if (L.first == NULL) {
-		L.first = zac;
-		L.last = zac;
+
+void copyFirst(listZacatku *L, int *index) {
+	*index = L->first->index;
+}
+void deleteFirst(listZacatku *L) {
+	neklPos tmp = L->first->next;
+	if (L->first == L->last) {
+		L->last = NULL;
+	}
+	free(L->first);
+	L->first = tmp;
+}
+void first(listZacatku *L) {
+	L->active = L->first;
+}
+int active(listZacatku *L) {
+	return L->active;
+}
+
+void insertLast(listZacatku *L, int index) {
+	//printf("adding %d\n", index);
+	if (L->last == NULL) {
+		neklPos tmp = malloc(sizeof(struct listM));
+		tmp->index = index;
+		tmp->next = NULL;
+		//printf("adding first %d\n", tmp->index);
+		L->first = tmp;
+		L->last = tmp;
 	}
 	else {
-		L.last->next = zac;
-		L.last = zac;
-	}
-}
-void copyFirst(listZacatku L, neklPos zac) {
-	zac = L.first;
-}
-void deleteFirst(listZacatku L) {
-	neklPos tmp;
-	tmp = L.first;
-	if (tmp == L.active) {
-		L.active = NULL;
-	}
-	L.first = tmp->next;
-	free(tmp);
-}
-void first(listZacatku L) {
-	L.active = L.first;
-}
-int active(listZacatku L) {
-	return L.active;
-}
-void insertLast(listZacatku L, neklPos zac) {
-	if (L.last) {
-		L.last->next = zac;
-		L.last = zac;
-	}
-	else {
-		L.first = zac;
-		L.last = zac;
+		neklPos tmp = malloc(sizeof(struct listM));
+		tmp->index = index;
+		tmp->next = NULL;
+		//printf("adding next %d\n", tmp->index);
+		L->last->next = tmp;
+		L->last = tmp;
 	}
 }
