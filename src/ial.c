@@ -117,7 +117,7 @@ int addToHashTable(HashTable hashTable, char *key, char *type, unsigned int data
 
 // Vyhledavani v tabulce
 HashTable searchInHashTable(HashTable hashTable, char *key) {
-	unsigned int index = hash(key);
+	//unsigned int index = hash(key);
 
 	// prochazim zaznam, pokud je key = 0 neexistuje v tabulce, pokud je zaznam nullovy = neexistuje v seznamu
 	for (HashTable item = &(hashTable[hash(key)]); item != NULL && item->key != NULL; item = item->next) {
@@ -141,6 +141,7 @@ unsigned int hash(char *key) {
 void listMergeSort(char *arr) {
 	//printf("%s\n",arr);
 	int size = strlen(arr);
+	if (size == 1) return;
 	int *pom = malloc(sizeof(int)*size);
 	
 	
@@ -180,7 +181,7 @@ void listMergeSort(char *arr) {
 		//printf("zacatek %d\n", tmp->index);
 
 	//sort
-	int zac1, zac2;
+	int zac1=0, zac2=0;
 	int index=0;
 	int tmp1,tmp2;
 	do {
@@ -239,8 +240,9 @@ void listMergeSort(char *arr) {
 	} while (L.first != L.last);
 
 	char *tmp = malloc(size);
-	//printf("END:\n");
-	for (int i = L.first->index, index = 0; i != -1; i = pom[i],index++) {
+	//printf("END:\n"); 
+	index = 0;
+	for (int i = L.first->index; i != -1; i = pom[i],index++) {
 		tmp[index] = arr[i];
 	}
 	
