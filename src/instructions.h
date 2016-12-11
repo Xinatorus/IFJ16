@@ -15,7 +15,6 @@
 	INS(I_MOV) \
 	INS(I_CALL) \
 	INS(I_RET) \
-	INS(I_END) \
 	INS(I_PUSH) \
 	INS(I_POP) \
 	INS(I_JMP) \
@@ -50,7 +49,6 @@
 static const char *INSTR_STRING[] = {
 	FOREACH_INSTR(GENERATE_STRING_INSTR)
 };
-
 
 // Instrunkci sada
 typedef enum {

@@ -18,13 +18,12 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	StackFrame *sf = newTopFrame(*root);
 	
 	sf = newFrame(sf,*root,"Main.run",NULL,NULL);
-	//extractParams(sf, *root, interStack);
 
 	debug("[INTERPRET] Content of TOP FRAME\n");
 	testWriteOutFrame(sf->top);
 	//printf("### END TEST SF wOut\n");
 
-	//StackFrame *sf = ts; // POUZE PRO TEST
+	
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 	char *tmpStr1,*tmpStr2;
@@ -32,6 +31,8 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	int tmpInt;
 	double tmpDouble;
 
+
+	testWriteOutInstr(iList);
 	instrListSetActiveFirst(&iList);
 
 
@@ -48,7 +49,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 		tmpStr1 = tmpStr2 = NULL; // reset adres
 
 
-		int destT, src1T, src2T;
+		int destT = 0, src1T = 0, src2T = 0;
 		// Priradim zdroje a cile
 		if (ins.addr1 == NULL) { //only return
 			
@@ -480,8 +481,8 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			
 			break;
 		case I_WRITE:
-			stackPop(interStack, &tmpData);
-			debug("[OUTPUT] ");
+			tmpInt = stackPop(interStack, &tmpData);
+			debug("[OUTPUT %d] ",tmpInt);
 			//TODO pretyp pak write
 
 			switch (tmpData.type) {
