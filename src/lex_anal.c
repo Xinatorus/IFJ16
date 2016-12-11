@@ -64,8 +64,8 @@ Ttoken* getNextToken()
 			{
                 		token->type = LEX_EOF;
                 		return token;
-            	}
-        }
+            		}
+        	}
 		// stavy, ktere nasleduji ihned po pocatecnim stave
 		switch (token->type)
 		{
