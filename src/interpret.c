@@ -18,13 +18,12 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	StackFrame *sf = newTopFrame(*root);
 	
 	sf = newFrame(sf,*root,"Main.run",NULL,NULL);
-	//extractParams(sf, *root, interStack);
 
 	debug("[INTERPRET] Content of TOP FRAME\n");
 	testWriteOutFrame(sf->top);
 	//printf("### END TEST SF wOut\n");
 
-	//StackFrame *sf = ts; // POUZE PRO TEST
+	
 
 	Operand *dest = NULL, *src1 = NULL, *src2 = NULL;
 	char *tmpStr1,*tmpStr2;
@@ -32,6 +31,8 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	int tmpInt;
 	double tmpDouble;
 
+
+	testWriteOutInstr(iList);
 	instrListSetActiveFirst(&iList);
 
 
