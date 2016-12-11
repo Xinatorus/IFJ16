@@ -1,4 +1,9 @@
-
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 #include "headers\testing.h"
 #include "headers\interpret.h"
 #include "headers\instructions.h"
