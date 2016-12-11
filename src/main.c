@@ -58,10 +58,10 @@ int main(int argc, char* argv[]) {
 	// patrikuv pisecek
 	/*char *c = "asdcv";
 	listMergeSort(c);
-	
-	printf("%s", c);*/
+	*/
+	printf("\a");
 
-	testInterpret();
+	//testInterpret();
 	//valgrind();
 	//getchar();
 

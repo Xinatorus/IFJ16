@@ -607,7 +607,7 @@ void addLabelAdress(labelAdress *la, char *name, tInstrListItem *addr) {
 tInstrListItem *getLabelAdress(labelAdress *la, char *name) {
 	for (labelAdress *item = &(la[hash(name)]); item != NULL && item->name != NULL; item = item->next) {
 		if (!strcmp(name, item->name))
-			return item; //vracim odkaz na zaznam
+			return item->addr; //vracim odkaz na zaznam
 	}
 
 	// nenalezen
