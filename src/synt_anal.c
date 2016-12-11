@@ -602,7 +602,7 @@ void execute() {
         /* Inits only to be done once */
         token_list = NULL;
         instrListInit(&instr_list);
-        labelAdressInit(lbladdr);
+        lbladdr = labelAdressInit();
         lbl_else = 0;
         lbl_endif = 0;
         lbl_while = 0;
