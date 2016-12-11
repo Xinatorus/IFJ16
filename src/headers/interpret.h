@@ -29,5 +29,15 @@ void clearAll(StackFrame *sf, TsTree *root, Stack interStack,tInstrList *iList);
 //TODO obalit do makra
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;
 
+typedef struct lAdress{
+	char *name;
+	tInstrListItem *addr;
+	struct lAdress *next;
+}labelAdress;
+
+labelAdress *labelAdressInit();
+void addLabelAdress(labelAdress la, char *name, tInstrListItem *addr);
+tInstrListItem *getLabelAdress(labelAdress la, char *name);
+void deleteLabels(labelAdress la);
 
 #endif // include guard

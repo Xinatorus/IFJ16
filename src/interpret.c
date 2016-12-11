@@ -2,7 +2,7 @@
 #include "headers\interpret.h"
 #include "headers\testWriteOut.h"
 
-void interpret(tInstrList iList,TsTree *root) {
+void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	debug("[INTERPRET] Staring interpret...\n");
 	//stack pro vnitrni mezi vypocty a parametry fci
 	Stack interStack = stackInit(100);
@@ -185,11 +185,17 @@ void interpret(tInstrList iList,TsTree *root) {
 			}
 			break;
 
+		case I_LABEL: 
+			//none		
+			break;
 //JMPs
-		case I_JMP: break;
+		case I_JMP: 
+			instrListSetActive(&iList, getLabelAdress(la,src1->value.v_string));
+			break;
 		case I_JMPE: 
 			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
-
+				if(byType(src1) == byType(src2))
+					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
 				//TODO free
@@ -198,7 +204,8 @@ void interpret(tInstrList iList,TsTree *root) {
 			break;
 		case I_JMPNE: 
 			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
-
+				if (byType(src1) != byType(src2))
+					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
 				//TODO free
@@ -206,7 +213,8 @@ void interpret(tInstrList iList,TsTree *root) {
 			}break;
 		case I_JMPL: 
 			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
-
+				if (byType(src1) < byType(src2))
+					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
 				//TODO free
@@ -215,7 +223,8 @@ void interpret(tInstrList iList,TsTree *root) {
 			break;
 		case I_JMPLE: 
 			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
-
+				if (byType(src1) <= byType(src2))
+					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
 				//TODO free
@@ -224,7 +233,8 @@ void interpret(tInstrList iList,TsTree *root) {
 			break;
 		case I_JMPG: 
 			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
-
+				if (byType(src1) > byType(src2))
+					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
 				//TODO free
@@ -233,7 +243,8 @@ void interpret(tInstrList iList,TsTree *root) {
 			break;
 		case I_JMPGE: 
 			if ((src1->type != name || findInFrame(src1->value.name, sf)->defined == true) && (src2->type != name || findInFrame(src2->value.name, sf)->defined == true)) {
-
+				if (byType(src1) >= byType(src2))
+					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
 				//TODO free
@@ -584,4 +595,38 @@ void clearAll(StackFrame *sf, TsTree *root, Stack interStack, tInstrList *iList)
 	stackFree(interStack);
 	while ((sf=deleteFrame(sf)));
 	instrListFree(iList);
+}
+
+labelAdress *labelAdressInit() {
+	labelAdress *la = malloc(sizeof(labelAdress)*101);
+	for (int i = 0; i < 101; i++)
+		la[i].name = NULL;
+}
+void addLabelAdress(labelAdress *la, char *name, tInstrListItem *addr) {
+	int key = hash(name);
+	if (la[key].name == NULL) {
+		la[key].name = makeString(name);
+		la[key].addr = addr;
+		la[key].next = NULL;
+		return;
+	}
+	labelAdress *item = &(la[key]); //last
+	for (; item->next != NULL; item = item->next);
+	labelAdress *tmp = malloc(sizeof(labelAdress));
+	tmp->name = makeString(name);
+	tmp->next = NULL;
+	item->next = tmp;
+
+}
+tInstrListItem *getLabelAdress(labelAdress *la, char *name) {
+	for (labelAdress *item = &(la[hash(name)]); item != NULL && item->name != NULL; item = item->next) {
+		if (!strcmp(name, item->name))
+			return item; //vracim odkaz na zaznam
+	}
+
+	// nenalezen
+	return NULL;
+}
+void deleteLabels(labelAdress la) {
+	//TODO
 }
