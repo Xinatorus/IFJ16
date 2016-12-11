@@ -472,40 +472,25 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			
 			break;
 		case I_WRITE:
-			if (src1->type != name || findInFrame(src1->value.name, sf)->defined == true) {
-				debug("[OUTPUT] ");
-				//TODO pretyp pak write
-				switch (dest->type) {
-				case c_int:
-					printf("%d", dest->value.v_int);
-					break;
-				case c_double:
-					printf("%g", dest->value.v_double);
-					break;
-				case c_string:
-					printf("%s", dest->value.v_string);
-					break;
-				case name:
-					switch (destT) {
-					case t_int:
-						printf("%d", findInFrame(dest->value.name, sf)->value.v_int);
-						break;
-					case t_double:
-						printf("%g", findInFrame(dest->value.name, sf)->value.v_double);
-						break;
-					case t_string:
-						printf("%s", findInFrame(dest->value.name, sf)->value.v_string);
-						break;
-					default: break;
-					}
-					break;
-				}
-				debug("\n");
+			stackPop(interStack, &tmpData);
+			debug("[OUTPUT] ");
+			//TODO pretyp pak write
+
+			switch (tmpData.type) {
+			case t_int:
+				printf("%d", tmpData.value.v_int);
+				break;
+			case t_double:
+				printf("%g", tmpData.value.v_double);
+				break;
+			case t_string:
+				printf("%s", tmpData.value.v_string);
+				break;
+			default: break;
 			}
-			else {
-				//TODO add free
-				error(ERR_RUN_INIT);
-			}
+
+			debug("\n");
+
 
 			break;
 // Vestavene funkce dest je cil kam se uklada vysledek
@@ -601,6 +586,7 @@ labelAdress *labelAdressInit() {
 	labelAdress *la = malloc(sizeof(labelAdress)*101);
 	for (int i = 0; i < 101; i++)
 		la[i].name = NULL;
+	return la;
 }
 void addLabelAdress(labelAdress *la, char *name, tInstrListItem *addr) {
 	int key = hash(name);

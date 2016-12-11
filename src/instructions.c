@@ -18,9 +18,9 @@ void instrListFree(tInstrList *list) {
 	}
 }
 
-int instrListAddInstr(tInstrList *list, tInstr instr) {
+tInstrListItem *instrListAddInstr(tInstrList *list, tInstr instr) {
 	tInstrListItem *instrItem = malloc(sizeof(tInstrListItem));
-	if (instrItem == NULL) return 1;
+	if (instrItem == NULL) return NULL;
 
 	debug("[INSTR] Add:");
 	testWriteOutI(instr);
@@ -34,7 +34,7 @@ int instrListAddInstr(tInstrList *list, tInstr instr) {
 		list->last->next = instrItem;
 	list->last = instrItem;
 
-	return 0;
+	return instrItem;
 }
 
 int instrListGetActiveInstr(tInstrList *list, tInstr *instr) {

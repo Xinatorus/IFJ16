@@ -92,7 +92,7 @@ typedef struct {
 void instrListInit(tInstrList *list);
 void instrListFree(tInstrList *list);
 
-int instrListAddInstr(tInstrList *list, tInstr instr);
+tInstrListItem *instrListAddInstr(tInstrList *list, tInstr instr);
 
 int instrListGetActiveInstr(tInstrList *list, tInstr *instr);
 void instrListSetActive(tInstrList *list, tInstrListItem *active);
