@@ -518,7 +518,7 @@ Ttoken* getNextToken()
 									else
 									{
 										// octal
-										printf("octal");
+										continue;
 									}
 								}
 							}
