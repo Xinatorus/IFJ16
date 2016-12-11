@@ -125,6 +125,7 @@ typedef struct {
     PType type;
     char data; // I/D/S/B/-
     Ttoken *token; // Associated token (can be NULL if it was made artificially)
+    char *temp_var; // Temp var where this token is stored
 }Psymbol;
 
 #endif // include guard

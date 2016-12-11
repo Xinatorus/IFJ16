@@ -487,47 +487,19 @@ Ttoken* getNextToken()
 				// retezec
 			case RETEZEC:
 
-				// retazec pokracuje
-				if (c == 92)
-				{
-					//addChar(token->attr, c);
-					if (c == 34)
-					{
-						addChar(token->attr, c);
-					}
-					else
-					{
-						if (c == 'n')
-						{
-							addChar(token->attr, c);
-						}
-						else
-						{
-
-							if (c == 't')
-							{
-								addChar(token->attr, c);
-							}
-							else
-							{
-								if (c == 92)
-								{
-										addChar(token->attr, c);
-								}
-								else
-								{
-										continue;
-								}
-							}
-						}
-					}
-				}
-
-				else if ((c > 31) && (c != 34))
+                if ((c > 31) && (c != 34) && (c != 92))
 				{
 					addChar(token->attr, c);
 					token->type = RETEZEC;
 				}
+
+				// prijde / -> escape sekvence
+				else if(c == 92)
+                {
+                    addChar(token->attr, c);
+					token->type = RETEZEC_2;
+                }
+
 				// koniec retazca
 				else if (c == 34)
 				{
@@ -542,6 +514,154 @@ Ttoken* getNextToken()
 				}
 
 				break;
+
+            case RETEZEC_2:
+
+                /* znaky " n t \ */
+                if ((c == 34) || (c == 110) || (c == 116) || (c == 92))
+                {
+                    addChar(token->attr, c);
+					token->type = RETEZEC;
+                }
+
+                // oktalova escape sekvence (001-377)
+                else if ((c >= '0') && (c <= '3'))
+                {
+                    // tedy oktalove cislo zacina 3
+                    if (c == '3')
+                    {
+                        addChar(token->attr, c);
+
+                        // escape sekvence (30? - 37?)
+                        if ((c >= '0') && (c <= '7'))
+                        {
+                            // escape sekvence (37?-37?)
+                            if (c == '7')
+                            {
+                                addChar(token->attr, c);
+
+                                //escape sekvence (370-377)
+                                if ((c >= '0') && (c <= '7'))
+                                {
+                                    addChar(token->attr, c);
+
+                                    // escape sekvence (370-377 + dalsi znak neni cislo)
+                                    if (!isdigit(c))
+                                    {
+                                        token->type = RETEZEC;
+                                    }
+
+                                    // escape sekvence (370-377 + dalsi znak je cislo) vrati chybu
+                                    else
+                                    {
+                                        fseek(subor, -1, SEEK_CUR);
+                                        token->type = LEXIKALNI_CHYBA;
+                                    }
+                                }
+
+                                //escape sekvence (377-379) vrati chybu
+                                else
+                                {
+                                    fseek(subor, -1, SEEK_CUR);
+                                    token->type = LEXIKALNI_CHYBA;
+                                }
+                            }
+
+                            // escape sekvence (30?-36?)
+                            else
+                            {
+                                 addChar(token->attr, c);
+
+                                 // sekvence pokracuje cislem
+                                 if (isdigit(c))
+                                 {
+                                     addChar(token->attr, c);
+
+                                     // sekvence nepokracuje cislem
+                                     if (!isdigit(c))
+                                     {
+                                          token->type = RETEZEC;
+                                     }
+
+                                     // sekvence nepokracuje cislem (4. cislice neni povolena)
+                                     else
+                                     {
+                                         fseek(subor, -1, SEEK_CUR);
+                                         token->type = LEXIKALNI_CHYBA;
+                                     }
+                                 }
+
+                                 // sekvence nepokracuje cislem - vrati chybu
+                                 else
+                                 {
+                                     fseek(subor, -1, SEEK_CUR);
+                                     token->type = LEXIKALNI_CHYBA;
+                                 }
+                            }
+                        }
+
+                        // vraci chybu (nepovolena sekvence)
+                        else
+                        {
+                            fseek(subor, -1, SEEK_CUR);
+                            token->type = LEXIKALNI_CHYBA;
+                        }
+                    }
+
+                    // oktalove cislo nezacina 3
+                    else
+                    {
+                        addChar(token->attr, c);
+
+                        // sekvence pokracuje cislem
+                        if (isdigit(c))
+                        {
+                            addChar(token->attr, c);
+
+                            // sekvence pokracuje cislem
+                            if (isdigit(c))
+                            {
+                                addChar(token->attr, c);
+
+                                // sekvence nepokracuje cislem (4. cislice neni povolena)
+                                if (!isdigit(c))
+                                {
+                                    token->type = RETEZEC;
+                                }
+
+                                // sekvence pokracuje cislem - vraci chybu
+                                else
+                                {
+                                    fseek(subor, -1, SEEK_CUR);
+                                    token->type = LEXIKALNI_CHYBA;
+                                }
+                            }
+
+                            // sekvence nepokracuje cislem - vraci chybu
+                            else
+                            {
+                                fseek(subor, -1, SEEK_CUR);
+                                token->type = LEXIKALNI_CHYBA;
+                            }
+                        }
+
+                        // sekvence nepokracuje cislem - vraci chybu
+                        else
+                        {
+                            fseek(subor, -1, SEEK_CUR);
+                            token->type = LEXIKALNI_CHYBA;
+                        }
+                    }
+                }
+
+                // jina escape sekvence
+                else
+                {
+                    fseek(subor, -1, SEEK_CUR);
+					token->type = LEXIKALNI_CHYBA;
+                }
+
+                break;
 
 			case CELOCISELNY_LITERAL:
 
@@ -954,6 +1074,9 @@ char *getTokenName(TokenType type) {
     case RETEZEC:
         return "String";
         break;
+    case RETEZEC_2:
+        return "String2";
+        break; 
     case CELOCISELNY_LITERAL:
         return "celeCislo";
         break;

@@ -123,278 +123,278 @@ int getRuleNumber(NTType nt, TType t) {
     return synt_rules[nt][t];
 }
 
-void applyRule(int rule, cStack *stack) {
-    if (stack == NULL) {
+void applyRule(int rule, cStack *stack_p) {
+    if (stack_p == NULL) {
         return;
     }
 
     #if SYNT_DEBUG == 1
-        fprintf(stdout, "[SYNT_DEBUG #%d] Applying rule #%d\n", first_analysis ? 1 : 2, rule);
+    fprintf(stdout, "[SYNT_DEBUG #%d] Applying rule #%d\n", first_analysis ? 1 : 2, rule);
     #endif
-    
+
     last_rule = rule;
     // The reason for not automating this process is precedence analysis
     switch (rule) {
-        case 1:
-            // NT_PROGRAM -> NT_TRIDA NT_PROGRAM
-            push_cstack_nonterminal(NT_TRIDA, stack);
-            break;
-        case 2:
-            // NT_PROGRAM -> NT_DOLLAR
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_DOLLAR, stack);
-            break;
-        case 3:
-            // NT_TRIDA -> T_CLASS T_IDENT T_LCB NT_SEZNAM_DEFINIC_STATIC T_RCB
-            cStack_pop(stack);
-            push_cstack_terminal(T_RCB, stack, '-');
-            push_cstack_nonterminal(NT_SEZNAM_DEFINIC_STATIC, stack);
-            push_cstack_terminal(T_LCB, stack, '-');
-            push_cstack_terminal(T_IDENT, stack, '-');
-            push_cstack_terminal(T_CLASS, stack, '-');
-            break;
-        case 4:
-            // NT_SEZNAM_DEFINIC_STATIC -> T_STATIC NT_DATOVY_TYP NT_DEFINICE_STATIC NT_SEZNAM_DEFINIC_STATIC
-            push_cstack_nonterminal(NT_DEFINICE_STATIC, stack);
-            push_cstack_nonterminal(NT_DATOVY_TYP, stack);
-            push_cstack_terminal(T_STATIC, stack, '-');
-            break;
-        case 5:
-            // NT_SEZNAM_DEFINIC_STATIC -> eps
-            cStack_pop(stack);
-            break;
-        case 6:
-            // NT_DEFINICE_STATIC -> NT_DEFINICE_FUNKCE
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_DEFINICE_FUNKCE, stack);
-            break;
-        case 7:
-            // NT_DEFINICE_STATIC -> NT_DEFINICE_PROMENNA T_SC
-            cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack, '-');
-            push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack);
-            break;
-        case 8:
-            // NT_DEFINICE_PROMENNA -> T_IDENT NT_DEF_PROM_KONEC
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_DEF_PROM_KONEC, stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            break;
-        case 9:
-            // NT_DEF_PROM_KONEC -> NT_PRIRAZENI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_PRIRAZENI, stack);
-            break;
-        case 10:
-            // NT_DEF_PROM_KONEC -> eps
-            cStack_pop(stack);
-            break;
-        case 11:
-            // NT_DEFINICE_FUNKCE -> T_FIDENT T_LRB NT_SEZNAM_PARAMETRU T_RRB NT_SLOZENY_PRIKAZ
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack, '-');
-            push_cstack_nonterminal(NT_SEZNAM_PARAMETRU, stack);
-            push_cstack_terminal(T_LRB, stack, '-');
-            push_cstack_terminal(T_FIDENT, stack, '-');
-            break;
-        case 12:
-            // NT_SEZNAM_PARAMETRU -> NT_PARAMETR_PRVNI NT_PARAMETR_DALSI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_PARAMETR_DALSI, stack);
-            push_cstack_nonterminal(NT_PARAMETR_PRVNI, stack);
-            break;
-        case 13:
-            // NT_SEZNAM_PARAMETRU -> eps
-            cStack_pop(stack);
-            break;
-        case 14:
-            // NT_PARAMETR_PRVNI -> T_TYPE T_IDENT
-            cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            push_cstack_terminal(T_TYPE, stack, '-');
-            break;
-        case 15:
-            // NT_PARAMETR_DALSI -> T_COMMA T_TYPE T_IDENT NT_PARAMETR_DALSI
-            push_cstack_terminal(T_IDENT, stack, '-');
-            push_cstack_terminal(T_TYPE, stack, '-');
-            push_cstack_terminal(T_COMMA, stack, '-');
-            break;
-        case 16:
-            // NT_PARAMETR_DALSI -> eps
-            cStack_pop(stack);
-            break;
-        case 17:
-            // NT_SEZNAM_VSTUPU -> T_EXPRESSION NT_VSTUP_DALSI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            break;
-        case 18:
-            // NT_SEZNAM_VSTUPU -> T_IDENT NT_VSTUP_DALSI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            break;
-        case 19:
-            // NT_SEZNAM_VSTUPU -> eps
-            cStack_pop(stack);
-            break;
-        case 20:
-            // NT_VSTUP_DALSI -> T_COMMA NT_VSTUP_KONEC
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_VSTUP_KONEC, stack);
-            push_cstack_terminal(T_COMMA, stack, '-');
-            break;
-        case 21:
-            // NT_VSTUP_DALSI -> eps
-            cStack_pop(stack);
-            break;
-        case 22:
-            // NT_VSTUP_KONEC -> T_EXPRESSION NT_VSTUP_DALSI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            break;
-        case 23:
-            // NT_VSTUP_KONEC -> T_IDENT NT_VSTUP_DALSI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_VSTUP_DALSI, stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            break;
-        case 24:
-            // NT_SLOZENY_PRIKAZ -> T_LCB NT_BLOK_PRIKAZU T_RCB
-            cStack_pop(stack);
-            push_cstack_terminal(T_RCB, stack, '-');
-            push_cstack_nonterminal(NT_BLOK_PRIKAZU, stack);
-            push_cstack_terminal(T_LCB, stack, '-');
-            break;
-        case 25:
-            // NT_BLOK_PRIKAZU -> NT_PRIKAZ NT_BLOK_PRIKAZU
-            push_cstack_nonterminal(NT_PRIKAZ, stack);
-            break;
-        case 26:
-            // NT_BLOK_PRIKAZU -> eps
-            cStack_pop(stack);
-            break;
-        case 27:
-            // NT_PRIKAZ -> T_TYPE NT_DEFINICE_PROMENNA T_SC
-            cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack, '-');
-            push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack);
-            push_cstack_terminal(T_TYPE, stack, '-');
-            break;
-        case 28:
-            // NT_PRIKAZ -> T_EXPRESSION T_SC
-            cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack, '-');
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            break;
-        case 29:
-            // NT_PRIKAZ -> T_IDENT NT_POUZITI T_SC
-            cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack, '-');
-            push_cstack_nonterminal(NT_POUZITI, stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            break;
-        case 30:
-            // NT_PRIKAZ -> T_FIDENT NT_VOLANI_FUNKCE T_SC
-            cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack, '-');
-            push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack);
-            push_cstack_terminal(T_FIDENT, stack, '-');
-            break;
-        case 31:
-            // NT_PRIKAZ -> T_RETURN NT_NAVRAT_KONEC T_SC
-            cStack_pop(stack);
-            push_cstack_terminal(T_SC, stack, '-');
-            push_cstack_nonterminal(NT_NAVRAT_KONEC, stack);
-            push_cstack_terminal(T_RETURN, stack, '-');
-            break;
-        case 32:
-            // NT_PRIKAZ -> T_IF T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ T_ELSE NT_SLOZENY_PRIKAZ
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_ELSE, stack, '-');
-            push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack, '-');
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            push_cstack_terminal(T_LRB, stack, '-');
-            push_cstack_terminal(T_IF, stack, '-');
-            break;
-        case 33:
-            // NT_PRIKAZ -> T_WHILE T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack);
-            push_cstack_terminal(T_RRB, stack, '-');
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            push_cstack_terminal(T_LRB, stack, '-');
-            push_cstack_terminal(T_WHILE, stack, '-');
-            break;
-        case 34:
-            // NT_POUZITI -> NT_PRIRAZENI
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_PRIRAZENI, stack);
-            break;
-        case 35:
-            // NT_POUZITI -> eps
-            cStack_pop(stack);
-            break;
-        case 36:
-            // NT_VOLANI_FUNKCE -> T_LRB NT_SEZNAM_VYRAZU T_RRB
-            cStack_pop(stack);
-            push_cstack_terminal(T_RRB, stack, '-');
-            push_cstack_nonterminal(NT_SEZNAM_VSTUPU, stack);
-            push_cstack_terminal(T_LRB, stack, '-');
-            break;
-        case 37:
-            // NT_NAVRAT_KONEC -> T_EXPRESSION
-            cStack_pop(stack);
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            break;
-        case 38:
-            // NT_NAVRAT_KONEC -> T_IDENT
-            cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            break;
-        case 39:
-            // NT_NAVRAT_KONEC -> eps
-            cStack_pop(stack);
-            break;
-        case 40:
-            // NT_PRIRAZENI -> T_ASSIGN NT_PRAVA_STRANA
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_PRAVA_STRANA, stack);
-            push_cstack_terminal(T_ASSIGN, stack, '-');
-            break;
-        case 41:
-            // NT_PRAVA_STRANA -> T_EXPRESSION
-            cStack_pop(stack);
-            push_cstack_terminal(T_EXPRESSION, stack, '-');
-            break;
-        case 42:
-            // NT_PRAVA_STRANA -> T_IDENT
-            cStack_pop(stack);
-            push_cstack_terminal(T_IDENT, stack, '-');
-            break;
-        case 43:
-            // NT_PRAVA_STRANA -> T_FIDENT NT_VOLANI_FUNKCE
-            cStack_pop(stack);
-            push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack);
-            push_cstack_terminal(T_FIDENT, stack, '-');
-            break;
-        case 44:
-            // NT_DATOVY_TYP -> T_VOID
-            cStack_pop(stack);
-            push_cstack_terminal(T_VOID, stack, '-');
-            break;
-        case 45:
-            // NT_DATOVY_TYP -> T_TYPE
-            cStack_pop(stack);
-            push_cstack_terminal(T_TYPE, stack, '-');
-            break;
-        default:
-            break;
+    case 1:
+        // NT_PROGRAM -> NT_TRIDA NT_PROGRAM
+        push_cstack_nonterminal(NT_TRIDA, stack_p);
+        break;
+    case 2:
+        // NT_PROGRAM -> NT_DOLLAR
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_DOLLAR, stack_p);
+        break;
+    case 3:
+        // NT_TRIDA -> T_CLASS T_IDENT T_LCB NT_SEZNAM_DEFINIC_STATIC T_RCB
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_RCB, stack_p, '-');
+        push_cstack_nonterminal(NT_SEZNAM_DEFINIC_STATIC, stack_p);
+        push_cstack_terminal(T_LCB, stack_p, '-');
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        push_cstack_terminal(T_CLASS, stack_p, '-');
+        break;
+    case 4:
+        // NT_SEZNAM_DEFINIC_STATIC -> T_STATIC NT_DATOVY_TYP NT_DEFINICE_STATIC NT_SEZNAM_DEFINIC_STATIC
+        push_cstack_nonterminal(NT_DEFINICE_STATIC, stack_p);
+        push_cstack_nonterminal(NT_DATOVY_TYP, stack_p);
+        push_cstack_terminal(T_STATIC, stack_p, '-');
+        break;
+    case 5:
+        // NT_SEZNAM_DEFINIC_STATIC -> eps
+        cStack_pop(stack_p);
+        break;
+    case 6:
+        // NT_DEFINICE_STATIC -> NT_DEFINICE_FUNKCE
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_DEFINICE_FUNKCE, stack_p);
+        break;
+    case 7:
+        // NT_DEFINICE_STATIC -> NT_DEFINICE_PROMENNA T_SC
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_SC, stack_p, '-');
+        push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack_p);
+        break;
+    case 8:
+        // NT_DEFINICE_PROMENNA -> T_IDENT NT_DEF_PROM_KONEC
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_DEF_PROM_KONEC, stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        break;
+    case 9:
+        // NT_DEF_PROM_KONEC -> NT_PRIRAZENI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_PRIRAZENI, stack_p);
+        break;
+    case 10:
+        // NT_DEF_PROM_KONEC -> eps
+        cStack_pop(stack_p);
+        break;
+    case 11:
+        // NT_DEFINICE_FUNKCE -> T_FIDENT T_LRB NT_SEZNAM_PARAMETRU T_RRB NT_SLOZENY_PRIKAZ
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack_p);
+        push_cstack_terminal(T_RRB, stack_p, '-');
+        push_cstack_nonterminal(NT_SEZNAM_PARAMETRU, stack_p);
+        push_cstack_terminal(T_LRB, stack_p, '-');
+        push_cstack_terminal(T_FIDENT, stack_p, '-');
+        break;
+    case 12:
+        // NT_SEZNAM_PARAMETRU -> NT_PARAMETR_PRVNI NT_PARAMETR_DALSI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_PARAMETR_DALSI, stack_p);
+        push_cstack_nonterminal(NT_PARAMETR_PRVNI, stack_p);
+        break;
+    case 13:
+        // NT_SEZNAM_PARAMETRU -> eps
+        cStack_pop(stack_p);
+        break;
+    case 14:
+        // NT_PARAMETR_PRVNI -> T_TYPE T_IDENT
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        push_cstack_terminal(T_TYPE, stack_p, '-');
+        break;
+    case 15:
+        // NT_PARAMETR_DALSI -> T_COMMA T_TYPE T_IDENT NT_PARAMETR_DALSI
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        push_cstack_terminal(T_TYPE, stack_p, '-');
+        push_cstack_terminal(T_COMMA, stack_p, '-');
+        break;
+    case 16:
+        // NT_PARAMETR_DALSI -> eps
+        cStack_pop(stack_p);
+        break;
+    case 17:
+        // NT_SEZNAM_VSTUPU -> T_EXPRESSION NT_VSTUP_DALSI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_VSTUP_DALSI, stack_p);
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        break;
+    case 18:
+        // NT_SEZNAM_VSTUPU -> T_IDENT NT_VSTUP_DALSI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_VSTUP_DALSI, stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        break;
+    case 19:
+        // NT_SEZNAM_VSTUPU -> eps
+        cStack_pop(stack_p);
+        break;
+    case 20:
+        // NT_VSTUP_DALSI -> T_COMMA NT_VSTUP_KONEC
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_VSTUP_KONEC, stack_p);
+        push_cstack_terminal(T_COMMA, stack_p, '-');
+        break;
+    case 21:
+        // NT_VSTUP_DALSI -> eps
+        cStack_pop(stack_p);
+        break;
+    case 22:
+        // NT_VSTUP_KONEC -> T_EXPRESSION NT_VSTUP_DALSI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_VSTUP_DALSI, stack_p);
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        break;
+    case 23:
+        // NT_VSTUP_KONEC -> T_IDENT NT_VSTUP_DALSI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_VSTUP_DALSI, stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        break;
+    case 24:
+        // NT_SLOZENY_PRIKAZ -> T_LCB NT_BLOK_PRIKAZU T_RCB
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_RCB, stack_p, '-');
+        push_cstack_nonterminal(NT_BLOK_PRIKAZU, stack_p);
+        push_cstack_terminal(T_LCB, stack_p, '-');
+        break;
+    case 25:
+        // NT_BLOK_PRIKAZU -> NT_PRIKAZ NT_BLOK_PRIKAZU
+        push_cstack_nonterminal(NT_PRIKAZ, stack_p);
+        break;
+    case 26:
+        // NT_BLOK_PRIKAZU -> eps
+        cStack_pop(stack_p);
+        break;
+    case 27:
+        // NT_PRIKAZ -> T_TYPE NT_DEFINICE_PROMENNA T_SC
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_SC, stack_p, '-');
+        push_cstack_nonterminal(NT_DEFINICE_PROMENNA, stack_p);
+        push_cstack_terminal(T_TYPE, stack_p, '-');
+        break;
+    case 28:
+        // NT_PRIKAZ -> T_EXPRESSION T_SC
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_SC, stack_p, '-');
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        break;
+    case 29:
+        // NT_PRIKAZ -> T_IDENT NT_POUZITI T_SC
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_SC, stack_p, '-');
+        push_cstack_nonterminal(NT_POUZITI, stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        break;
+    case 30:
+        // NT_PRIKAZ -> T_FIDENT NT_VOLANI_FUNKCE T_SC
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_SC, stack_p, '-');
+        push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack_p);
+        push_cstack_terminal(T_FIDENT, stack_p, '-');
+        break;
+    case 31:
+        // NT_PRIKAZ -> T_RETURN NT_NAVRAT_KONEC T_SC
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_SC, stack_p, '-');
+        push_cstack_nonterminal(NT_NAVRAT_KONEC, stack_p);
+        push_cstack_terminal(T_RETURN, stack_p, '-');
+        break;
+    case 32:
+        // NT_PRIKAZ -> T_IF T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ T_ELSE NT_SLOZENY_PRIKAZ
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack_p);
+        push_cstack_terminal(T_ELSE, stack_p, '-');
+        push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack_p);
+        push_cstack_terminal(T_RRB, stack_p, '-');
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        push_cstack_terminal(T_LRB, stack_p, '-');
+        push_cstack_terminal(T_IF, stack_p, '-');
+        break;
+    case 33:
+        // NT_PRIKAZ -> T_WHILE T_LRB T_EXPRESSION T_RRB NT_SLOZENY_PRIKAZ
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_SLOZENY_PRIKAZ, stack_p);
+        push_cstack_terminal(T_RRB, stack_p, '-');
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        push_cstack_terminal(T_LRB, stack_p, '-');
+        push_cstack_terminal(T_WHILE, stack_p, '-');
+        break;
+    case 34:
+        // NT_POUZITI -> NT_PRIRAZENI
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_PRIRAZENI, stack_p);
+        break;
+    case 35:
+        // NT_POUZITI -> eps
+        cStack_pop(stack_p);
+        break;
+    case 36:
+        // NT_VOLANI_FUNKCE -> T_LRB NT_SEZNAM_VYRAZU T_RRB
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_RRB, stack_p, '-');
+        push_cstack_nonterminal(NT_SEZNAM_VSTUPU, stack_p);
+        push_cstack_terminal(T_LRB, stack_p, '-');
+        break;
+    case 37:
+        // NT_NAVRAT_KONEC -> T_EXPRESSION
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        break;
+    case 38:
+        // NT_NAVRAT_KONEC -> T_IDENT
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        break;
+    case 39:
+        // NT_NAVRAT_KONEC -> eps
+        cStack_pop(stack_p);
+        break;
+    case 40:
+        // NT_PRIRAZENI -> T_ASSIGN NT_PRAVA_STRANA
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_PRAVA_STRANA, stack_p);
+        push_cstack_terminal(T_ASSIGN, stack_p, '-');
+        break;
+    case 41:
+        // NT_PRAVA_STRANA -> T_EXPRESSION
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_EXPRESSION, stack_p, '-');
+        break;
+    case 42:
+        // NT_PRAVA_STRANA -> T_IDENT
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_IDENT, stack_p, '-');
+        break;
+    case 43:
+        // NT_PRAVA_STRANA -> T_FIDENT NT_VOLANI_FUNKCE
+        cStack_pop(stack_p);
+        push_cstack_nonterminal(NT_VOLANI_FUNKCE, stack_p);
+        push_cstack_terminal(T_FIDENT, stack_p, '-');
+        break;
+    case 44:
+        // NT_DATOVY_TYP -> T_VOID
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_VOID, stack_p, '-');
+        break;
+    case 45:
+        // NT_DATOVY_TYP -> T_TYPE
+        cStack_pop(stack_p);
+        push_cstack_terminal(T_TYPE, stack_p, '-');
+        break;
+    default:
+        break;
     }
 }
 
@@ -534,7 +534,7 @@ Terminal getNextTerminal() {
     return terminal;
 }
 
-void push_cstack_terminal(TType type, cStack *stack, char data) {
+void push_cstack_terminal(TType type, cStack *stack_p, char data) {
     cItem item;
     Terminal terminal;
     terminal.token = NULL;
@@ -542,16 +542,16 @@ void push_cstack_terminal(TType type, cStack *stack, char data) {
     terminal.data = data;
     item.type = IT_TERMINAL;
     item.content.terminal = terminal;
-    if (!cStack_push(stack, item)) {
+    if (!cStack_push(stack_p, item)) {
         error(ERR_INTER);
     }
 }
 
-void push_cstack_nonterminal(NTType type, cStack *stack) {
+void push_cstack_nonterminal(NTType type, cStack *stack_p) {
     cItem item;
     item.type = IT_NTTYPE;
     item.content.nttype = type;
-    if (!cStack_push(stack, item)) {
+    if (!cStack_push(stack_p, item)) {
         error(ERR_INTER);
     }
 }
@@ -1203,6 +1203,10 @@ void execute() {
         }
 
         first_analysis = false;
+
+        /* GENERATOR */
+        add_instruction(I_CALL, 'N', "Main.run", '-', NULL, '-', NULL);
+
         execute();
     }
 }
@@ -1392,24 +1396,37 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
         fprintf(stdout, "\n");
     #endif
 
-    tInstr result = (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] };
-    return instrListAddInstr(&instr_list, result);
+    tInstr result;
+    result.instr = instr;
+    result.addr1 = ops_p[0];
+    result.addr2 = ops_p[1];
+    result.addr3 = ops_p[2];
+
+    tInstrListItem *returned = instrListAddInstr(&instr_list, result);
+    if (instr == I_LABEL && strchr(ops_p[0]->value.name, '#') != NULL)
+        addLabelAdress(labelAdressInit(), ops_p[0]->value.name, returned);
+
+    return returned;
 }
 
 char *manage_temp_var(char get, char *free) {
-    /* INIT FOR FIRST TIME */
+    #define INIT_TEMP_CAP 10
+    static bool inited = false;
     static bool *tempI[1]; static bool *tempD[1]; static bool *tempS[1];
-    #ifndef INIT_TEMP_CAP
-        #define INIT_TEMP_CAP 10
+    static int capI = INIT_TEMP_CAP; static int capD = INIT_TEMP_CAP; static int capS = INIT_TEMP_CAP;
+    static int usedI = 0; static int usedD = 0; static int usedS = 0;
+    /* INIT FOR FIRST TIME */
+    if (!inited) {
+        inited = true;
         // one item array is workaround because we cannot malloc static var directly
         tempI[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
         tempD[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
         tempS[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
-    #endif
-    /* CAPACITY */
-    static int capI = INIT_TEMP_CAP; static int capD = INIT_TEMP_CAP; static int capS = INIT_TEMP_CAP;
-    /* USED */
-    static int usedI = 0; static int usedD = 0; static int usedS = 0;
+    
+        for (int i = 0; i < INIT_TEMP_CAP; i++) { // Clear
+            tempI[0][i] = false; tempD[0][i] = false; tempS[0][i] = false;
+        }
+    }
 
     /* GET FREE VAR */
     if (free == NULL) {
@@ -1417,13 +1434,16 @@ char *manage_temp_var(char get, char *free) {
             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
             if (usedI == capI) { // Capacity is full, double it
                 tempI[0] = (bool *)realloc(tempI[0], sizeof(bool) * capI * 2);
+                for (int i = capI; i < capI *2; i++) { // Clear
+                    tempI[0][i] = false;
+                }
                 capI *= 2;
             }
             for (int i = 0; i < capI; i++) { /* Find free var */
                 if (!tempI[0][i]) { // Found
                     tempI[0][i] = true; // Mark as used
                     usedI++;
-                    sprintf(val, "%d", i); // Convert from i (int) to val (text)
+                    sprintf(val, "%d", i+1); // Convert from i (int) to val (text)
                     return cat("#tmpI", val); // Finally return
                 }
             }
@@ -1432,13 +1452,16 @@ char *manage_temp_var(char get, char *free) {
             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3);
             if (usedD == capD) {
                 tempD[0] = (bool *)realloc(tempD[0], sizeof(bool) * capD * 2);
+                for (int i = capD; i < capD * 2; i++) { // Clear
+                    tempD[0][i] = false;
+                }
                 capD *= 2;
             }
             for (int i = 0; i < capD; i++) {
                 if (!tempD[0][i]) {
                     tempD[0][i] = true;
                     usedD++;
-                    sprintf(val, "%d", i);
+                    sprintf(val, "%d", i+1);
                     return cat("#tmpD", val);
                 }
             }
@@ -1447,13 +1470,16 @@ char *manage_temp_var(char get, char *free) {
             char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3);
             if (usedS == capS) {
                 tempS[0] = (bool *)realloc(tempS[0], sizeof(bool) * capS * 2);
+                for (int i = capS; i < capS * 2; i++) { // Clear
+                    tempS[0][i] = false;
+                }
                 capS *= 2;
             }
             for (int i = 0; i < capS; i++) {
                 if (!tempS[0][i]) {
                     tempS[0][i] = true;
                     usedS++;
-                    sprintf(val, "%d", i);
+                    sprintf(val, "%d", i+1);
                     return cat("#tmpS", val);
                 }
             }
@@ -1467,22 +1493,22 @@ char *manage_temp_var(char get, char *free) {
         val[strlen(free)-5] = '\0'; // Append null terminator
         int index = (int)strtol(val, (char **)NULL, 10); // Convert val (text) to index (int)
         if (free[4] == 'I') {
-            if (tempI[0][index]) { // It is used
-                tempI[0][index] = false; // Mark as freed
+            if (tempI[0][index-1]) { // It is used
+                tempI[0][index-1] = false; // Mark as freed
                 usedI--;
                 return NULL;
             }
         }
         else if (free[4] == 'D') {
-            if (tempD[0][index]) { // It is used
-                tempD[0][index] = false; // Mark as freed
+            if (tempD[0][index-1]) { // It is used
+                tempD[0][index-1] = false; // Mark as freed
                 usedD--;
                 return NULL;
             }
         }
         else if (free[4] == 'S') {
-            if (tempS[0][index]) { // It is used
-                tempS[0][index] = false; // Mark as freed
+            if (tempS[0][index-1]) { // It is used
+                tempS[0][index-1] = false; // Mark as freed
                 usedS--;
                 return NULL;
             }

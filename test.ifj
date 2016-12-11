@@ -1,6 +1,14 @@
 
 class Main {
+    
     static void run() {
-        // ifj16.print(" \t \n \\ \" ");
+        
+        
+    ifj16.print(" \t \n \\ \" ");
     }
+
+    static void test() {
+    }
+
+    static int a = 5 + 5 * 5 + 5 * 5;
 }
