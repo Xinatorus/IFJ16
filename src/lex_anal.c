@@ -730,8 +730,8 @@ Ttoken* getNextToken()
 			case LEXIKALNI_CHYBA:
 
 				//fprintf(stderr, "Chyba lexikalniho analyzatoru na radku %d\n", token->cisloRiadku);
-				error(ERR_LEX);
-				return NULL;
+				//error(ERR_LEX);
+				//return NULL;
 
 				break;
 		}
