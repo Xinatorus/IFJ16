@@ -57,6 +57,7 @@ Psymbol getNextPrecSymbol() {
     symbol.token = token;
     symbol.type = PS_DOLLAR;
     symbol.data = '-';
+    symbol.temp_var = NULL;
 
     if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
@@ -145,12 +146,13 @@ Psymbol getNextPrecSymbol() {
     return symbol;
 }
 
-void push_cstack_psymbol(PType type, cStack *stack, char data) {
+void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var) {
     cItem item;
     Psymbol symbol;
     symbol.token = NULL; // We dont know, from what its made.. could be E op E -> E
     symbol.type = type;
     symbol.data = data;
+    symbol.temp_var = temp_var;
     item.type = IT_PSYMBOL;
     item.content.psymbol = symbol;
     if (!cStack_push(stack, item)) {
@@ -175,7 +177,7 @@ char prec_analysis(Ttoken *token) {
     // First step - there is T_EXPRESSION on top, pop it
     cStack_pop(&stack);
     // Second step - push $ on top
-    push_cstack_psymbol(PS_DOLLAR, &stack, '-');
+    push_cstack_psymbol(PS_DOLLAR, &stack, '-', NULL);
 
     char operation;
     Psymbol input = getNextPrecSymbol();
@@ -199,7 +201,7 @@ char prec_analysis(Ttoken *token) {
 
         // There could be PS_ESYS, PS_LSYS or PS_RSYS on top, in that case we are popping until we find regular prec. symbol to get prec. operation
         while (top.content.psymbol.type == PS_ESYS || top.content.psymbol.type == PS_LSYS || top.content.psymbol.type == PS_RSYS) {
-            push_cstack_psymbol(top.content.psymbol.type, &temporary, top.content.psymbol.data);
+            push_cstack_psymbol(top.content.psymbol.type, &temporary, top.content.psymbol.data, top.content.psymbol.temp_var);
             cStack_pop(&stack);
             top = cStack_top(&stack);
         }
@@ -208,7 +210,7 @@ char prec_analysis(Ttoken *token) {
         if (operation != '<') {
             // We have to push everything "borrowed" back (the check for < is there because operation < does it by itself)
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data, cStack_top(&temporary).content.psymbol.temp_var);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
@@ -220,27 +222,26 @@ char prec_analysis(Ttoken *token) {
 
         /* Apply operation */
         if (operation == '<') {
-            push_cstack_psymbol(PS_LSYS, &stack, '-'); // This is pushed just after non-SYS prec. symbol
+            push_cstack_psymbol(PS_LSYS, &stack, '-', NULL); // This is pushed just after non-SYS prec. symbol
             // We have to push everything "borrowed" back
             while (!cStack_isempty(&temporary)) {
-                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data);
+                push_cstack_psymbol(cStack_top(&temporary).content.psymbol.type, &stack, cStack_top(&temporary).content.psymbol.data, cStack_top(&temporary).content.psymbol.temp_var);
                 cStack_pop(&temporary);
                 top = cStack_top(&stack);
             }
-            push_cstack_psymbol(input.type, &stack, input.data);
+            push_cstack_psymbol(input.type, &stack, input.data, input.temp_var);
             input = getNextPrecSymbol();
         }
         else if (operation == '>') {
-            /* ??? Nebylo by lepsi davat na Stack rovnou ty psymboly se vsemi daty naraz ? */
 
             // (E) -> E
             if (top.content.psymbol.type == PS_RRB) { // )>
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_ESYS) { // E)>
-                    char result_type = top.content.psymbol.data; // Save type of E
+                    Psymbol top_symbol = top.content.psymbol; // Save E
                     #if PREC_DEBUG == 1
-                        fprintf(stdout, "  [PREC_DEBUG] [ (ESYS) -> ESYS ] %c -> %c\n", top.content.psymbol.data, result_type);
+                        fprintf(stdout, "  [PREC_DEBUG] [ (ESYS) -> ESYS ] %c -> %c\n", top.content.psymbol.data, top_symbol.data);
                     #endif
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
@@ -250,7 +251,7 @@ char prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <(E)>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            push_cstack_psymbol(PS_ESYS, &stack, result_type); // <(E)> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, top_symbol.type, top_symbol.temp_var); // <(E)> -> E
                         }
                         else error(ERR_SYNT);
                     }
@@ -261,11 +262,6 @@ char prec_analysis(Ttoken *token) {
             // i -> E
             else if (top.content.psymbol.type == PS_VALUE) { // i>
                 Psymbol s_top = top.content.psymbol; // Save i
-                /* GENERATOR */
-                char c = (s_top.token->type == IDENTIFIKATOR || s_top.token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) ? 'N' : s_top.data;
-                char *temp_var = manage_temp_var(s_top.data, NULL);
-                add_instruction(I_MOV, 'N', temp_var, c, s_top.token->attr->str, '-', NULL);
-                expr_temp_last = makeString(temp_var);
 
                 #if PREC_DEBUG == 1
                     fprintf(stdout, "  [PREC_DEBUG] [ PSYM -> ESYS ] %c -> %c\n", s_top.data, s_top.type);
@@ -273,15 +269,21 @@ char prec_analysis(Ttoken *token) {
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
+                    /* GENERATOR */
+                    char c = (s_top.token->type == IDENTIFIKATOR || s_top.token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) ? 'N' : s_top.data;
+                    char *temp_var = manage_temp_var(s_top.data, NULL);
+                    add_instruction(I_MOV, 'N', temp_var, c, s_top.token->attr->str, '-', NULL);
+                    expr_temp_last = makeString(temp_var);
+
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
-                    push_cstack_psymbol(PS_ESYS, &stack, s_top.type); // <i> -> E
+                    push_cstack_psymbol(PS_ESYS, &stack, s_top.type, temp_var); // <i> -> E
                 }
                 else error(ERR_SYNT);
             }
             // E op E -> E
             else if (top.content.psymbol.type == PS_ESYS) { // E>
-                char first = top.content.psymbol.data; // Save type of first E
+                Psymbol first_s = top.content.psymbol; // Save first E
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_PLUS || 
@@ -298,26 +300,53 @@ char prec_analysis(Ttoken *token) {
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
                     if (top.content.psymbol.type == PS_ESYS) { // E op E>
-                        char second = top.content.psymbol.data; // Save type of second E
+                        Psymbol second_s = top.content.psymbol; // Save second E
                         cStack_pop(&stack);
                         top = cStack_top(&stack);
                         if (top.content.psymbol.type == PS_LSYS) { // <E op E>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-                            char result_type = get_result_type(first, second, op);
+                            char result_type = get_result_type(first_s.data, second_s.data, op);
                             #if PREC_DEBUG == 1
-                                fprintf(stdout, "  [PREC_DEBUG] [ ESYS op ESYS -> ESYS ] %c %s %c -> %c\n", first, PType_string[op], second, result_type);
+                                fprintf(stdout, "  [PREC_DEBUG] [ ESYS op ESYS -> ESYS ] %c %s %c -> %c\n", first_s.data, PType_string[op], second_s.data, result_type);
                             #endif
 
                             /* @SEM12 - Check for operands compatibility */
                             if (result_type == 'E' && (((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)))) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first, second, PType_string[op]);
+                                    fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first_s.data, second_s.data, PType_string[op]);
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
 
-                            push_cstack_psymbol(PS_ESYS, &stack, result_type); // <E op E> -> E
+                            push_cstack_psymbol(PS_ESYS, &stack, result_type, first_s.temp_var); // <E op E> -> E
+                            expr_temp_last = first_s.temp_var;
+                            /* GENERATOR */
+                            if (op == PS_PLUS || op == PS_MINUS || op == PS_STAR || op == PS_SLASH) {
+                                Instructions ins;
+                                if (op == PS_PLUS) ins = I_ADD;
+                                if (op == PS_MINUS) ins = I_SUB;
+                                if (op == PS_SLASH) ins = I_DIV;
+                                if (op == PS_STAR) ins = I_MUL;
+                                add_instruction(ins, 'N', first_s.temp_var, 'N', second_s.temp_var, '-', NULL);
+                            }
+
+                            // Save last used logical operator + operands (for later IF and WHILE jumps)
+                            if (op == PS_LTHAN || op == PS_RTHAN || op == PS_LTHANEQ || op == PS_RTHANEQ || op == PS_EQ || op == PS_NEQ) {
+                                expr_left_bool = first_s.temp_var;
+                                expr_right_bool = second_s.temp_var;
+                                expr_last_bool = op;
+                                if (op == PS_LTHAN) expr_last_bool_neg = PS_RTHANEQ;
+                                if (op == PS_RTHAN) expr_last_bool_neg = PS_LTHANEQ;
+                                if (op == PS_LTHANEQ) expr_last_bool_neg = PS_RTHAN;
+                                if (op == PS_RTHANEQ) expr_last_bool_neg = PS_LTHAN;
+                                if (op == PS_EQ) expr_last_bool_neg = PS_NEQ;
+                                if (op == PS_NEQ) expr_last_bool_neg = PS_EQ;
+                            
+                            }
+
+                            // Free temp var for another usage
+                            manage_temp_var('-', second_s.temp_var);
                         }
                         else error(ERR_SYNT);
                     }
@@ -329,7 +358,7 @@ char prec_analysis(Ttoken *token) {
 
         }
         else if (operation == '=') {
-            push_cstack_psymbol(input.type, &stack, input.data);
+            push_cstack_psymbol(input.type, &stack, input.data, NULL);
             input = getNextPrecSymbol();
         }
         else if (operation != 'E') {

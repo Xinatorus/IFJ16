@@ -52,7 +52,7 @@ void push_cstack_terminal(TType type, cStack *stack, char data);
 void push_cstack_nonterminal(NTType type, cStack *stack);
 
 /* Auxiliary function to push precedence symbol on stack */
-void push_cstack_psymbol(PType type, cStack *stack, char data);
+void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var);
 
 /* Auxiliary function to insert token into queue */
 void insert_cqueue_token(Ttoken *token, cQueue *queue);
