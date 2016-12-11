@@ -59,9 +59,9 @@ int main(int argc, char* argv[]) {
 	/*char *c = "asdcv";
 	listMergeSort(c);
 	*/
-	printf("\a");
 
-	//testInterpret();
+
+	testInterpret();
 	//valgrind();
 	//getchar();
 
