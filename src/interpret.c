@@ -1,6 +1,11 @@
-
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 #include "headers\interpret.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	debug("[INTERPRET] Staring interpret...\n");
@@ -100,7 +105,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					default: break;
 				}
 			else {
-				//TODO ADD END frees
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -166,7 +171,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					break;
 				}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -198,7 +203,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -208,7 +213,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}break;
 		case I_JMPL: 
@@ -217,7 +222,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -227,7 +232,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -237,7 +242,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -247,7 +252,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					instrListSetActive(&iList, getLabelAdress(la, dest->value.v_string));
 			}
 			else {
-				//TODO free
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			break;
@@ -257,15 +262,15 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 		case I_ADD:
 			// ? src2 ? // src2 je vzdy
 			if (src2 && src2->type == name && findInFrame(src2->value.name,sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			} // src1 src2 dest
 			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
-					//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
@@ -328,14 +333,15 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			break;
 		case I_SUB:
 			if (src2 && src2->type == name && findInFrame(src2->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			} // src1 src2 dest
 			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 				//ERR
 			}
@@ -358,15 +364,15 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			break;
 		case I_MUL:
 			if (src2 && src2->type == name && findInFrame(src2->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			} // src1 src2 dest
 			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
@@ -388,15 +394,15 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			break;
 		case I_DIV:
 			if (src2 && src2->type == name && findInFrame(src2->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			} // src1 src2 dest
 			if (src1 != dest && src1->type == name && findInFrame(src1->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}	// dest src2
 			else if (findInFrame(dest->value.name, sf)->defined == false) {
-				//ERR
+				clearAll(sf, root, interStack, &iList, la);
 				error(ERR_RUN_INIT);
 			}
 			findInFrame(dest->value.name, sf)->defined = true;
@@ -406,7 +412,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 						findInFrame(dest->value.name, sf)->value.v_int = getIntVar(src1);
 					}
 					if (byType(src2) == 0) {
-						//TODO free
+						clearAll(sf, root, interStack, &iList, la);
 						error(ERR_RUN_DEV);
 					}
 					findInFrame(dest->value.name, sf)->value.v_int /= getIntVar(src2);
@@ -416,7 +422,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 						findInFrame(dest->value.name, sf)->value.v_double = byType(src1);
 					}
 					if (byType(src2) == 0) {
-						//TODO free
+						clearAll(sf, root, interStack, &iList, la);
 						error(ERR_RUN_DEV);
 					}
 					findInFrame(dest->value.name, sf)->value.v_double /= byType(src2);
@@ -454,12 +460,14 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			switch(destT) {
 				case t_int: 
 					if (!readInt(&tmpInt)) { //TODO skonceni
+						clearAll(sf, root, interStack, &iList, la);
 						error(ERR_RUN_NUM);
 					}
 					findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
 					break;
 				case t_double: 
 					if (!readDouble(&tmpDouble)) {
+						clearAll(sf, root, interStack, &iList, la);
 						error(ERR_RUN_NUM);
 					}
 					findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
@@ -502,31 +510,38 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 		case I_SUBS: // String substr(String s, int i, int n)
 			findInFrame(dest->value.name, sf)->defined = true;
 			stackPop(interStack, &tmpData);
-			tmpStr1 = tmpData.value.v_string;
+			int tmpInt2 = tmpData.value.v_int;
 			stackPop(interStack, &tmpData);
 			int tmpInt1 = tmpData.value.v_int;
 			stackPop(interStack, &tmpData);
-			int tmpInt2 = tmpData.value.v_int;
+			tmpStr1 = tmpData.value.v_string;
+
 			findInFrame(dest->value.name, sf)->value.v_string = getSubString(tmpStr1,tmpInt1,tmpInt2);
 			break;
 		case I_CMP: // int compare(String s1, String s2)
 			findInFrame(dest->value.name, sf)->defined = true;
 			stackPop(interStack, &tmpData);
-			tmpStr1 = tmpData.value.v_string;
-			stackPop(interStack, &tmpData);
 			tmpStr2 = tmpData.value.v_string;
+			stackPop(interStack, &tmpData);
+			tmpStr1 = tmpData.value.v_string;
+			
 			findInFrame(dest->value.name, sf)->value.v_int = compare(tmpStr1, tmpStr2);
 			break;
 		case I_FIND: // int find(String s, String search) 
 			findInFrame(dest->value.name, sf)->defined = true;
 			stackPop(interStack, &tmpData);
-			tmpStr1 = tmpData.value.v_string;
-			stackPop(interStack, &tmpData);
 			tmpStr2 = tmpData.value.v_string;
+			stackPop(interStack, &tmpData);
+			tmpStr1 = tmpData.value.v_string;
+			
 			findInFrame(dest->value.name, sf)->value.v_int = findSubstring(tmpStr1,tmpStr2);
 			break;
 		case I_SORT: // String sort(String s)
-			findInFrame(dest->value.name, sf)->defined = true;
+			if (findInFrame(dest->value.name, sf)->defined == true) {
+				free(findInFrame(dest->value.name, sf)->value.v_string);
+			}
+			else findInFrame(dest->value.name, sf)->defined = true;
+
 			stackPop(interStack, &tmpData);
 			//TODO prepisy
 			findInFrame(dest->value.name, sf)->value.v_string = makeString(tmpData.value.v_string);
@@ -546,7 +561,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 		instrListSetActiveNext(&iList); // posunu aktivitu na další 
 	}//while ins
 	debug("[INTERPRET] Ending interpret...\n");
-	clearAll(sf,root,interStack,&iList);
+	clearAll(sf,root,interStack,&iList,la);
 	debug("[INTERPRET] End.\n");
 }
 
@@ -566,12 +581,12 @@ void extractParams(StackFrame *sf, TsTree root, Stack stack) {
 
 	for (int i = cpar; i > 0; i--) {
 		stackPop(stack, &tmp);
-		sf->data[i].value = tmp.value; //TODO test
+		sf->data[i].value = tmp.value;
 	}
 }
 
 // Vycisti veskerou doposud alokovanou pamet 
-void clearAll(StackFrame *sf, TsTree *root, Stack interStack, tInstrList *iList) {
+void clearAll(StackFrame *sf, TsTree *root, Stack interStack, tInstrList *iList, labelAdress *la) {
 	//docastne promenne? nebo jine?
 	//identifikatory, hash table, data ramce, stringy v ramci, istrukce, 
 	//operandy instrukci podle toho jak se budou vytvaret

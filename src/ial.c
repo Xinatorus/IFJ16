@@ -1,6 +1,11 @@
-
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 #include "headers\ial.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 int	findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 

@@ -1,8 +1,9 @@
-/* ========================================================================== */
-/* Soubor:  lex_anal.h                                                        */
-/* Faze:    Lexikalni analyzator                                              */
-/* Datum:   24.10.2016                                                        */
-/* ========================================================================== */
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 
 #ifndef LEX_ANAL_H
 #define LEX_ANAL_H

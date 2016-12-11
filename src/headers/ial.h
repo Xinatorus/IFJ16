@@ -1,4 +1,10 @@
-﻿#ifndef IAL_H
+﻿/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
+#ifndef IAL_H
 #define IAL_H
 
 #include <stdio.h>

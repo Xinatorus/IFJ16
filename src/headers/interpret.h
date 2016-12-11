@@ -1,3 +1,9 @@
+/*
+*	Projekt:	IFJ16
+*	Vedouci:	xztef02
+*	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
+*				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
+*/
 #ifndef INTERPRET_H
 #define INTERPRET_H
 
@@ -30,7 +36,7 @@ typedef struct lAdress {
 
 void interpret(tInstrList instr,TsTree *root, labelAdress *la);
 void extractParams(StackFrame *sf, TsTree root, Stack stack);
-void clearAll(StackFrame *sf, TsTree *root, Stack interStack,tInstrList *iList);
+void clearAll(StackFrame *sf, TsTree *root, Stack interStack,tInstrList *iList, labelAdress *la);
 
 //TODO obalit do makra
 //dest->value.v_int += (src1->type == t_int) ? src1->value.v_int : src1->value.v_double;
