@@ -140,8 +140,7 @@ Psymbol getNextPrecSymbol() {
     }
 
     #if PREC_DEBUG == 1
-        if (symbol.type == PS_VALUE)
-            fprintf(stdout, "  [PREC_DEBUG]   ## getNextPrecSymbol PS_VALUE -> Token: '%s', Result type: %c\n", getTokenName(token->type), symbol.data);
+        fprintf(stdout, "  [PREC_DEBUG]   ## getNextPrecSymbol %s -> Token: '%s' (data: '%s'), Result type: %c\n", PType_string[symbol.type], getTokenName(token->type), token->attr->str, symbol.data);
     #endif
     return symbol;
 }
@@ -149,7 +148,7 @@ Psymbol getNextPrecSymbol() {
 void push_cstack_psymbol(PType type, cStack *stack, char data) {
     cItem item;
     Psymbol symbol;
-    symbol.token = NULL;
+    symbol.token = NULL; // We dont know, from what its made.. could be E op E -> E
     symbol.type = type;
     symbol.data = data;
     item.type = IT_PSYMBOL;
@@ -261,16 +260,22 @@ char prec_analysis(Ttoken *token) {
             }
             // i -> E
             else if (top.content.psymbol.type == PS_VALUE) { // i>
-                char result_type = top.content.psymbol.data; // Save type of i
+                Psymbol s_top = top.content.psymbol; // Save i
+                /* GENERATOR */
+                char c = (s_top.token->type == IDENTIFIKATOR || s_top.token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) ? 'N' : s_top.data;
+                char *temp_var = manage_temp_var(s_top.data, NULL);
+                add_instruction(I_MOV, 'N', temp_var, c, s_top.token->attr->str, '-', NULL);
+                expr_temp_last = makeString(temp_var);
+
                 #if PREC_DEBUG == 1
-                    fprintf(stdout, "  [PREC_DEBUG] [ PSYM -> ESYS ] %c -> %c\n", top.content.psymbol.data, result_type);
+                    fprintf(stdout, "  [PREC_DEBUG] [ PSYM -> ESYS ] %c -> %c\n", s_top.data, s_top.type);
                 #endif
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
-                    push_cstack_psymbol(PS_ESYS, &stack, result_type); // <i> -> E
+                    push_cstack_psymbol(PS_ESYS, &stack, s_top.type); // <i> -> E
                 }
                 else error(ERR_SYNT);
             }

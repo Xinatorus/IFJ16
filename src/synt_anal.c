@@ -8,6 +8,11 @@ Ttoken *token_list = NULL; // Token list, used for second pass
 bool first_analysis = true; // Whether this is first pass (static declarations)
 char *current_class; // Actual class
 char *current_func; // Actual function
+char *expr_temp_last; // In which temp var is expression from last prec. analysis saved
+char *expr_left_bool; // Last left boolean operand
+PType expr_last_bool; // Last boolean operation
+PType expr_last_bool_neg; // Last boolean operation negated
+char *expr_right_bool; // Last right boolean operand
 
 /* Semantic variables */
 TsTree root; // Main symbol table leaf
@@ -548,8 +553,8 @@ void push_cstack_nonterminal(NTType type, cStack *stack) {
 
 void execute() {
 
-    /* SEMANTIC ACTIONS IN FIRST PASS
-        If fist pass is executed,
+    /* NOTE - SEMANTIC ACTIONS IN FIRST PASS
+        If first pass is executed,
         only classes & static vars + functions are saved
     */
 
@@ -566,6 +571,11 @@ void execute() {
     last_rule = -1;
     current_class = makeString("");
     current_func = makeString("");
+    expr_temp_last = makeString("");
+    expr_left_bool = makeString("");
+    expr_last_bool = PS_DOLLAR;
+    expr_last_bool_neg = PS_DOLLAR;
+    expr_right_bool = makeString("");
     dec_types = makeString("");
     last_func_ident = makeString("");
     cStack_init(&stack, 50);
@@ -889,7 +899,7 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                         /* GENERATOR */
-                        add_instruction(I_MOV, 'N', last_var_ident, 'N', get_temp(input.data, true), '-', NULL);
+                        add_instruction(I_MOV, 'N', last_var_ident, 'N', expr_temp_last, '-', NULL);
                     }
                     if (!first_analysis) {
                         /* @SEM2 - Check expected boolean type for if statement */
@@ -930,7 +940,7 @@ void execute() {
                                 error(ERR_SEM_TYPE);
                             }
                             /* GENERATOR */
-                            add_instruction(I_PUSH, 'N', get_temp(input.data, true), '-', NULL, '-', NULL);
+                            add_instruction(I_PUSH, 'N', expr_temp_last, '-', NULL, '-', NULL);
                         }
                     }
                 }
@@ -1381,37 +1391,97 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
     return instrListAddInstr(&instr_list, result);
 }
 
-char *get_temp(char type, bool third) {
-    static int i = 0, d = 0, s = 0; // Last returned
-    
-    if (third) {
-        if (type == 'I')
-            return makeString("#tmpI3");
-        else if (type == 'D')
-            return makeString("#tmpD3");
-        else if (type == 'S')
-            return makeString("#tmpS3");
-        else return NULL;
-    }
-    else {
-        char *id = (char *)malloc(2 * sizeof(char));
-        char c;
+char *manage_temp_var(char get, char *free) {
+    /* INIT FOR FIRST TIME */
+    static bool *tempI[1]; static bool *tempD[1]; static bool *tempS[1];
+    #ifndef INIT_TEMP_CAP
+        #define INIT_TEMP_CAP 10
+        // one item array is workaround because we cannot malloc static var directly
+        tempI[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
+        tempD[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
+        tempS[0] = (bool *)malloc(sizeof(bool) * INIT_TEMP_CAP);
+    #endif
+    /* CAPACITY */
+    static int capI = INIT_TEMP_CAP; static int capD = INIT_TEMP_CAP; static int capS = INIT_TEMP_CAP;
+    /* USED */
+    static int usedI = 0; static int usedD = 0; static int usedS = 0;
 
-        if (type == 'I') {
-            c = (i ? --i : ++i) + 1 + '0';
-            sprintf(id, "%c", c);
-            return cat("#tmpI", id);
+    /* GET FREE VAR */
+    if (free == NULL) {
+        if (get == 'I') {
+            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+            if (usedI == capI) { // Capacity is full, double it
+                tempI[0] = (bool *)realloc(tempI[0], sizeof(bool) * capI * 2);
+                capI *= 2;
+            }
+            for (int i = 0; i < capI; i++) { /* Find free var */
+                if (!tempI[0][i]) { // Found
+                    tempI[0][i] = true; // Mark as used
+                    usedI++;
+                    sprintf(val, "%d", i); // Convert from i (int) to val (text)
+                    return cat("#tmpI", val); // Finally return
+                }
+            }
         }
-        else if (type == 'D') {
-            c = (d ? --d : ++d) + 1 + '0';
-            sprintf(id, "%c", c);
-            return cat("#tmpD", id);
+        else if (get == 'D') {
+            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3);
+            if (usedD == capD) {
+                tempD[0] = (bool *)realloc(tempD[0], sizeof(bool) * capD * 2);
+                capD *= 2;
+            }
+            for (int i = 0; i < capD; i++) {
+                if (!tempD[0][i]) {
+                    tempD[0][i] = true;
+                    usedD++;
+                    sprintf(val, "%d", i);
+                    return cat("#tmpD", val);
+                }
+            }
         }
-        else if (type == 'S') {
-            c = (s ? --s : ++s) + 1 + '0';
-            sprintf(id, "%c", c);
-            return cat("#tmpS", id);
+        else if (get == 'S') {
+            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3);
+            if (usedS == capS) {
+                tempS[0] = (bool *)realloc(tempS[0], sizeof(bool) * capS * 2);
+                capS *= 2;
+            }
+            for (int i = 0; i < capS; i++) {
+                if (!tempS[0][i]) {
+                    tempS[0][i] = true;
+                    usedS++;
+                    sprintf(val, "%d", i);
+                    return cat("#tmpS", val);
+                }
+            }
         }
-        else return NULL;
+        return NULL;
+    }
+    /* FREE USED VAR */
+    else {
+        char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+        strncpy(val, free+5, strlen(free)-5); // Copy number of temp var
+        val[strlen(free)-5] = '\0'; // Append null terminator
+        int index = (int)strtol(val, (char **)NULL, 10); // Convert val (text) to index (int)
+        if (free[4] == 'I') {
+            if (tempI[0][index]) { // It is used
+                tempI[0][index] = false; // Mark as freed
+                usedI--;
+                return NULL;
+            }
+        }
+        else if (free[4] == 'D') {
+            if (tempD[0][index]) { // It is used
+                tempD[0][index] = false; // Mark as freed
+                usedD--;
+                return NULL;
+            }
+        }
+        else if (free[4] == 'S') {
+            if (tempS[0][index]) { // It is used
+                tempS[0][index] = false; // Mark as freed
+                usedS--;
+                return NULL;
+            }
+        }
+        return NULL;
     }
 }
