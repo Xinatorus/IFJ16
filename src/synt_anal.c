@@ -1269,7 +1269,7 @@ void execute() {
         first_analysis = false;
 
         /* GENERATOR */
-        add_instruction(I_CALL, 'N', "Main.run", '-', NULL, '-', NULL);
+        // add_instruction(I_CALL, 'N', "Main.run", '-', NULL, '-', NULL);
 
         execute();
         }
