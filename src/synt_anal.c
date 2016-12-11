@@ -19,6 +19,7 @@ int var_normal_index; // Order of saved normal var in function symbol table
 int block_depth; // Actual code depth (used to determine static context)
 char *last_var_ident; // Used to hold variable name which is being assigned to
 int current_param; // Current parameter number of called function
+bool assigning_to_func; // Used because we cannot determine by grammar if func is called AND assigned somewhere too
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -572,6 +573,7 @@ void execute() {
     block_depth = 0;
     last_var_ident = makeString("");
     current_param = 0;
+    assigning_to_func = false;
 
     if (first_analysis) {
         /* Inits only to be done once */
@@ -658,7 +660,7 @@ void execute() {
             if (top.content.terminal.type == input.type) {
                 if (input.type == T_IDENT) {
                     /* @SEM12 - Save identificator (to know where to assign later) */
-                    if (last_rule != 42) // we dont want to overwrite by assigned identificator
+                    if (last_rule != 42 && last_rule != 18 && last_rule != 23) // we dont want to overwrite by assigned identificator or params in called func
                         last_var_ident = makeString(input.token->attr->str);
                     if (last_rule == 3) {
                         /* @SEM1 - Declaring class */
@@ -692,67 +694,63 @@ void execute() {
                         current_class = makeString(input.token->attr->str);
                         var_static_index = 0;
                     }
-                    else if (last_rule == 8) {
+                    if (last_rule == 8) {
                         /* @SEM1 - Declaring static variable */
-                        if (strlen(current_func) == 0) {
-                            if (first_analysis) {
-                                if (strchr(input.token->attr->str, '.') != NULL) {
-                                    #if SEM_DEBUG == 1
-                                        fprintf(stdout, "\t@ User tried to declare static variable %s in class %s WITH DOT!\n", input.token->attr->str, current_class);
-                                    #endif
-                                    error(ERR_SEM_OTHER);
-                                }
-                                char *full_name = cat(cat(current_class, "."), input.token->attr->str);
+                        if (first_analysis && strlen(current_func) == 0) {
+                            if (strchr(input.token->attr->str, '.') != NULL) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
+                                    fprintf(stdout, "\t@ User tried to declare static variable %s in class %s WITH DOT!\n", input.token->attr->str, current_class);
                                 #endif
-                                TsTree class_tree = get_declared_class(current_class);
-                                if (searchInHashTable(class_tree->ts, full_name) != NULL) {
-                                    #if SEM_DEBUG == 1
-                                        fprintf(stdout, "\t@ Static variable %s is already declared!\n", full_name);
-                                    #endif
-                                    error(ERR_SEM_DEF);
-                                }
-                                else {
-                                    #if SEM_DEBUG == 1
-                                        fprintf(stdout, "\t@ Declaring static variable %s of type %s\n", full_name, dec_types);
-                                    #endif
-                                    addToHashTable(class_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_static_index++);
-                                    class_tree->varCount++;
-                                }
+                                error(ERR_SEM_OTHER);
+                            }
+                            char *full_name = cat(cat(current_class, "."), input.token->attr->str);
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
+                            #endif
+                            TsTree class_tree = get_declared_class(current_class);
+                            if (searchInHashTable(class_tree->ts, full_name) != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Static variable %s is already declared!\n", full_name);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring static variable %s of type %s\n", full_name, dec_types);
+                                #endif
+                                addToHashTable(class_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_static_index++);
+                                class_tree->varCount++;
                             }
                         }
                         /* @SEM2 - Declaring normal variable */
-                        else {
-                            if (!first_analysis) {
+                        if (!first_analysis && strlen(current_func) > 0) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
+                            #endif
+                            if (strchr(input.token->attr->str, '.') != NULL) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
+                                fprintf(stdout, "\t@ User tried to declare normal variable %s in function %s WITH DOT!\n", input.token->attr->str, current_func);
                                 #endif
-                                if (strchr(input.token->attr->str, '.') != NULL) {
-                                    #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to declare normal variable %s in function %s WITH DOT!\n", input.token->attr->str, current_func);
-                                    #endif
-                                    error(ERR_SEM_OTHER);
-                                }
-                                TsTree func_tree = get_declared_function(current_func, NULL);
-                                if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
-                                    #if SEM_DEBUG == 1
-                                        fprintf(stdout, "\t@ Normal variable %s in function %s is already declared!\n", input.token->attr->str, current_func);
-                                    #endif
-                                    error(ERR_SEM_DEF);
-                                }
-                                else {
-                                    #if SEM_DEBUG == 1
-                                        fprintf(stdout, "\t@ Declaring normal variable %s of type %s in function %s\n", input.token->attr->str, dec_types, current_func);
-                                    #endif
-                                    addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
-                                    func_tree->varCount++;
-                                }
+                                error(ERR_SEM_OTHER);
+                            }
+                            TsTree func_tree = get_declared_function(current_func, NULL);
+                            if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Normal variable %s in function %s is already declared!\n", input.token->attr->str, current_func);
+                                #endif
+                                error(ERR_SEM_DEF);
+                            }
+                            else {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Declaring normal variable %s of type %s in function %s\n", input.token->attr->str, dec_types, current_func);
+                                #endif
+                                addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                                func_tree->varCount++;
                             }
                         }
                     }
                     /* @SEM2 - Declaring normal variables (parameters) */
-                    else if (last_rule == 14 || last_rule == 15) {
+                    if (last_rule == 14 || last_rule == 15) {
                         if (!first_analysis) {
                             char *full_name = cat(cat(current_class, "."), last_func_ident);
                             if (strchr(input.token->attr->str, '.') != NULL) {
@@ -803,7 +801,7 @@ void execute() {
                         /* Incompatible type */
                         if (!are_type_compatible((left->type)[1], (right->type)[1])) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right->type)[1], last_var_ident, left->type)[1]);
+                                fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", (right->type)[1], last_var_ident, (left->type)[1]);
                             #endif
                             error(ERR_SEM_TYPE);
                         }
@@ -823,12 +821,15 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                         /* Invalid param type */
-                        if (!are_type_compatible(cur_func->type[current_param + 1], (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1])) {
+                        HashTable given_param = get_declared_variable(input.token->attr->str, current_class, current_func);
+                        if (!are_type_compatible(cur_func->type[current_param + 1], (given_param->type)[1])) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
                             #endif
                             error(ERR_SEM_TYPE);
                         }
+                        /* GENERATOR */
+                        add_instruction(I_PUSH, 'N', input.token->attr->str, '-', NULL, '-', NULL);
                     }
                 }
                 else if (input.type == T_FIDENT) {
@@ -859,17 +860,9 @@ void execute() {
                             }
                         }
                     }
-                    /* @SEM2 - Assigning function (currently on func ident) */
+                    /* Calling function, which will be then assigned */
                     if (!first_analysis && last_rule == 43) {
-                        char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
-                        char right = (get_declared_function_ht(input.token->attr->str, current_class)->type)[1];
-                        /* Incompatible (or void) type */
-                        if (!are_type_compatible(left, right)) {
-                            #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_var_ident, left);
-                            #endif
-                            error(ERR_SEM_TYPE);
-                        }
+                        assigning_to_func = true;
                     }
                 }
                 if (input.type == T_EXPRESSION) {
@@ -884,9 +877,8 @@ void execute() {
                         fprintf(stdout, "[SYNT_DEBUG #%d] ~~~~ > Precedence analysis returned type %c < ~~~~\n", first_analysis ? 1 : 2, input.data);
                     #endif
 
-
                     /* @SEM12 - Assigning expression to variable */
-                    if (((first_analysis && strlen(current_func) == 0) || (first_analysis && strlen(current_func) == 0)) && last_rule == 41) {
+                    if (((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) && last_rule == 41) {
                         /* Incompatible types */
                         char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
                         char right = input.data;
@@ -897,7 +889,7 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                         /* GENERATOR */
-                        add_instruction(I_MOV, 'N', last_var_ident, 'N', "temp1", '-', NULL);
+                        add_instruction(I_MOV, 'N', last_var_ident, 'N', "#tmpI1", '-', NULL);
                     }
                     if (!first_analysis) {
                         /* @SEM2 - Check expected boolean type for if statement */
@@ -937,6 +929,8 @@ void execute() {
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
+                            /* GENERATOR */
+                            add_instruction(I_PUSH, 'N', "#tmpI1", '-', NULL, '-', NULL);
                         }
                     }
                 }
@@ -969,26 +963,69 @@ void execute() {
                                 addToHashTable(tsFind(root, current_class)->ts, full_name, cat("F", dec_types), 0, 0);
                             }
                         }
-                        /* @SEM12 - Entering function */
+                        /* @SEM12 - Entering function (after declaring) */
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Entering static function %s\n", full_name);
                         #endif
                         current_func = makeString(full_name);
                         var_normal_index = 0;
+                        /* GENERATOR */
+                        if (!first_analysis) // Important, TsTree was added in first (static) analysis, but instruction is generated in second analysis!
+                            tsFind(root, full_name)->addr = add_instruction(I_LABEL, 'N', full_name, '-', NULL, '-', NULL);
                     }
-                    if (last_rule == 19 || last_rule == 21) {
-                        /* @SEM2 - Function call ends, check for missing parameters */
-                        if (!first_analysis) {
-                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
-                            int needed_params = strlen(cur_func->type) - 2;
-                            if (current_param < needed_params) {
+                    /* @SEM2 - Function call ends */
+                    if (!first_analysis && (last_rule == 19 || last_rule == 21)) {
+                        /* Missing parameters */
+                        HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
+                        int needed_params = strlen(cur_func->type) - 2;
+                        if (current_param < needed_params) {
+                            #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to call function %s with not enough parameters (needed %d)!\n", last_func_ident, needed_params);
+                            #endif
+                            error(ERR_SEM_TYPE);
+                        }
+                        current_param = 0;
+                    }
+                }
+                else if (input.type == T_SC) {
+                    if (!first_analysis && (last_rule == 19 || last_rule == 21)) {
+                        /* @SEM2 - Assigning function to variable */
+                        if (assigning_to_func == true) {
+                            char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
+                            char right = (get_declared_function_ht(last_func_ident, current_class)->type)[1];
+                            /* Incompatible (or void) type */
+                            if (!are_type_compatible(left, right)) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ User tried to call function %s with not enough parameters (needed %d)!\n", last_func_ident, needed_params);
+                                fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_var_ident, left);
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
-                            current_param = 0;
                         }
+
+                        /* GENERATOR */
+                        if (strcmp(last_func_ident, "ifj16.readInt") == 0)
+                            add_instruction(I_IREAD, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.readDouble") == 0)
+                            add_instruction(I_DREAD, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.readString") == 0)
+                            add_instruction(I_SREAD, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.print") == 0)
+                            add_instruction(I_WRITE, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.length") == 0)
+                            add_instruction(I_LEN, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.substr") == 0)
+                            add_instruction(I_SUBS, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.compare") == 0)
+                            add_instruction(I_CMP, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.find") == 0)
+                            add_instruction(I_FIND, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.sort") == 0)
+                            add_instruction(I_SORT, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else
+                            add_instruction(I_CALL, 'N', last_func_ident, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+
+                        if (assigning_to_func == true)
+                            assigning_to_func = false;
                     }
                 }
                 else if (input.type == T_RCB) {
@@ -1281,7 +1318,7 @@ bool are_type_compatible(char left, char right) {
 ///// GENERATOR /////
 /////////////////////
 
-void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
+void *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
 
     Operand ops[3];
     Operand *ops_p[3];
@@ -1291,7 +1328,7 @@ void add_instruction(Instructions instr, char type1, char *value1, char type2, c
     values[0] = value1; values[1] = value2; values[2] = value3;
     
     #if GEN_DEBUG == 1
-        fprintf(stdout, "** [ GENE ] ** [ %s ] **", INSTR_STRING[instr]);
+        fprintf(stdout, "** [ GEN ] ** [ %s ] **", INSTR_STRING[instr]);
     #endif
 
     for (int i = 0; i < 3; i++) {
@@ -1340,6 +1377,11 @@ void add_instruction(Instructions instr, char type1, char *value1, char type2, c
         fprintf(stdout, "\n");
     #endif
 
-    instrListAddInstr(&instr_list, (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] });
-
+    tInstr *result = (tInstr *) malloc(sizeof(tInstr));
+    result->instr = instr;
+    result->addr1 = ops_p[0];
+    result->addr2 = ops_p[1];
+    result->addr3 = ops_p[2];
+    instrListAddInstr(&instr_list, *result);
+    return (void *) result;
 }

@@ -61,40 +61,28 @@ Psymbol getNextPrecSymbol() {
     if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR) {
 
-        /* @SEM2 - Check for variables declaration (in expr) inside functions */
-        if (!first_analysis && strlen(current_func) > 0) {
+        if ((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)) {
+            /* @SEM12 - Check for variables declaration (in expr) */
             if (get_declared_variable(token->attr->str, current_class, current_func) == NULL) {
                 #if SEM_DEBUG == 1
-                    fprintf(stdout, "\t@ User tried to use undeclared variable (in expr) %s in function %s!\n", token->attr->str, current_func);
+                    fprintf(stdout, "\t@ User tried to use undeclared variable %s in expression!\n", token->attr->str);
                 #endif
                 error(ERR_SEM_DEF);
             }
-        }
-        /* @SEM1 - Check for variables declaration (in expr) in static context */
-        if (first_analysis && strlen(current_func) == 0) {
-            if (get_declared_variable(token->attr->str, current_class, NULL) == NULL) {
-                #if SEM_DEBUG == 1
-                    fprintf(stdout, "\t@ User tried to use undeclared variable (in expr) %s in static context of class %s!\n", token->attr->str, current_class);
-                #endif
-                error(ERR_SEM_DEF);
-            }
-        }
-
-        /* @SEM2 - Get data type from identificator */
-        if (!first_analysis) {
+            /* @SEM12 - Get data type from identificator */
             symbol.data = get_declared_variable(token->attr->str, current_class, current_func)->type[1];
         }
+
+
     }
 
-    /* @SEM2 - Get data type from value */
-    if (!first_analysis) {
-        if (token->type == RETEZEC)
-            symbol.data = 'S';
-        else if (token->type == CELOCISELNY_LITERAL || token->type == CELOCISELNY_LITERAL_EXPONENT)
-            symbol.data = 'I';
-        else if (token->type == DESETINNY_LITERAL || token->type == DESETINNY_LITERAL_EXPONENT)
-            symbol.data = 'D';
-    }
+    /* @SEM12 - Get data type from value */
+    if (token->type == RETEZEC)
+        symbol.data = 'S';
+    else if (token->type == CELOCISELNY_LITERAL || token->type == CELOCISELNY_LITERAL_EXPONENT)
+        symbol.data = 'I';
+    else if (token->type == DESETINNY_LITERAL || token->type == DESETINNY_LITERAL_EXPONENT)
+        symbol.data = 'D';
 
     if (token->type == IDENTIFIKATOR ||
         token->type == PLNE_KVALIFIKOVANY_IDENTIFIKATOR ||
@@ -151,6 +139,10 @@ Psymbol getNextPrecSymbol() {
         insert_cqueue_token(token, &token_archive);
     }
 
+    #if PREC_DEBUG == 1
+        if (symbol.type == PS_VALUE)
+            fprintf(stdout, "  [PREC_DEBUG]   ## getNextPrecSymbol PS_VALUE -> Token: '%s', Result type: %c\n", getTokenName(token->type), symbol.data);
+    #endif
     return symbol;
 }
 
@@ -248,6 +240,9 @@ char prec_analysis(Ttoken *token) {
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_ESYS) { // E)>
                     char result_type = top.content.psymbol.data; // Save type of E
+                    #if PREC_DEBUG == 1
+                        fprintf(stdout, "  [PREC_DEBUG] [ (ESYS) -> ESYS ] %c -> %c\n", top.content.psymbol.data, result_type);
+                    #endif
                     cStack_pop(&stack);
                     top = cStack_top(&stack);
                     if (top.content.psymbol.type == PS_LRB) { // (E)>
@@ -267,6 +262,9 @@ char prec_analysis(Ttoken *token) {
             // i -> E
             else if (top.content.psymbol.type == PS_VALUE) { // i>
                 char result_type = top.content.psymbol.data; // Save type of i
+                #if PREC_DEBUG == 1
+                    fprintf(stdout, "  [PREC_DEBUG] [ PSYM -> ESYS ] %c -> %c\n", top.content.psymbol.data, result_type);
+                #endif
                 cStack_pop(&stack);
                 top = cStack_top(&stack);
                 if (top.content.psymbol.type == PS_LSYS) { // <i>
@@ -301,17 +299,17 @@ char prec_analysis(Ttoken *token) {
                         if (top.content.psymbol.type == PS_LSYS) { // <E op E>
                             cStack_pop(&stack);
                             top = cStack_top(&stack);
-
                             char result_type = get_result_type(first, second, op);
+                            #if PREC_DEBUG == 1
+                                fprintf(stdout, "  [PREC_DEBUG] [ ESYS op ESYS -> ESYS ] %c %s %c -> %c\n", first, PType_string[op], second, result_type);
+                            #endif
 
-                            /* @SEM2 - Check for operands compatibility */
-                            if (!first_analysis) {
-                                if (result_type == 'E') {
-                                    #if SEM_DEBUG == 1
-                                        fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first, second, PType_string[op]);
-                                    #endif
-                                    error(ERR_SEM_TYPE);
-                                }
+                            /* @SEM12 - Check for operands compatibility */
+                            if (result_type == 'E' && (((first_analysis && strlen(current_func) == 0) || (!first_analysis && strlen(current_func) > 0)))) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ Error in expression! Operands %c and %c are not compatible with operator %s\n", first, second, PType_string[op]);
+                                #endif
+                                error(ERR_SEM_TYPE);
                             }
 
                             push_cstack_psymbol(PS_ESYS, &stack, result_type); // <E op E> -> E

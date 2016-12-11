@@ -26,6 +26,9 @@
 	INS(I_INC) \
 	INS(I_DEC) \
 	INS(I_READ) \
+    INS(I_IREAD) \
+    INS(I_DREAD) \
+    INS(I_SREAD) \
 	INS(I_WRITE) \
 	INS(I_LEN)\
 	INS(I_SUBS)\

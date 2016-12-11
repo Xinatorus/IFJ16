@@ -1,5 +1,4 @@
 /* ========================================================================== */
-/* Jmena:   .......                                                           */
 /* Soubor:  lex_anal.h                                                        */
 /* Faze:    Lexikalni analyzator                                              */
 /* Datum:   24.10.2016                                                        */
@@ -44,8 +43,6 @@ typedef enum {
   PRIRAZENI,
   STREDNIK,
   CARKA,
-  
-  ESC_SEKV,
   
   // zavorky
   LEVA_KULATA_ZAVORKA,
