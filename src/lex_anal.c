@@ -534,6 +534,7 @@ Ttoken* getNextToken()
 				{
 					token->type = RETEZEC;
 					//return token;
+					break;
 				}
 				// jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
