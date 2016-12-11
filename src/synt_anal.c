@@ -1000,14 +1000,32 @@ void execute() {
                                 #endif
                                 error(ERR_SEM_TYPE);
                             }
+                        }
+
+                        /* GENERATOR */
+                        if (strcmp(last_func_ident, "ifj16.readInt") == 0)
+                            add_instruction(I_IREAD, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.readDouble") == 0)
+                            add_instruction(I_DREAD, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.readString") == 0)
+                            add_instruction(I_SREAD, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.print") == 0)
+                            add_instruction(I_WRITE, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.length") == 0)
+                            add_instruction(I_LEN, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.substr") == 0)
+                            add_instruction(I_SUBS, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.compare") == 0)
+                            add_instruction(I_CMP, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.find") == 0)
+                            add_instruction(I_FIND, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else if (strcmp(last_func_ident, "ifj16.sort") == 0)
+                            add_instruction(I_SORT, '-', NULL, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+                        else
+                            add_instruction(I_CALL, 'N', last_func_ident, '-', NULL, assigning_to_func ? 'N' : '-', assigning_to_func ? last_var_ident : NULL);
+
+                        if (assigning_to_func == true)
                             assigning_to_func = false;
-                            /* GENERATOR (call function with assign) */
-                            add_instruction(I_CALL, 'N', last_func_ident, '-', NULL, 'N', last_var_ident);
-                        }
-                        else {
-                            /* GENERATOR (just calling function) */
-                            add_instruction(I_CALL, 'N', last_func_ident, '-', NULL, '-', NULL);
-                        }
                     }
                 }
                 else if (input.type == T_RCB) {
