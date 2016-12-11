@@ -15,6 +15,7 @@
 
 #include <stdbool.h>
 #include <string.h>
+#include <limits.h>
 #include "collections.h"
 #include "error.h"
 #include "tstree.h"
