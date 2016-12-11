@@ -4,8 +4,8 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\framework.h"
-#include "headers\testing.h"
+#include "framework.h"
+#include "testing.h"
 
 //vraci odkaz na promenou
 Data *findInFrame(char *name, StackFrame *sf) {

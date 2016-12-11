@@ -4,8 +4,8 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\ial.h"
-#include "headers\testing.h"
+#include "ial.h"
+#include "testing.h"
 
 int	findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 

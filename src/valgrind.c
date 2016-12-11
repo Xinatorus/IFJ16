@@ -4,7 +4,7 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\valgrind.h"
+#include "valgrind.h"
 
 void valgrind() {
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);

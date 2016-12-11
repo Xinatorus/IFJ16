@@ -4,8 +4,8 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\tstree.h"
-#include "headers\testing.h"
+#include "tstree.h"
+#include "testing.h"
 
 void tsTreeInit(TsTree *root) {
 	*root = NULL;

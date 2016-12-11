@@ -4,11 +4,11 @@
 *	Autori:		xsztef02 xsipos03 xszucs01 xstolj00
 *				Patrik Sztefek, Marek Sipos, Tomas Szucz, Jakub Stol
 */
-#include "headers\testing.h"
-#include "headers\interpret.h"
-#include "headers\instructions.h"
-#include "headers\valgrind.h"
-#include "headers\tstree.h"
+#include "testing.h"
+#include "interpret.h"
+#include "instructions.h"
+#include "valgrind.h"
+#include "tstree.h"
 
 
 void hashWriteOut(HashTable hashTable) {
