@@ -486,21 +486,58 @@ Ttoken* getNextToken()
 				// retazec pokracuje
 				if (c == '\\')
 				{
-					addChar(token->attr, c);
-					token->type = RETEZEC;
+					//addChar(token->attr, c);
+					if (c == '\"')
+					{
+						addChar(token->attr, c);
+					}
+					else
+					{
+						if (c == 'n')
+						{
+							addChar(token->attr, c);
+						}
+						else
+						{
+							
+							if (c == 't')
+							{
+								addChar(token->attr, c);
+							}
+							else
+							{
+								if (c == 't')
+								{
+									addChar(token->attr, c);
+								}
+								else
+								{
+									if (c == '\\')
+									{
+										addChar(token->attr, c);
+									}
+									else
+									{
+										// octal
+										printf("octal");
+									}
+								}
+							}
+						}	
+					}
 				}
-				else if (c == 34)
-				{
-					token->type = RETEZEC;
-					return token;
-				}
+				
 				else if ((c > 31) && (c != 34))
 				{
 					addChar(token->attr, c);
 					token->type = RETEZEC;
 				}
 				// koniec retazca
-				
+				else if (c == 34)
+				{
+					token->type = RETEZEC;
+					return token;
+				}
 				// jiny nepovoleny znak vrati chybu (nebo neukonceni retezce)
 				else
 				{
