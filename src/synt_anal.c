@@ -1,6 +1,7 @@
 
 #include "headers\synt_anal.h"
 
+tInstrList instr_list; // Main instruction list
 cQueue token_archive; // Queue to store pre-used tokens
 cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 Ttoken *token_list = NULL; // Token list, used for second pass
@@ -12,11 +13,12 @@ char *current_func; // Actual function
 TsTree root; // Main symbol table leaf
 int last_rule; // Last applied rule
 char *dec_types; // Actual types (var type of return type of func + params)
-char *dec_id; // Actual identificator (because insert itself happens AFTER ident token)
+char *last_func_ident; // Actual function identificator (for declaration & param checks in calls)
 int var_static_index; // Order of saved static var in class symbol table
 int var_normal_index; // Order of saved normal var in function symbol table
 int block_depth; // Actual code depth (used to determine static context)
-char *last_ident; // Used to hold variable name which is being assigned to
+char *last_var_ident; // Used to hold variable name which is being assigned to
+int current_param; // Current parameter number of called function
 
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
@@ -84,7 +86,7 @@ Ttoken *load_next_token() {
 
 
     #if TOKEN_DEBUG == 1
-        fprintf(stdout, "    <<< TOKEN: %s DATA: %s >>>\n", getTokenName(token->type), token->attr->str);
+        fprintf(stdout, "    <<< TOKEN: '%s' DATA: '%s' >>>\n", getTokenName(token->type), token->attr->str);
 
         // Print entire token_list
         /*
@@ -553,7 +555,6 @@ void execute() {
     #if SYNT_DEBUG == 1
     fprintf(stdout, "---------------------------------\n");
     if (first_analysis) {
-        token_list = NULL;
         fprintf(stdout, "[SYNT_DEBUG #%d] FIRST Syntax analysis started\n", first_analysis ? 1 : 2);
     }
     else
@@ -565,13 +566,18 @@ void execute() {
     current_class = makeString("");
     current_func = makeString("");
     dec_types = makeString("");
-    dec_id = makeString("");
+    last_func_ident = makeString("");
     cStack_init(&stack, 50);
     cQueue_init(&token_archive);
     block_depth = 0;
-    last_ident = NULL;
+    last_var_ident = makeString("");
+    current_param = 0;
 
     if (first_analysis) {
+        /* Inits only to be done once */
+        token_list = NULL;
+        instrListInit(&instr_list);
+
         /* @SEM - Create symbol table for default if16 class */
         #if SEM_DEBUG == 1
             fprintf(stdout, "\t@ Declaring default ifj16 class\n");
@@ -654,7 +660,7 @@ void execute() {
                     /* @SEM2 - Save identificator (to know where to assign later) */
                     if (!first_analysis) {
                         if (last_rule != 42) // we dont want to overwrite by assigned identificator
-                            last_ident = makeString(input.token->attr->str);
+                            last_var_ident = makeString(input.token->attr->str);
                     }
                     if (last_rule == 3) {
                         /* @SEM1 - Declaring class */
@@ -662,6 +668,12 @@ void execute() {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring class %s\n", input.token->attr->str);
                             #endif
+                            if (strchr(input.token->attr->str, '.') != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to declare class %s WITH DOT!\n", input.token->attr->str);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
                             if (get_declared_class(input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Class %s is already declared!\n", input.token->attr->str);
@@ -686,6 +698,12 @@ void execute() {
                         /* @SEM1 - Declaring static variable */
                         if (strlen(current_func) == 0) {
                             if (first_analysis) {
+                                if (strchr(input.token->attr->str, '.') != NULL) {
+                                    #if SEM_DEBUG == 1
+                                        fprintf(stdout, "\t@ User tried to declare static variable %s in class %s WITH DOT!\n", input.token->attr->str, current_class);
+                                    #endif
+                                    error(ERR_SEM_OTHER);
+                                }
                                 char *full_name = cat(cat(current_class, "."), input.token->attr->str);
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User is declaring static variable %s\n", full_name);
@@ -701,7 +719,8 @@ void execute() {
                                     #if SEM_DEBUG == 1
                                         fprintf(stdout, "\t@ Declaring static variable %s of type %s\n", full_name, dec_types);
                                     #endif
-                                    addToHashTable(class_tree->ts, full_name, cat("V", dec_types), 0, var_static_index++);
+                                    addToHashTable(class_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_static_index++);
+                                    class_tree->varCount++;
                                 }
                             }
                         }
@@ -711,6 +730,12 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User is declaring normal variable %s in function %s\n", input.token->attr->str, current_func);
                                 #endif
+                                if (strchr(input.token->attr->str, '.') != NULL) {
+                                    #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to declare normal variable %s in function %s WITH DOT!\n", input.token->attr->str, current_func);
+                                    #endif
+                                    error(ERR_SEM_OTHER);
+                                }
                                 TsTree func_tree = get_declared_function(current_func, NULL);
                                 if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
                                     #if SEM_DEBUG == 1
@@ -723,6 +748,7 @@ void execute() {
                                         fprintf(stdout, "\t@ Declaring normal variable %s of type %s in function %s\n", input.token->attr->str, dec_types, current_func);
                                     #endif
                                     addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                                    func_tree->varCount++;
                                 }
                             }
                         }
@@ -730,7 +756,13 @@ void execute() {
                     /* @SEM2 - Declaring normal variables (parameters) */
                     else if (last_rule == 14 || last_rule == 15) {
                         if (!first_analysis) {
-                            char *full_name = cat(cat(current_class, "."), dec_id);
+                            char *full_name = cat(cat(current_class, "."), last_func_ident);
+                            if (strchr(input.token->attr->str, '.') != NULL) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to declare normal variable (parameter) %s of function %s WITH DOT!\n", input.token->attr->str, full_name);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring normal variable (parameter) %s of function %s\n", input.token->attr->str, full_name);
                             #endif
@@ -746,6 +778,7 @@ void execute() {
                                     fprintf(stdout, "\t@ Declaring normal variable (parameter) %s of type %s in function %s\n", input.token->attr->str, dec_types, full_name);
                                 #endif
                                 addToHashTable(func_tree->ts, input.token->attr->str, cat("V", dec_types), 0, var_normal_index++);
+                                func_tree->varCount++;
                             }
                         }
                     }
@@ -768,26 +801,49 @@ void execute() {
                                 error(ERR_SEM_DEF);
                             }
                         }
-                        /* @SEM2 - Assigning variable with incompatible type */
+                        /* @SEM2 - Checking function parameters when calling function */
+                        if (!first_analysis && (last_rule == 18 || last_rule == 23)) {
+                            current_param++;
+                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
+                            int needed_params = strlen(cur_func->type) - 2;
+                            /* Too much parameters */
+                            if (current_param > needed_params) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with too many parameters (needed %d)!\n", last_func_ident, needed_params);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                            /* Invalid param type */
+                            if (!are_type_compatible(cur_func->type[current_param + 1], (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1])) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                        }
+                        /* @SEM2 - Assigning variable */
                         if (!first_analysis && last_rule == 42) {
-                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
-                            char right = get_declared_variable(input.token->attr->str, current_class, current_func)->type[1];
+                            char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
+                            char right = (get_declared_variable(input.token->attr->str, current_class, current_func)->type)[1];
+                            /* Incompatible type */
                             if (!are_type_compatible(left, right)) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                    fprintf(stdout, "\t@ Assigning invalid right value (var) of type %c into var %s of type %c!\n", right, last_var_ident, left);
                                 #endif
                                 error(ERR_SEM_DEF);
                             }
+                            /* GENERATOR */
+                            add_instruction(I_MOV, 'N', last_var_ident, 'N', input.token->attr->str, '-', NULL);
                         }
                     }
                 }
                 else if (input.type == T_FIDENT) {
                     /* @SEM12 - Save function identificator for later use */
-                    if (last_rule == 11) {
+                    if (last_rule == 11 || last_rule == 30 || last_rule == 43) {
                         #if SEM_DEBUG == 1
                             fprintf(stdout, "\t@ Saving function identificator %s for later use\n", input.token->attr->str);
                         #endif
-                        dec_id = makeString(input.token->attr->str);
+                        last_func_ident = makeString(input.token->attr->str);
                     }
                     /* @SEM1 - Using function call outside function */
                     if (last_rule == 43) {
@@ -811,11 +867,11 @@ void execute() {
                     }
                     /* @SEM2 - Assigning function with incompatible type (or void type) */
                     if (!first_analysis && last_rule == 43) {
-                        char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
-                        char right = get_declared_function(input.token->attr->str, current_class);
+                        char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
+                        char right = (get_declared_function_ht(input.token->attr->str, current_class)->type)[1];
                         if (!are_type_compatible(left, right)) {
                             #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                fprintf(stdout, "\t@ Assigning invalid right value (func) of type %c into var %s of type %c!\n", right, last_var_ident, left);
                             #endif
                             error(ERR_SEM_DEF);
                         }
@@ -823,12 +879,18 @@ void execute() {
                 }
                 else if (input.type == T_RRB) {
                     if (last_rule == 16 || last_rule == 13) {
-                        char *full_name = cat(cat(current_class, "."), dec_id);
+                        char *full_name = cat(cat(current_class, "."), last_func_ident);
                         /* @SEM1 - Declaring function */
                         if (first_analysis) {
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring static function %s\n", full_name);
                             #endif
+                            if (strchr(last_func_ident, '.') != NULL) {
+                                #if SEM_DEBUG == 1
+                                fprintf(stdout, "\t@ User tried to declare static function %s in class %s WITH DOT!\n", last_func_ident, current_class);
+                                #endif
+                                error(ERR_SEM_OTHER);
+                            }
                             if (get_declared_function(full_name, NULL) != NULL) {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ Static function %s is already declared!\n", full_name);
@@ -841,7 +903,7 @@ void execute() {
                                 #endif
                                 HashTable ht = createHashTable(HASH_TABLE_SIZE);
                                 tsAdd(&root, full_name, 0, NULL, ht);
-                                addToHashTable(ht, full_name, cat("F", dec_types), 0, 0);
+                                addToHashTable(tsFind(root, current_class)->ts, full_name, cat("F", dec_types), 0, 0);
                             }
                         }
                         /* @SEM12 - Entering function */
@@ -850,6 +912,21 @@ void execute() {
                         #endif
                         current_func = makeString(full_name);
                         var_normal_index = 0;
+                    }
+                    if (last_rule == 19 || last_rule == 21) {
+                        /* @SEM2 - Function call ends, check for missing parameters*/
+                        if (!first_analysis) {
+                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
+                            int needed_params = strlen(cur_func->type) - 2;
+                            if (current_param < needed_params) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with not enough parameters (needed %d)!\n", last_func_ident, needed_params);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                            current_param = 0;
+                        }
+                        
                     }
                 }
                 else if (input.type == T_RCB) {
@@ -964,13 +1041,33 @@ void execute() {
                         }
                         /* @SEM2 - Assigning expression with incompatible type */
                         if (last_rule == 41) {
-                            char left = get_declared_variable(last_ident, current_class, current_func)->type[1];
+                            char left = (get_declared_variable(last_var_ident, current_class, current_func)->type)[1];
                             char right = input.data;
                             if (!are_type_compatible(left, right)) {
                                 #if SEM_DEBUG == 1
-                                    fprintf(stdout, "\t@ Assigning invalid right value (expr) of type %c into var %s of type %c!\n", right, last_ident, left);
+                                    fprintf(stdout, "\t@ Assigning invalid right value (expr) of type %c into var %s of type %c!\n", right, last_var_ident, left);
                                 #endif
                                 error(ERR_SEM_DEF);
+                            }
+                        }
+                        /* @SEM2 - Checking function parameters when calling function */
+                        if (last_rule == 17 || last_rule == 22) {
+                            current_param++;
+                            HashTable cur_func = get_declared_function_ht(last_func_ident, current_class);
+                            int needed_params = strlen(cur_func->type) - 2;
+                            /* Too much parameters */
+                            if (current_param > needed_params) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with too many parameters (needed %d)!\n", last_func_ident, needed_params);
+                                #endif
+                                error(ERR_SEM_TYPE);
+                            }
+                            /* Invalid param type */
+                            if (!are_type_compatible(cur_func->type[current_param + 1], input.data)) {
+                                #if SEM_DEBUG == 1
+                                    fprintf(stdout, "\t@ User tried to call function %s with invalid %d. parameter!\n", last_func_ident, current_param);
+                                #endif
+                                error(ERR_SEM_TYPE);
                             }
                         }
                     }
@@ -1022,30 +1119,30 @@ void execute() {
     if (first_analysis) {
         /* @SEM1 - Check for class main & function run presence & check correct types */
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether class main exists\n");
+            fprintf(stdout, "\t@ Checking whether class Main exists\n");
         #endif
-        if (get_declared_class("main") == NULL) {
+        TsTree t_main = get_declared_class("Main");
+        if (t_main == NULL) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Class main not declared!\n");
+                fprintf(stdout, "\t@ Class Main not declared!\n");
             #endif
             error(3);
         }
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether function main.run exists\n");
+            fprintf(stdout, "\t@ Checking whether function Main.run exists\n");
         #endif
-        TsTree main_run = get_declared_function("main.run", NULL);
-        if (main_run == NULL) {
+        if (get_declared_function("Main.run", NULL) == NULL) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Function main.run not declared!\n");
+                fprintf(stdout, "\t@ Function Main.run not declared!\n");
             #endif
             error(3);
         }
         #if SEM_DEBUG == 1
-            fprintf(stdout, "\t@ Checking whether function main.run is void without params\n");
+            fprintf(stdout, "\t@ Checking whether function Main.run is void without params\n");
         #endif
-        if (strcmp(searchInHashTable(main_run->ts, "main.run")->type, "FV") != 0) {
+        if (strcmp(searchInHashTable(t_main->ts, "Main.run")->type, "FV") != 0) {
             #if SEM_DEBUG == 1
-                fprintf(stdout, "\t@ Function main.run has incorrect types!\n");
+                fprintf(stdout, "\t@ Function Main.run has incorrect types!\n");
             #endif
             error(3);
         }
@@ -1054,6 +1151,10 @@ void execute() {
         execute();
     }
 }
+
+////////////////////
+///// SEMANTIC /////
+////////////////////
 
 TsTree get_declared_class(char *name) {
     return tsFind(root, name);
@@ -1070,13 +1171,24 @@ TsTree get_declared_function(char *name, char *p_class) {
     }
 }
 
+HashTable get_declared_function_ht(char *name, char *p_class) {
+    /* Full identifier - definitely static */
+    if (strchr(name, '.') != NULL) {
+        return searchInHashTable(tsFind(root, explodeFullIdentifier(name, true))->ts, name);
+    }
+    /* Short identifier - look into class */
+    else {
+        return searchInHashTable(tsFind(root, p_class)->ts, cat(cat(p_class, "."), name));
+    }
+}
+
 HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
     TsTree tree;
     /* Full identifier - definitely static */
     if (strchr(name, '.') != NULL) {
         tree = tsFind(root, explodeFullIdentifier(name, true));
         if (tree != NULL)
-            return searchInHashTable(tree->ts, name);
+            return searchInHashTable(tree->ts, explodeFullIdentifier(name, false));
         else
             return NULL;
     }
@@ -1098,7 +1210,7 @@ HashTable get_declared_variable(char *name, char *p_class, char *p_function) {
         }
         /* Search in class */
         if (returned == NULL) {
-            returned = searchInHashTable(tsFind(root, p_class)->ts, cat(cat(p_class, "."), name));
+            returned = searchInHashTable(tsFind(root, p_class)->ts, name);
         }
 
         return returned;
@@ -1160,4 +1272,47 @@ bool are_type_compatible(char left, char right) {
     #endif
 
     return result;
+}
+
+/////////////////////
+///// GENERATOR /////
+/////////////////////
+
+void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
+
+    Operand ops[3];
+    Operand *ops_p[3];
+    char types[3];
+    char *values[3];
+    types[0] = type1; types[1] = type2; types[2] = type3;
+    values[0] = value1; values[1] = value2; values[2] = value3;
+    
+    for (int i = 0; i < 3; i++) {
+        if (types[i] == 'I') {
+            ops[i].type = c_int;
+            ops[i].value.v_int = (int)strtol(values[i], (char **)NULL, 10);
+            ops_p[i] = &ops[i];
+        }
+        else if (types[i] == 'D') {
+            ops[i].type = c_double;
+            ops[i].value.v_double = (int)strtod(values[i], (char **)NULL);
+            ops_p[i] = &ops[i];
+        }
+        else if (types[i] == 'S') {
+            ops[i].type = c_string;
+            ops[i].value.v_string = makeString(values[i]);
+            ops_p[i] = &ops[i];
+        }
+        else if (types[i] == 'N' || types[i] == 'V') { // V just to be safe
+            ops[i].type = name;
+            ops[i].value.v_string = makeString(values[i]);
+            ops_p[i] = &ops[i];
+        }
+        else {
+            ops_p[i] = NULL;
+        }
+    }
+
+    instrListAddInstr(&instr_list, (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] });
+
 }

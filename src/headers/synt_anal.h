@@ -5,6 +5,7 @@
 #define SYNT_DEBUG 1    // Debug messages for syntax analysis
 #define PREC_DEBUG 1    // Debug messages for precedence analysis
 #define SEM_DEBUG 1     // Debug messsges for semantic analysis
+#define GEN_DEBUG 1     // Debug messages for generator
 
 #include <stdbool.h>
 #include <string.h>
@@ -14,7 +15,9 @@
 #include "ial.h"
 #include "strings.h"
 #include "testWriteOut.h"
+#include "instructions.h"
 
+extern tInstrList instr_list; // Main instruction List
 extern cQueue token_archive; // Queue to store pre-used tokens
 extern cStack stack; // Main stack for syntax analysis to hold terminals, non-terminals & prec. symbols
 extern Ttoken *token_list; // Token list, used for second pass
@@ -58,11 +61,19 @@ Ttoken *load_next_token();
 /* Run syntax analysis */
 void execute();
 
+
+////////////////////
+///// SEMANTIC /////
+////////////////////
+
 /* Gets declared class */
 TsTree get_declared_class(char *name);
 /* Gets declared function
    Name can be full (p_class ignored) or short (p_class needed) */
 TsTree get_declared_function(char *name, char *p_class);
+/* Gets declared function (HashTable version)
+   Name can be full (p_class ignored) or short (p_class needed) */
+HashTable get_declared_function_ht(char *name, char *p_class);
 /* Gets declared variable
    Name can be full (args ignored) or short (class or both needed)
    In case of short name, function (short or long, if provided) is checked before class */
@@ -75,5 +86,12 @@ char get_result_type(char first, char second, PType op);
 
 /* Checks, whether types of left & right sides are compatible */
 bool are_type_compatible(char left, char right);
+
+/////////////////////
+///// GENERATOR /////
+/////////////////////
+
+/* Creates and adds instruction on instruction tape (list) */
+void add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
 
 #endif  // include guard

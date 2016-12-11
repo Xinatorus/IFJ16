@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define PATRIK_TO_NECHCE 1
-#define LEX_TEST 0        //Lexical analysis test
+#define PATRIK_TO_NECHCE 0
+#define LEX_TEST 1        //Lexical analysis test
 #define VALGRIND_TEST 0   //Valgrind test
 #define OUTPUT_TIME 1     //Output execution time 
 
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	    int num = 0;
 	    do {
 		    token = getNextToken();
-		    fprintf(stdout, "#%-5d Typ: %-11s Radek: %-3d Data: %-12s Next: %p\n", num, getTokenName(token->type), token->cisloRiadku, token->attr->str, token->next);
+		    fprintf(stdout, "#%-5d Typ: %-11s Radek: %-3d Data: %-18s\n", num, getTokenName(token->type), token->cisloRiadku, token->attr->str);
 		    num++;
 	    } while (token != NULL && token->type != KONEC_SOUBORU && token->type != LEXIKALNI_CHYBA);
     #elif VALGRIND_TEST == 1
