@@ -486,22 +486,36 @@ Ttoken* getNextToken()
 				// retazec pokracuje
 				if ((c > 31) && (c != 34))
 				{
-					if (c == '\\')
-					{
+					addChar(token->attr, c);
+					token->type = RETEZEC;
+				}
+				else if (c == '\\')
+				{
 						if (c == '\\')
+						{
+							if (c == '\\')
+							{
+								addChar(token->attr, c);
+								token->type = RETEZEC;
+							}
+							else
+							{
+								fseek(subor, -1, SEEK_CUR);
+								token->type = LEXIKALNI_CHYBA;
+							}
+						}
+						else if (c == '"')
 						{
 							addChar(token->attr, c);
 							token->type = RETEZEC;
 						}
-					}
-					else if (c == '"')
-					{
-						addChar(token->attr, c);
-						token->type = RETEZEC;
-					}
-					addChar(token->attr, c);
-					token->type = RETEZEC;
+						else
+						{
+							fseek(subor, -1, SEEK_CUR);
+							token->type = LEXIKALNI_CHYBA;
+						}
 				}
+					
 				
 				// koniec retazca
 				else if (c == 34)
