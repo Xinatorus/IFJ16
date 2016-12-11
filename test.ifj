@@ -2,7 +2,8 @@
 class Main
 {
     static void run() {
-        int a = Main.lol(a, "lol");
+        // ifj16.print(" \t \\ \n \" ");
+        String a = "lol";
     }
 
     static int lol(int a, String b) {
