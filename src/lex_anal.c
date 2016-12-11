@@ -522,7 +522,6 @@ Ttoken* getNextToken()
 							}
 						}
 					}
-				   continue;
 				}
 
 				else if ((c > 31) && (c != 34))
