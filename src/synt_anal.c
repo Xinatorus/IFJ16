@@ -31,6 +31,13 @@ char *last_var_ident; // Used to hold variable name which is being assigned to
 int current_param; // Current parameter number of called function
 bool assigning_to_func; // Used because we cannot determine by grammar if func is called AND assigned somewhere too
 
+/* Label variables */
+int lbl_else;
+int lbl_endif;
+int lbl_while;
+int lbl_endwhile;
+
+
 int synt_rules[23][20] = {
 //   IDENT  FIDENT CLASS  STATIC RETURN  IF     ELSE  WHILE   VOID  TYPE   EXPR    LCB    RCB    LRB    RRB    SC    COMMA  ASSIGN  EOF  UNKNOWN
     { -1  ,  -1  ,   1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,  -1  ,   2  ,  -1 } , // NT_PROGRAM
@@ -594,6 +601,10 @@ void execute() {
         /* Inits only to be done once */
         token_list = NULL;
         instrListInit(&instr_list);
+        lbl_else = 0;
+        lbl_endif = 0;
+        lbl_while = 0;
+        lbl_endwhile = 0;
 
         /* @SEM - Create symbol table for default if16 class */
         #if SEM_DEBUG == 1
@@ -687,7 +698,7 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User tried to declare class %s WITH DOT!\n", input.token->attr->str);
                                 #endif
-                                error(ERR_SEM_OTHER);
+                                error(ERR_SYNT);
                             }
                             if (get_declared_class(input.token->attr->str) != NULL) {
                                 #if SEM_DEBUG == 1
@@ -716,7 +727,7 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User tried to declare static variable %s in class %s WITH DOT!\n", input.token->attr->str, current_class);
                                 #endif
-                                error(ERR_SEM_OTHER);
+                                error(ERR_SYNT);
                             }
                             char *full_name = cat(cat(current_class, "."), input.token->attr->str);
                             #if SEM_DEBUG == 1
@@ -744,9 +755,9 @@ void execute() {
                             #endif
                             if (strchr(input.token->attr->str, '.') != NULL) {
                                 #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ User tried to declare normal variable %s in function %s WITH DOT!\n", input.token->attr->str, current_func);
+                                    fprintf(stdout, "\t@ User tried to declare normal variable %s in function %s WITH DOT!\n", input.token->attr->str, current_func);
                                 #endif
-                                error(ERR_SEM_OTHER);
+                                error(ERR_SYNT);
                             }
                             TsTree func_tree = get_declared_function(current_func, NULL);
                             if (searchInHashTable(func_tree->ts, input.token->attr->str) != NULL) {
@@ -772,7 +783,7 @@ void execute() {
                                 #if SEM_DEBUG == 1
                                     fprintf(stdout, "\t@ User tried to declare normal variable (parameter) %s of function %s WITH DOT!\n", input.token->attr->str, full_name);
                                 #endif
-                                error(ERR_SEM_OTHER);
+                                error(ERR_SYNT);
                             }
                             #if SEM_DEBUG == 1
                                 fprintf(stdout, "\t@ User is declaring normal variable (parameter) %s of function %s\n", input.token->attr->str, full_name);
@@ -959,9 +970,9 @@ void execute() {
                             #endif
                             if (strchr(last_func_ident, '.') != NULL) {
                                 #if SEM_DEBUG == 1
-                                fprintf(stdout, "\t@ User tried to declare static function %s in class %s WITH DOT!\n", last_func_ident, current_class);
+                                    fprintf(stdout, "\t@ User tried to declare static function %s in class %s WITH DOT!\n", last_func_ident, current_class);
                                 #endif
-                                error(ERR_SEM_OTHER);
+                                error(ERR_SYNT);
                             }
                             if (get_declared_function(full_name, NULL) != NULL) {
                                 #if SEM_DEBUG == 1
