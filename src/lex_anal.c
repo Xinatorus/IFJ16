@@ -486,11 +486,8 @@ Ttoken* getNextToken()
 				// retazec pokracuje
 				if ((c > 31) && (c != 34))
 				{
-					addChar(token->attr, c);
-					token->type = RETEZEC;
-				}
-				else if (c == '\\')
-				{
+					if (c == '\\')
+					{
 						if (c == '\\')
 						{
 							if (c == '\\')
@@ -506,13 +503,10 @@ Ttoken* getNextToken()
 							addChar(token->attr, c);
 							token->type = RETEZEC;
 						}
-						else
-						{
-							fseek(subor, -1, SEEK_CUR);
-							token->type = LEXIKALNI_CHYBA;
-						}
+					}
+					addChar(token->attr, c);
+					token->type = RETEZEC;
 				}
-					
 				
 				// koniec retazca
 				else if (c == 34)
