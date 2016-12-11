@@ -1407,8 +1407,7 @@ bool are_type_compatible(char left, char right) {
 
 tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
 
-    Operand ops[3];
-    Operand *ops_p[3];
+    Operand *operand = (Operand *)malloc(sizeof(Operand) * 3);
     char types[3];
     char *values[3];
     types[0] = type1; types[1] = type2; types[2] = type3;
@@ -1420,40 +1419,35 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
 
     for (int i = 0; i < 3; i++) {
         if (types[i] == 'I') {
-            ops[i].type = c_int;
-            ops[i].value.v_int = (int)strtol(values[i], (char **)NULL, 10);
-            ops_p[i] = &ops[i];
+            operand[i].type = c_int;
+            operand[i].value.v_int = (int)strtol(values[i], (char **)NULL, 10);
             #if GEN_DEBUG == 1
-                fprintf(stdout, " [ %d. (int) %d ] **", i+1, ops[i].value.v_int);
+                fprintf(stdout, " [ %d. (int) %d ] **", i+1, operand[i].value.v_int);
             #endif
         }
         else if (types[i] == 'D') {
-            ops[i].type = c_double;
-            ops[i].value.v_double = strtod(values[i], (char **)NULL);
-            ops_p[i] = &ops[i];
+            operand[i].type = c_double;
+            operand[i].value.v_double = strtod(values[i], (char **)NULL);
             #if GEN_DEBUG == 1
-                fprintf(stdout, " [ %d. (double) %f ] **", i+1, ops[i].value.v_double);
+                fprintf(stdout, " [ %d. (double) %f ] **", i+1, operand[i].value.v_double);
             #endif
         }
         else if (types[i] == 'S') {
-            ops[i].type = c_string;
-            ops[i].value.v_string = makeString(values[i]);
-            ops_p[i] = &ops[i];
+            operand[i].type = c_string;
+            operand[i].value.v_string = makeString(values[i]);
             #if GEN_DEBUG == 1
-                fprintf(stdout, " [ %d. (string) '%s' ] **", i+1, ops[i].value.v_string);
+                fprintf(stdout, " [ %d. (string) '%s' ] **", i+1, operand[i].value.v_string);
             #endif
         }
         else if (types[i] == 'N' || types[i] == 'V') { // V just to be safe
-            ops[i].type = name;
-            ops[i].value.name = makeString(values[i]);
-            ops_p[i] = &ops[i];
+            operand[i].type = name;
+            operand[i].value.name = makeString(values[i]);
             #if GEN_DEBUG == 1
-                fprintf(stdout, " [ %d. (name) '%s' ] **", i + 1, ops[i].value.name);
+                fprintf(stdout, " [ %d. (name) '%s' ] **", i + 1, operand[i].value.name);
             #endif
         }
         else {
             types[i] = '-';
-            ops_p[i] = NULL;
             #if GEN_DEBUG == 1
                 fprintf(stdout, " [ %d. ----- ] **", i + 1);
             #endif
@@ -1464,15 +1458,17 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
         fprintf(stdout, "\n");
     #endif
 
-    tInstr result;
-    result.instr = instr;
-    result.addr1 = ops_p[0];
-    result.addr2 = ops_p[1];
-    result.addr3 = ops_p[2];
+    tInstr *result = (tInstr *)malloc(sizeof(tInstr));
+    result->instr = instr;
+    result->addr1 = types[0] == '-' ? NULL : &operand[0];
+    result->addr2 = types[1] == '-' ? NULL : &operand[1];
+    result->addr3 = types[2] == '-' ? NULL : &operand[2];
 
-    tInstrListItem *returned = instrListAddInstr(&instr_list, result);
-    if (instr == I_LABEL && strchr(ops_p[0]->value.name, '#') != NULL)
-        addLabelAdress(lbladdr, ops_p[0]->value.name, returned);
+    tInstrListItem *returned = instrListAddInstr(&instr_list, *result);
+    if (instr == I_LABEL && strchr(operand[0].value.name, '#') != NULL)
+        addLabelAdress(lbladdr, operand[0].value.name, returned);
+
+    testWriteOutInstr(instr_list);
 
     return returned;
 }
