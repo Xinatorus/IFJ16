@@ -1,5 +1,5 @@
 
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 #include "headers\interpret.h"
 #include "headers\instructions.h"
 #include "headers\valgrind.h"

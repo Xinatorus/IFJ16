@@ -14,7 +14,7 @@
 #include "tstree.h"
 #include "ial.h"
 #include "strings.h"
-#include "testWriteOut.h"
+#include "testing.h"
 #include "instructions.h"
 
 extern tInstrList instr_list; // Main instruction List

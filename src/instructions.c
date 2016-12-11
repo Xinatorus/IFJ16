@@ -1,6 +1,6 @@
 
 #include "headers\instructions.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 void instrListInit(tInstrList *list) {
 	list->first = NULL;

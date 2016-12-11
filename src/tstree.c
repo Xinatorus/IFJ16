@@ -1,5 +1,5 @@
 #include "headers\tstree.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 void tsTreeInit(TsTree *root) {
 	*root = NULL;

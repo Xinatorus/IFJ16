@@ -1,5 +1,5 @@
 #include "headers\valgrind.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 #include "headers\synt_anal.h"
 #include <stdio.h>
 #include <stdlib.h>

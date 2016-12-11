@@ -1,6 +1,6 @@
 
 #include "headers\strings.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 //vytvori kopii str na nove adrese, tu vraci
 char *makeString(char *str) {

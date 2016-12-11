@@ -1,6 +1,6 @@
 
 #include "headers\ial.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 int	findSubstring(char *s, char *search) {
 	if (s == NULL || search == NULL 

@@ -1,5 +1,5 @@
 #include "headers\framework.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 //vraci odkaz na promenou
 Data *findInFrame(char *name, StackFrame *sf) {

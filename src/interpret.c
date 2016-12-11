@@ -1,6 +1,6 @@
 
 #include "headers\interpret.h"
-#include "headers\testWriteOut.h"
+#include "headers\testing.h"
 
 void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	debug("[INTERPRET] Staring interpret...\n");
