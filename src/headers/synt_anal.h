@@ -3,7 +3,7 @@
 
 #define TOKEN_DEBUG 0   // Debug messages for loaded tokens
 #define SYNT_DEBUG 0    // Debug messages for syntax analysis
-#define PREC_DEBUG 0    // Debug messages for precedence analysis
+#define PREC_DEBUG 1    // Debug messages for precedence analysis
 #define SEM_DEBUG 0     // Debug messsges for semantic analysis
 #define GEN_DEBUG 1     // Debug messages for generator
 
@@ -92,6 +92,10 @@ bool are_type_compatible(char left, char right);
 /////////////////////
 
 /* Creates and adds instruction on instruction tape (list) */
-void *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
+tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3);
+
+/* third = false -> Get NOT LAST used temp variable (from 1 & 2)
+   third = true  -> Get temp variable 3 */
+char *get_temp(char type, bool third);
 
 #endif  // include guard

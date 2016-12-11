@@ -889,7 +889,7 @@ void execute() {
                             error(ERR_SEM_TYPE);
                         }
                         /* GENERATOR */
-                        add_instruction(I_MOV, 'N', last_var_ident, 'N', "#tmpI1", '-', NULL);
+                        add_instruction(I_MOV, 'N', last_var_ident, 'N', get_temp(input.data, true), '-', NULL);
                     }
                     if (!first_analysis) {
                         /* @SEM2 - Check expected boolean type for if statement */
@@ -930,7 +930,7 @@ void execute() {
                                 error(ERR_SEM_TYPE);
                             }
                             /* GENERATOR */
-                            add_instruction(I_PUSH, 'N', "#tmpI1", '-', NULL, '-', NULL);
+                            add_instruction(I_PUSH, 'N', get_temp(input.data, true), '-', NULL, '-', NULL);
                         }
                     }
                 }
@@ -1318,7 +1318,7 @@ bool are_type_compatible(char left, char right) {
 ///// GENERATOR /////
 /////////////////////
 
-void *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
+tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, char type2, char *value2, char type3, char *value3) {
 
     Operand ops[3];
     Operand *ops_p[3];
@@ -1377,11 +1377,41 @@ void *add_instruction(Instructions instr, char type1, char *value1, char type2, 
         fprintf(stdout, "\n");
     #endif
 
-    tInstr *result = (tInstr *) malloc(sizeof(tInstr));
-    result->instr = instr;
-    result->addr1 = ops_p[0];
-    result->addr2 = ops_p[1];
-    result->addr3 = ops_p[2];
-    instrListAddInstr(&instr_list, *result);
-    return (void *) result;
+    tInstr result = (tInstr) { instr, ops_p[0], ops_p[1], ops_p[2] };
+    return instrListAddInstr(&instr_list, result);
+}
+
+char *get_temp(char type, bool third) {
+    static int i = 0, d = 0, s = 0; // Last returned
+    
+    if (third) {
+        if (type == 'I')
+            return makeString("#tmpI3");
+        else if (type == 'D')
+            return makeString("#tmpD3");
+        else if (type == 'S')
+            return makeString("#tmpS3");
+        else return NULL;
+    }
+    else {
+        char *id = (char *)malloc(2 * sizeof(char));
+        char c;
+
+        if (type == 'I') {
+            c = (i ? --i : ++i) + 1 + '0';
+            sprintf(id, "%c", c);
+            return cat("#tmpI", id);
+        }
+        else if (type == 'D') {
+            c = (d ? --d : ++d) + 1 + '0';
+            sprintf(id, "%c", c);
+            return cat("#tmpD", id);
+        }
+        else if (type == 'S') {
+            c = (s ? --s : ++s) + 1 + '0';
+            sprintf(id, "%c", c);
+            return cat("#tmpS", id);
+        }
+        else return NULL;
+    }
 }
