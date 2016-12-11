@@ -151,7 +151,7 @@ Psymbol getNextPrecSymbol() {
     return symbol;
 }
 
-void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var, Ttoken *token) {
+void push_cstack_psymbol(PType type, cStack *stack_p, char data, char *temp_var, Ttoken *token) {
     cItem item;
     Psymbol symbol;
     symbol.token = NULL; // We dont know, from what its made.. could be E op E -> E
@@ -161,7 +161,7 @@ void push_cstack_psymbol(PType type, cStack *stack, char data, char *temp_var, T
     symbol.token = token;
     item.type = IT_PSYMBOL;
     item.content.psymbol = symbol;
-    if (!cStack_push(stack, item)) {
+    if (!cStack_push(stack_p, item)) {
         error(ERR_INTER);
     }
 }
@@ -329,7 +329,7 @@ char prec_analysis(Ttoken *token) {
                             expr_temp_last = first_s.temp_var;
                             /* GENERATOR */
                             if (op == PS_PLUS || op == PS_MINUS || op == PS_STAR || op == PS_SLASH) {
-                                Instructions ins;
+                                Instructions ins = I_ADD;
                                 if (op == PS_PLUS) ins = I_ADD;
                                 if (op == PS_MINUS) ins = I_SUB;
                                 if (op == PS_SLASH) ins = I_DIV;
