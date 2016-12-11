@@ -6,7 +6,7 @@
 */
 #ifndef VALGRIND_H
 #define VALGRIND_H
-
+/*
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC 1
 #include <stdlib.h>
@@ -16,7 +16,7 @@
 #undef free
 #define free(addr) _free_dbg(addr,_CLIENT_BLOCK)
 #endif
-
+*/
 void valgrind();
 
 #endif // !VALGRIND_H
