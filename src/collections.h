@@ -20,7 +20,8 @@ typedef enum {
     IT_TERMINAL,
     IT_NTTYPE,
     IT_PSYMBOL,
-    IT_TOKEN
+    IT_TOKEN,
+    IT_FEW
 }cItemType;
 
 typedef union {
@@ -29,6 +30,7 @@ typedef union {
     NTType nttype;
     Psymbol psymbol;
     Ttoken *token;
+    FEW few;
 }cItemData;
 
 typedef struct {

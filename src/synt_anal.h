@@ -63,6 +63,9 @@ void push_cstack_nonterminal(NTType type, cStack *stack_p);
 /* Auxiliary function to push precedence symbol on stack */
 void push_cstack_psymbol(PType type, cStack *stack_p, char data, char *temp_var, Ttoken *token);
 
+/* Auxiliary function to push FEW on stack */
+void push_cstack_few(char type, cStack *stack_p, int value);
+
 /* Auxiliary function to insert token into queue */
 void insert_cqueue_token(Ttoken *token, cQueue *queue);
 

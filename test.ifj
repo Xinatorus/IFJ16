@@ -4,18 +4,15 @@ class Main
 
     static void run()
     {
-    	FOO.a = 5;
-        ifj16.print("Hello world!");
-    	FOO.foo(FOO.a);
+        if (3 < 5) {
+    	    ifj16.print("if\n");
+            while (1 == 2) {
+                ifj16.print("while\n");
+            }
+        } else {
+            ifj16.print("else\n");
+        }
     
     }
-
-}
-
-class FOO{
-	static int a;
-	static void foo(int a){
-		ifj16.print(a);
-	}
 
 }
