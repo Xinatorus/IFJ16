@@ -11,7 +11,7 @@
 #define SYNT_DEBUG 0    // Debug messages for syntax analysis
 #define PREC_DEBUG 0    // Debug messages for precedence analysis
 #define SEM_DEBUG 0     // Debug messsges for semantic analysis
-#define GEN_DEBUG 0     // Debug messages for generator
+#define GEN_DEBUG 1     // Debug messages for generator
 
 #include <stdbool.h>
 #include <string.h>
@@ -35,8 +35,8 @@ extern char *current_class; // Actual class
 extern char *current_func; // Actual function
 extern char *expr_temp_last; // In which temp var is expression from last prec. analysis saved
 extern char *expr_left_bool; // Last left boolean operand
-extern PType expr_last_bool; // Last boolean operation
-extern PType expr_last_bool_neg; // Last boolean operation negated
+extern Instructions expr_last_bool; // Last boolean operation
+extern Instructions expr_last_bool_neg; // Last boolean operation negated
 extern char *expr_right_bool; // Last right boolean operand
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */

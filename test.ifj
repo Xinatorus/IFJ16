@@ -4,7 +4,14 @@ class Main
 
     static void run()
     {
-        ifj16.print("Hello world!");    
+        int a = 0;
+        while (a <= 10) {
+        
+            //ifj16.print("nejde \n \t \\ \" ");
+
+        }   
+
+        //ifj16.print(" konec");
     }
 
 }

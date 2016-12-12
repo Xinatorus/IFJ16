@@ -16,8 +16,8 @@ char *current_class; // Actual class
 char *current_func; // Actual function
 char *expr_temp_last; // In which temp var is expression from last prec. analysis saved
 char *expr_left_bool; // Last left boolean operand
-PType expr_last_bool; // Last boolean operation
-PType expr_last_bool_neg; // Last boolean operation negated
+Instructions expr_last_bool; // Last boolean operation
+Instructions expr_last_bool_neg; // Last boolean operation negated
 char *expr_right_bool; // Last right boolean operand
 
 /* Semantic variables */
@@ -1158,7 +1158,7 @@ void execute() {
                         if (item.content.few.type == 'W') {
                             char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
                             sprintf(num_str, "%d", num); // Convert from (int) to (text)
-                            add_instruction(expr_last_bool, 'N', expr_left_bool, 'N', expr_right_bool, 'N', cat("#while_", num_str));
+                            add_instruction(expr_last_bool, 'N', expr_right_bool, 'N', expr_left_bool, 'N', cat("#while_", num_str));
                             add_instruction(I_LABEL, 'N', cat("#endwhile_", num_str), '-', NULL, '-', NULL);
                             cStack_pop(&fews);
                         }
