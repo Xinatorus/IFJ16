@@ -174,7 +174,6 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 				debug("[INTERPRET] Switched out of Main.run -> End \n");
 			}
 			sf = deleteFrame(sf); // navraceni do otcovskeho ramce		
-			continue;
 			break;
 		case I_PUSH:
 			if (dest->type != name || findInFrame(dest->value.name, sf)->defined == true)
@@ -500,6 +499,39 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 				default: break;
 			}
 			
+		case I_IREAD:
+			if (dest) {
+				findInFrame(dest->value.name, sf)->defined = true;
+				if (!readInt(&tmpInt)) { //TODO skonceni
+					clearAll(sf, root, interStack, &iList, la);
+					error(ERR_RUN_NUM);
+				}
+				findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
+			}
+			break;
+		case I_DREAD:
+			if (dest) {
+				if (!readDouble(&tmpDouble)) {
+					clearAll(sf, root, interStack, &iList, la);
+					error(ERR_RUN_NUM);
+				}
+				findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
+			}
+			break;
+		case I_SREAD:
+			if (dest) {
+				if (findInFrame(dest->value.name, sf)->defined == true) {
+					free(findInFrame(dest->value.name, sf)->value.v_string);
+				}
+				findInFrame(dest->value.name, sf)->defined = true;
+				if (!readInt(&tmpInt)) { //TODO skonceni
+					clearAll(sf, root, interStack, &iList, la);
+					error(ERR_RUN_NUM);
+				}
+				findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
+			}
+			break;
+
 			break;
 		case I_WRITE:
 			tmpInt = stackPop(&interStack, &tmpData);

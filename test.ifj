@@ -4,17 +4,9 @@ class Main
 
     static void run()
     {
-    	int a = 5;
-    	FOO.foo(a);
-    
+    	int x;
+    	x = ifj16.readInt();
+    	//ifj16.print("ad"+x);
     }
-
-}
-
-class FOO{
-	static int b;
-	static void foo(int b){
-		ifj16.print("hello");
-	}
 
 }
