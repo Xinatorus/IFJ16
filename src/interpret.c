@@ -174,7 +174,6 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 				debug("[INTERPRET] Switched out of Main.run -> End \n");
 			}
 			sf = deleteFrame(sf); // navraceni do otcovskeho ramce		
-			continue;
 			break;
 		case I_PUSH:
 			if (dest->type != name || findInFrame(dest->value.name, sf)->defined == true)
