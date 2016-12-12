@@ -14,7 +14,7 @@
 #define PATRIK_TO_NECHCE 0
 #define LEX_TEST 0       //Lexical analysis test
 #define VALGRIND_TEST 0  //Valgrind test
-#define OUTPUT_TIME 1     //Output execution time 
+#define OUTPUT_TIME 0     //Output execution time 
 
 
 int main(int argc, char* argv[]) {
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 	*/
 
 
-	testInterpret();
+	//testInterpret();
 	//valgrind();
 	//getchar();
 

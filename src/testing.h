@@ -31,7 +31,7 @@
 
 
 
-#define printf(...) do{ \
+//#define printf(...) do{ \
 fprintf( debugFile, __VA_ARGS__ ); \
 /*fprintf( stdout, __VA_ARGS__ );*/ \
 } while( false )

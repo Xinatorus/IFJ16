@@ -4,9 +4,9 @@ class Main
 
     static void run()
     {
-    	String tmp = "hell";
-    	tmp = tmp + 5;
-    	ifj16.print(tmp);
+    	int x;
+    	x = ifj16.readInt();
+    	//ifj16.print("ad"+x);
     }
 
 }
