@@ -9,6 +9,7 @@
 
 void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 	debug("[INTERPRET] Staring interpret...\n");
+	tsWriteOutTreeTS(*root);
 	//stack pro vnitrni mezi vypocty a parametry fci
 	Stack interStack = stackInit(100);
 
@@ -122,8 +123,25 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			//TODO non-void bez returnu!
 			sf = newFrame(sf, *root,  ins.addr1->value.name,ins.addr3? findInFrame(ins.addr3->value.name,sf) : NULL, iList.active);
 			debug("[INTERPRET] Switched to frame: %s",sf->identifier);
+			testWriteOutFrame(sf);
 			instrListSetActive(&iList, tsFind(*root, ins.addr1->value.name)->addr);
-			extractParams(sf, *root, interStack);
+			debug("[INTERPRET] Looking for params\n");
+			//nacitani parametru
+			int cpar = 0;
+			for (TsTree x = *root; x != NULL; x = x->next)
+				if (isHisParent(sf->identifier, x->name)) {
+					cpar = strlen(searchInHashTable(x->ts, sf->identifier)->type) - 2;
+					break;
+				}
+			debug("[INTERPRET] found %d params for %s\n", cpar, sf->identifier);
+
+			for (int i = cpar - 1; i >= 0; i--) {
+				stackPop(&interStack, &tmpData);
+				debug("[INTERPRET] Add: %d\n", tmpData.type);
+				sf->data[i].value = tmpData.value;
+				sf->data[i].type = tmpData.type;
+				sf->data[i].defined = true;
+			}
 			continue;
 
 			break;
@@ -156,7 +174,6 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 				debug("[INTERPRET] Switched out of Main.run -> End \n");
 			}
 			sf = deleteFrame(sf); // navraceni do otcovskeho ramce		
-			continue;
 			break;
 		case I_PUSH:
 			if (dest->type != name || findInFrame(dest->value.name, sf)->defined == true)
@@ -164,11 +181,12 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 					case t_int: 
 					case t_double: 
 						tmpData = *findInFrame(dest->value.name, sf);
-						stackPush(interStack,tmpData);
+						stackPush(&interStack,tmpData);
+						break;
 					case t_string: 
 						tmpData = *findInFrame(dest->value.name, sf);
 						tmpData.value.v_string = makeString(tmpData.value.v_string); // novou kopii 
-						stackPush(interStack, tmpData); // vlozim na stack
+						stackPush(&interStack, tmpData); // vlozim na stack
 						break;
 					default:
 					break;
@@ -186,7 +204,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 				case t_int:
 				case t_double:
 				 // retezec je vytvoren pres push, nemusim tvorit novy 
-					stackPop(interStack,&tmpData);
+					stackPop(&interStack,&tmpData);
 					findInFrame(dest->value.name, sf)->value = tmpData.value; // NERUCIM za spravnost 
 				default:
 					break;
@@ -481,9 +499,42 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 				default: break;
 			}
 			
+		case I_IREAD:
+			if (dest) {
+				findInFrame(dest->value.name, sf)->defined = true;
+				if (!readInt(&tmpInt)) { //TODO skonceni
+					clearAll(sf, root, interStack, &iList, la);
+					error(ERR_RUN_NUM);
+				}
+				findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
+			}
+			break;
+		case I_DREAD:
+			if (dest) {
+				if (!readDouble(&tmpDouble)) {
+					clearAll(sf, root, interStack, &iList, la);
+					error(ERR_RUN_NUM);
+				}
+				findInFrame(dest->value.name, sf)->value.v_double = tmpDouble;
+			}
+			break;
+		case I_SREAD:
+			if (dest) {
+				if (findInFrame(dest->value.name, sf)->defined == true) {
+					free(findInFrame(dest->value.name, sf)->value.v_string);
+				}
+				findInFrame(dest->value.name, sf)->defined = true;
+				if (!readInt(&tmpInt)) { //TODO skonceni
+					clearAll(sf, root, interStack, &iList, la);
+					error(ERR_RUN_NUM);
+				}
+				findInFrame(dest->value.name, sf)->value.v_int = tmpInt;
+			}
+			break;
+
 			break;
 		case I_WRITE:
-			tmpInt = stackPop(interStack, &tmpData);
+			tmpInt = stackPop(&interStack, &tmpData);
 			debug("[OUTPUT %d] ",tmpInt);
 			//TODO pretyp pak write
 
@@ -507,34 +558,34 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 // Vestavene funkce dest je cil kam se uklada vysledek
 		case I_LEN: // int lenght(String)
 			findInFrame(dest->value.name,sf)->defined = true;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			findInFrame(dest->value.name,sf)->value.v_int = strlen(tmpData.value.v_string);
 			break;
 		case I_SUBS: // String substr(String s, int i, int n)
 			findInFrame(dest->value.name, sf)->defined = true;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			int tmpInt2 = tmpData.value.v_int;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			int tmpInt1 = tmpData.value.v_int;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			tmpStr1 = tmpData.value.v_string;
 
 			findInFrame(dest->value.name, sf)->value.v_string = getSubString(tmpStr1,tmpInt1,tmpInt2);
 			break;
 		case I_CMP: // int compare(String s1, String s2)
 			findInFrame(dest->value.name, sf)->defined = true;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			tmpStr2 = tmpData.value.v_string;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			tmpStr1 = tmpData.value.v_string;
 			
 			findInFrame(dest->value.name, sf)->value.v_int = compare(tmpStr1, tmpStr2);
 			break;
 		case I_FIND: // int find(String s, String search) 
 			findInFrame(dest->value.name, sf)->defined = true;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			tmpStr2 = tmpData.value.v_string;
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			tmpStr1 = tmpData.value.v_string;
 			
 			findInFrame(dest->value.name, sf)->value.v_int = findSubstring(tmpStr1,tmpStr2);
@@ -545,7 +596,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			}
 			else findInFrame(dest->value.name, sf)->defined = true;
 
-			stackPop(interStack, &tmpData);
+			stackPop(&interStack, &tmpData);
 			//TODO prepisy
 			findInFrame(dest->value.name, sf)->value.v_string = makeString(tmpData.value.v_string);
 			tmpStr1 = findInFrame(dest->value.name, sf)->value.v_string;
@@ -560,6 +611,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 		}
 
 		debug("[INTERPRET] Content of FRAME after execute\n");
+		testWriteOutFrame(sf->top);
 		testWriteOutFrame(sf);
 
 		instrListSetActiveNext(&iList); // posunu aktivitu na další 
@@ -583,9 +635,11 @@ void extractParams(StackFrame *sf, TsTree root, Stack stack) {
 
 	Data tmp;
 
-	for (int i = cpar; i > 0; i--) {
-		stackPop(stack, &tmp);
+	for (int i = cpar-1; i >= 0; i--) {
+		stackPop(&stack, &tmp);
+		debug("[INTERPRET] Add: %d",tmp.type);
 		sf->data[i].value = tmp.value;
+		sf->data[i].defined = true;
 	}
 }
 
@@ -596,7 +650,7 @@ void clearAll(StackFrame *sf, TsTree *root, Stack interStack, tInstrList *iList,
 	//operandy instrukci podle toho jak se budou vytvaret
 
 	tsDel(root);
-	stackFree(interStack);
+	stackFree(&interStack);
 	while ((sf=deleteFrame(sf)));
 	instrListFree(iList);
 }
