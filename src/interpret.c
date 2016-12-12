@@ -78,6 +78,7 @@ void interpret(tInstrList iList,TsTree *root,labelAdress *la) {
 			src1 = ins.addr1;
 			src2 = ins.addr2;
 
+			if(ins.instr<I_JMP && ins.instr>I_JMPGE)
 			destT = getType(dest);
 			src1T = getType(src1);
 			src2T = getType(src2);
