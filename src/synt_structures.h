@@ -128,4 +128,10 @@ typedef struct {
     char *temp_var; // Temp var where this token is stored
 }Psymbol;
 
+/* FEW FRAME */
+typedef struct {
+    char type; // F / E / W
+    int value;
+}FEW;
+
 #endif // include guard

@@ -32,11 +32,9 @@ char *last_var_ident; // Used to hold variable name which is being assigned to
 int current_param; // Current parameter number of called function
 bool assigning_to_func; // Used because we cannot determine by grammar if func is called AND assigned somewhere too
 
-/* Label variables */
-int lbl_else;
-int lbl_endif;
-int lbl_while;
-int lbl_endwhile;
+// Labels
+int free_few;
+cStack fews;
 
 
 int synt_rules[23][20] = {
@@ -564,6 +562,18 @@ void push_cstack_nonterminal(NTType type, cStack *stack_p) {
     }
 }
 
+void push_cstack_few(char type, cStack *stack_p, int value) {
+    cItem item;
+    FEW few;
+    few.type = type;
+    few.value = value;
+    item.type = IT_FEW;
+    item.content.few = few;
+    if (!cStack_push(stack_p, item)) {
+        error(ERR_INTER);
+    }
+}
+
 void execute() {
 
     /* NOTE - SEMANTIC ACTIONS IN FIRST PASS
@@ -597,16 +607,14 @@ void execute() {
     last_var_ident = makeString("");
     current_param = 0;
     assigning_to_func = false;
+    cStack_init(&fews, 30);
+    free_few = 1;
 
     if (first_analysis) {
         /* Inits only to be done once */
         token_list = NULL;
         instrListInit(&instr_list);
         lbladdr = labelAdressInit();
-        lbl_else = 0;
-        lbl_endif = 0;
-        lbl_while = 0;
-        lbl_endwhile = 0;
 
         /* @SEM - Create symbol table for default if16 class */
         #if SEM_DEBUG == 1
@@ -934,7 +942,7 @@ void execute() {
                     }
                     if (!first_analysis) {
                         if (last_rule == 32) {
-                            /* @SEM2 - Check expected boolean type for if statement */
+                            /* @SEM2 - Check expected boolean type for IF statement */
                             if (input.data != 'B') {
                                 #if PREC_DEBUG == 1
                                     fprintf(stdout, "\t@ Wrong type (%c) passed into if()\n", input.data);
@@ -942,13 +950,15 @@ void execute() {
                                 error(ERR_SEM_TYPE);
                             }
                             /* GENERATOR */
-                            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
-                            sprintf(val, "%d", lbl_else); // Convert from (int) to (text)
-                            add_instruction(expr_last_bool_neg, 'N', expr_left_bool, 'N', expr_right_bool, 'N', cat("#else_", val));
+                            int num = free_few++;
+                            push_cstack_few('F', &fews, num);
+                            char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(num_str, "%d", num); // Convert from (int) to (text)
+                            add_instruction(expr_last_bool_neg, 'N', expr_right_bool, 'N', expr_left_bool, 'N', cat("#else_", num_str));
                         }
 
                         if (last_rule == 33) {
-                            /* @SEM2 - Check expected boolean type for while statement */
+                            /* @SEM2 - Check expected boolean type for WHILE statement */
                             if (input.data != 'B') {
                                 #if PREC_DEBUG == 1
                                     fprintf(stdout, "\t@ Wrong type (%c) passed into while()\n", input.data);
@@ -956,10 +966,12 @@ void execute() {
                                 error(ERR_SEM_TYPE);
                             }
                             /* GENERATOR */
-                            char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
-                            sprintf(val, "%d", lbl_endwhile); // Convert from (int) to (text)
-                            add_instruction(expr_last_bool_neg, 'N', expr_left_bool, 'N', expr_right_bool, 'N', cat("#endwhile_", val));
-                            add_instruction(I_LABEL, 'N', cat("#while_", val), '-', NULL, '-', NULL);
+                            int num = free_few++;
+                            push_cstack_few('W', &fews, num);
+                            char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(num_str, "%d", num); // Convert from (int) to (text)
+                            add_instruction(expr_last_bool_neg, 'N', expr_right_bool, 'N', expr_left_bool, 'N', cat("#endwhile_", num_str));
+                            add_instruction(I_LABEL, 'N', cat("#while_", num_str), '-', NULL, '-', NULL);
                         }
                         /* @SEM2 - Checking function parameters when calling function */
                         if (last_rule == 17 || last_rule == 22) {
@@ -1051,11 +1063,13 @@ void execute() {
                     }
                 }
                 else if (input.type == T_ELSE) {
-                    if (last_rule == 26) {
+                    if (!first_analysis && last_rule == 26) {
                         /* GENERATOR */
-                        char *val = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
-                        sprintf(val, "%d", lbl_else); // Convert from (int) to (text)
-                        add_instruction(I_LABEL, 'N', cat("#else_", val), '-', NULL, '-', NULL);
+                        int num = cStack_top(&fews).content.few.value;
+                        push_cstack_few('E', &fews, num);
+                        char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                        sprintf(num_str, "%d", num); // Convert from (int) to (text)
+                        add_instruction(I_LABEL, 'N', cat("#else_", num_str), '-', NULL, '-', NULL);
                     }
                 }
                 else if (input.type == T_SC) {
@@ -1122,6 +1136,32 @@ void execute() {
                             add_instruction(I_RET, '-', NULL, '-', NULL, '-', NULL);
                         }
                         current_func = makeString("");
+                    }
+                    /* DETERMINING ENDING OF IF - ELSE - WHILE BY FEW FRAME */
+                    if (!first_analysis && last_rule == 26) {
+                        cItem item = cStack_top(&fews);
+                        int num = item.content.few.value;
+                        /* END OF IF */
+                        if (item.content.few.type == 'F') {
+                            char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(num_str, "%d", num); // Convert from (int) to (text)
+                            add_instruction(I_JMP, 'N', cat("#endif_", num_str), '-', NULL, '-', NULL);
+                        }
+                        /* END OF ELSE */
+                        if (item.content.few.type == 'E') {
+                            char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(num_str, "%d", num); // Convert from (int) to (text)
+                            add_instruction(I_LABEL, 'N', cat("#endif_", num_str), '-', NULL, '-', NULL);
+                            cStack_pop(&fews);
+                        }
+                        /* END OF WHILE */
+                        if (item.content.few.type == 'W') {
+                            char *num_str = (char *)malloc((CHAR_BIT * sizeof(int) / 3) + 3); // This can hold any int as text
+                            sprintf(num_str, "%d", num); // Convert from (int) to (text)
+                            add_instruction(expr_last_bool, 'N', expr_left_bool, 'N', expr_right_bool, 'N', cat("#while_", num_str));
+                            add_instruction(I_LABEL, 'N', cat("#endwhile_", num_str), '-', NULL, '-', NULL);
+                            cStack_pop(&fews);
+                        }
                     }
                 }
                 else if (input.type == T_LCB) {
@@ -1234,6 +1274,7 @@ void execute() {
 
     cStack_free(&stack);
     cQueue_free(&token_archive);
+    cStack_free(&fews);
 
     if (first_analysis) {
         /* @SEM1 - Check for class main & function run presence & check correct types */
@@ -1467,8 +1508,6 @@ tInstrListItem *add_instruction(Instructions instr, char type1, char *value1, ch
     tInstrListItem *returned = instrListAddInstr(&instr_list, *result);
     if (instr == I_LABEL && strchr(operand[0].value.name, '#') != NULL)
         addLabelAdress(lbladdr, operand[0].value.name, returned);
-
-    testWriteOutInstr(instr_list);
 
     return returned;
 }
