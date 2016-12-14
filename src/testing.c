@@ -258,7 +258,7 @@ void testWriteOutInstr(tInstrList list) {
 	
 		 debug(" [INSTR] Instruction list:\n");
 	for (tInstrListItem *tmp = list.first; tmp != NULL; tmp = tmp->next) {
-		printf("    |");
+		//printf("    |");
 		testWriteOutI(tmp->instr);
 	}
 	debug(" [INSTR] End of Instruction list\n");

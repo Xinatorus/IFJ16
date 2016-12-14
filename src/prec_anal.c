@@ -345,13 +345,12 @@ char prec_analysis(Ttoken *token) {
                             if (op == PS_LTHAN || op == PS_RTHAN || op == PS_LTHANEQ || op == PS_RTHANEQ || op == PS_EQ || op == PS_NEQ) {
                                 expr_left_bool = first_s.temp_var;
                                 expr_right_bool = second_s.temp_var;
-                                expr_last_bool = op;
-                                if (op == PS_LTHAN) expr_last_bool_neg = PS_RTHANEQ;
-                                if (op == PS_RTHAN) expr_last_bool_neg = PS_LTHANEQ;
-                                if (op == PS_LTHANEQ) expr_last_bool_neg = PS_RTHAN;
-                                if (op == PS_RTHANEQ) expr_last_bool_neg = PS_LTHAN;
-                                if (op == PS_EQ) expr_last_bool_neg = PS_NEQ;
-                                if (op == PS_NEQ) expr_last_bool_neg = PS_EQ;
+                                if (op == PS_LTHAN) { expr_last_bool = I_JMPL; expr_last_bool_neg = I_JMPGE; }
+                                if (op == PS_RTHAN) { expr_last_bool = I_JMPG; expr_last_bool_neg = I_JMPLE; }
+                                if (op == PS_LTHANEQ) { expr_last_bool = I_JMPLE; expr_last_bool_neg = I_JMPG; }
+                                if (op == PS_RTHANEQ) { expr_last_bool = I_JMPGE; expr_last_bool_neg = I_JMPL; }
+                                if (op == PS_EQ) { expr_last_bool = I_JMPE; expr_last_bool_neg = I_JMPNE; }
+                                if (op == PS_NEQ) { expr_last_bool = I_JMPNE; expr_last_bool_neg = I_JMPE; }
                             
                             }
 

@@ -35,8 +35,8 @@ extern char *current_class; // Actual class
 extern char *current_func; // Actual function
 extern char *expr_temp_last; // In which temp var is expression from last prec. analysis saved
 extern char *expr_left_bool; // Last left boolean operand
-extern PType expr_last_bool; // Last boolean operation
-extern PType expr_last_bool_neg; // Last boolean operation negated
+extern Instructions expr_last_bool; // Last boolean operation
+extern Instructions expr_last_bool_neg; // Last boolean operation negated
 extern char *expr_right_bool; // Last right boolean operand
 
 /* Get appropriate rule number from TT table - based on non-terminal and terminal */
